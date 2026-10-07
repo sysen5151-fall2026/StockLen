@@ -51,7 +51,9 @@ Windows setup and shutdown: [operating guide](docs/operations.md). With the back
 python3 -m unittest discover -s tests -v
 node --test tests/site.test.mjs
 ```
-SPEC.md retains all eight submitted stakeholder requirements and proposed acceptance criteria. [Five emerging system-function candidates](requirements/FUNCTIONAL-CANDIDATES.md) await approval and native-model allocation. Proposed user MOEs are not completed test results. The separate stakeholder-acceptance workflow intentionally reports eight unmet assessments; green development checks do not close them.
+SPEC.md retains all eight submitted stakeholder requirements and proposed acceptance criteria. [Five emerging system-function candidates](requirements/FUNCTIONAL-CANDIDATES.md) await approval and native-model allocation. Proposed user MOEs are not completed test results. The stakeholder-readiness workflow reports all eight as **not assessed**; a green report job only means the report was generated. The strict acceptance scaffold remains available through the manual workflow option or `python -m unittest discover -s acceptance -v`, and still fails while evidence is missing.
+
+Website publishing requires **Settings → Pages → Source: GitHub Actions**. The workflow builds and checks the site on every run; when Pages is unavailable, deployment is skipped with a setup notice. Skipped deployment does not mean the website was published. After enabling Pages, run **Verify and publish StockLens** from the Actions tab.
 
 ## Reference and provenance
 
