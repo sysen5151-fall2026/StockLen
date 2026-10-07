@@ -1,0 +1,127 @@
+{
+  "source_name": "Stakeholder_Needs_and_Requirements_Definition.pdf",
+  "source_sha256": "a0ce0ea870bf5b220d67fad6313d53724b6328e63f88184c9704f25f7c004404",
+  "normalization": "PDF line wrapping and line-end hyphenation only",
+  "requirements": [
+    {
+      "need_id": "N-01",
+      "need": "I need to compare two stocks on a common analysis date using a consistent indicator basis.",
+      "requirement_id": "SR-01",
+      "requirement": "StockLens shall display a comparison of two eligible stocks using a common analysis date and the same documented indicator and scoring configuration.",
+      "acceptance": "MOE-01: ≥80% unassisted correct completion of the agreed comparison task. Conformance check: both stocks are eligible and use the same analysis date and documented indicator/scoring configuration.",
+      "method": "User task + inspection. Ask each participant to compare two stocks using two agreed indicators and the displayed ranking. Score against a prepared answer rubric. Inspect the dated inputs and configuration. Retain answers, assistance records, stock eligibility, dates and configuration version.",
+      "model": "UC.1 (185145)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 19
+      },
+      "evidence_status": "not assessed"
+    },
+    {
+      "need_id": "N-02",
+      "need": "I need to understand a displayed ranking through the computed drivers that explain the difference between the stocks.",
+      "requirement_id": "SR-02",
+      "requirement": "StockLens shall provide an explanation of each displayed ranking that identifies the ranking’s main computed drivers and their corresponding indicator values.",
+      "acceptance": "MOE-02: ≥80% correctly identify both requested drivers without assistance. Conformance check: every explanation in the assessment set identifies the selected computed drivers and their correct values, with no contradiction of the score breakdown.",
+      "method": "User task + calculation review. Ask why Stock A ranks above Stock B. Use a case with two identifiable drivers selected by the frozen rule. Compare answers and explanation content with the checked factor values, weights and score breakdown. Retain the rubric, outputs, input values and discrepancy log.",
+      "model": "UC.1.6 (186309); UC.1.7 (186503)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 19
+      },
+      "evidence_status": "not assessed"
+    },
+    {
+      "need_id": "N-03",
+      "need": "I need inspectable, dated evidence for the news claims used in my stock comparison.",
+      "requirement_id": "SR-03",
+      "requirement": "StockLens shall associate each displayed news claim with an inspectable supporting source identifier and publication date, alongside the analysis and market-data dates for the comparison.",
+      "acceptance": "MOE-03: ≥80% locate the requested supporting item and distinguish its publication date from the comparison’s analysis and market-data dates without assistance. Conformance check: every news claim in the assessment set has an inspectable source that supports the claim and the required date information.",
+      "method": "User task + source review. Ask participants to open a displayed claim’s source and identify all three dates. Independently inspect each claim and its cited material. Retain answers, source identifiers, dates, the supporting passage or reference, and any inaccessible or unsupported items.",
+      "model": "UC.1.7 (186503)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 19
+      },
+      "evidence_status": "not assessed"
+    },
+    {
+      "need_id": "N-04",
+      "need": "We need an agreed core research workflow that our team can deliver within its available time, skills and service resources.",
+      "requirement_id": "SR-04",
+      "requirement": "The StockLens project shall deliver an executable instance of the agreed UC.1 research workflow within the time and service-resource limits recorded in the demonstration baseline.",
+      "acceptance": "MOE-04: pass only when the agreed UC.1 workflow executes in the documented environment within confirmed time and service-resource limits. Undefined limits make it not assessable, rather than satisfied.",
+      "method": "Demonstration + review. Freeze scope and limits before the run. Record the outcome, environment/version, elapsed time and relevant service-resource use against that baseline. Retain the run record and deviations.",
+      "model": "UC.1 (185145); A-04 (219105)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 20
+      },
+      "evidence_status": "not assessed"
+    },
+    {
+      "need_id": "N-05",
+      "need": "I need a traceable account of how each stakeholder requirement follows from a need and is supported by model and assessment evidence.",
+      "requirement_id": "SR-05",
+      "requirement": "The StockLens project shall maintain a traceability record for each stakeholder requirement identifying its originating need, related model entities, validation method and evidence status.",
+      "acceptance": "MOE-05: 100% of the current eight requirements have correct need links, related model entities, a validation method and an explicit evidence status. Recalculate the denominator if the baseline changes.",
+      "method": "Inspection. Follow each link in the register, report and Innoslate model; check entity IDs and consistency. Retain reviewed records and discrepancies. A planned status is valid; an invented or broken model link is not.",
+      "model": "A-05 (216873)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 20
+      },
+      "evidence_status": "not assessed"
+    },
+    {
+      "need_id": "N-06",
+      "need": "I need continuity of operation through instructions that another team member can follow without the original author’s undocumented knowledge.",
+      "requirement_id": "SR-06",
+      "requirement": "The StockLens project shall provide an operating and transition guide enabling a team member other than its author to start, run and shut down the demonstration and carry out the documented handover or retirement procedure without undocumented instructions.",
+      "acceptance": "MOE-06: pass only when a member other than the guide’s author completes startup, the demonstration, shutdown and the selected documented handover or retirement procedure without undocumented instructions.",
+      "method": "Observed demonstration + review. Use a controlled project environment. Record stages, assistance and missing instructions. Check responsibility, configuration, retained records and applicable access-transfer or revocation steps. Retain the guide version and executed transition record; a checklist alone is insufficient.",
+      "model": "A-06 (217607)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 20
+      },
+      "evidence_status": "not assessed"
+    },
+    {
+      "need_id": "N-07",
+      "need": "We need the project’s use of our services and content to remain within the conditions applicable to the selected access arrangements.",
+      "requirement_id": "SR-07",
+      "requirement": "The StockLens project shall conduct its use of each selected market-data and news service in accordance with the applicable access, retention and display conditions identified in its dated service-use record.",
+      "acceptance": "MOE-07: 100% provider coverage, with no unresolved discrepancy between applicable conditions and observed access, retention or display in the assessment scope. A conditions register alone does not pass.",
+      "method": "Conditions and actual-use inspection. Compare dated provider references with request records, retained data and displayed content. Retain the condition-to-use checklist and decisions for each provider. Missing conditions or unobserved use remain unresolved; planned use is not actual-use evidence.",
+      "model": "A-07 (217608)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 20
+      },
+      "evidence_status": "not assessed"
+    },
+    {
+      "need_id": "N-08",
+      "need": "We need the analysis request to contain only the inputs agreed for that task through the approved service access.",
+      "requirement_id": "SR-08",
+      "requirement": "StockLens shall restrict AI analysis-request content to the approved field schema, excluding credentials and unnecessary personal information from that content.",
+      "acceptance": "MOE-08: 100% of requests in the recorded set conform to the approved schema, with no credentials or unnecessary personal information in analysis content. Approved service access is a separate prerequisite for assessing N-08; content conformance alone does not close its access-coverage item.",
+      "method": "Payload inspection. Compare captured requests with the versioned schema and task purpose. Record the assessment set and deviations. Retain redacted examples and access/configuration evidence without exposing secrets. Review authentication separately from analysis content.",
+      "model": "A-08 (217609)",
+      "source_pages": {
+        "need": 15,
+        "requirement": 16,
+        "acceptance": 20
+      },
+      "evidence_status": "not assessed"
+    }
+  ]
+}

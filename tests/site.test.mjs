@@ -7,7 +7,7 @@ import {transmitEvaluationRequest,renderComparisonDashboard} from '../website/js
 const data=JSON.parse(readFileSync(new URL('../website/data/historical.json',import.meta.url)));
 test('browser stub result matches Python participant path',()=>{
  const js=renderComparisonDashboard(transmitEvaluationRequest('DEMO_A','DEMO_B','2026-09-18'));
- const py=JSON.parse(execFileSync(process.env.PYTHON||'python3',['-c',"import json,dashboard_ui; print(json.dumps(dashboard_ui.render_comparison_dashboard(dashboard_ui.transmit_evaluation_request('DEMO_A','DEMO_B','2026-09-18'))))"],{encoding:'utf8'}));
+ const py=JSON.parse(execFileSync(process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-c',"import json,dashboard_ui; print(json.dumps(dashboard_ui.render_comparison_dashboard(dashboard_ui.transmit_evaluation_request('DEMO_A','DEMO_B','2026-09-18'))))"],{encoding:'utf8'}));
  assert.deepEqual(js,py);
 });
 test('later outcomes do not affect illustrative ranking',()=>{

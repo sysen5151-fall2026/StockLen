@@ -14,4 +14,6 @@
 
 Formal functional requirement IDs await the appropriate requirement-definition increment. UC.1 identifiers are model action IDs, not invented requirements. Python return values mediate X.04-to-UI delivery through StockLens. The browser mirror runs in one process; neither mirror nor Python stub demonstrates real network access to providers. Report model diagrams remain authoritative for the agreed concept.
 
+Five [emerging functional candidates](../requirements/FUNCTIONAL-CANDIDATES.md) now record proposed statements, stakeholder derivation, action allocation, implementation evidence and unresolved parameters for Milestone 1 review. None has been approved or added to Innoslate.
+
 Remaining team decisions: scoring definitions and weights, data provenance/windows, service provider selection, real AI integration, exception flows in later work, human provenance review and pilot. Historical lab sentiment values and later returns remain illustrative pending provenance.

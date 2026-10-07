@@ -3,6 +3,8 @@ export function returnNewsEvidence(query) { return [{id:"FIXTURE-01",published_a
 export function queryExternalDataFeeds(query) { return {...returnMarketData(query),sources:returnNewsEvidence(query)}; }
 export function calculateAndNormalizeRanking(evidence) {return {fixture:true,stock_pair:evidence.stock_pair,analysis_date:evidence.analysis_date,observation_date:evidence.observation_date,scores:[{symbol:"DEMO_A",score:60,driver:"Fixed demonstration factor"},{symbol:"DEMO_B",score:40,driver:"Fixed demonstration factor"}],sources:evidence.sources};}
 export function synthesizeGroundedAIExplanation(scoreEvidence) {return {fixture:true,text:"DEMO_A is shown first in this fixed fixture. No ranking algorithm or AI model was run.",source_ids:["FIXTURE-01"]};}
-export function evaluateComparison(query) {const ranking=calculateAndNormalizeRanking(queryExternalDataFeeds(query));const explanation=synthesizeGroundedAIExplanation(ranking);return {requested_query:query,ranking,explanation};}
+// Internal AI Explanation Module coordinates; external X.04 synthesizes.
+export function coordinateExplanation(scoreEvidence) {return synthesizeGroundedAIExplanation(scoreEvidence);}
+export function evaluateComparison(query) {const ranking=calculateAndNormalizeRanking(queryExternalDataFeeds(query));const explanation=coordinateExplanation(ranking);return {requested_query:query,ranking,explanation};}
 export function transmitEvaluationRequest(stockA,stockB,date) {return evaluateComparison({stock_pair:[stockA,stockB],analysis_date:date});}
 export function renderComparisonDashboard(result) {return {mode:"walking-skeleton-fixed-fixture",...result};}

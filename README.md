@@ -1,6 +1,12 @@
 # StockLens — SYSEN 5151
 
-An AI-assisted stock research concept for students and beginning investors. A researcher selects a stock pair and date, StockLens obtains dated market and news evidence, produces a comparison, and displays score drivers, an explanation and supporting sources. The user inspects the evidence. Trading and portfolio management are outside the scope.
+## Operational Concept
+
+A normal session begins when a Research User chooses eligible stocks and an analysis date in the Dashboard/User Interface. StockLens then requests market and company records through the Market Data Interface and dated news evidence through the News Interface. The Scoring & Ranking Model applies the same documented factors, observation periods, and weights to both stocks, so the comparison is created before any explanation is written. Only after the score breakdown is complete does the AI Explanation Module send the relevant results and evidence to the external AI Model Service. The returned text explains the calculation; it cannot change the scoring rules or independently decide the ranking. A sentiment factor would enter this flow only after its derivation has been separately specified and checked.
+
+The Dashboard/User Interface brings the result back to the user as a connected story: what was compared, which factors mattered, what evidence supports the explanation, and when that evidence was dated. The user can inspect the sources or begin another comparison. The Maintenance Interface supports approved configuration, updates, and future service-status exchanges, but it does not participate in the normal research path. The session ends with information for the user to review; no trade is placed and no personalized portfolio is created.
+
+Transcribed from BMA section 3.2.4; see [source register](model-artifacts/source-register.md). This describes the intended system; the runnable increment below still uses fixed stubs.
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
@@ -34,11 +40,13 @@ Preview: `python3 -m http.server 8080 --directory website --bind 127.0.0.1`.
 
 ## Check
 
+Windows setup and shutdown: [operating guide](docs/operations.md). With the backend dependencies installed and Node.js 20+ on PATH, run all development checks with `backend/.venv/Scripts/python.exe scripts/verify.py` on Windows or `backend/.venv/bin/python scripts/verify.py` on macOS/Linux.
+
 ```sh
 python3 -m unittest discover -s tests -v
 node --test tests/site.test.mjs
 ```
-Formal requirement derivation is pending; SPEC.md retains preliminary headings. The course PDF and model supply the conceptual baseline. Proposed user MOEs are not completed test results.
+SPEC.md retains all eight submitted stakeholder requirements and proposed acceptance criteria. [Five emerging system-function candidates](requirements/FUNCTIONAL-CANDIDATES.md) await approval and native-model allocation. Proposed user MOEs are not completed test results. The separate stakeholder-acceptance workflow intentionally reports eight unmet assessments; green development checks do not close them.
 
 ## Reference and provenance
 

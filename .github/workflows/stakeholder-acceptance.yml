@@ -1,0 +1,15 @@
+name: Stakeholder acceptance readiness
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  submitted-criteria:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/check_baseline.py
+      - name: Report unassessed stakeholder criteria (expected red until assessed)
+        run: python -m unittest discover -s acceptance -v
