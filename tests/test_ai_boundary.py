@@ -39,4 +39,3 @@ class ExplanationBoundaryTest(unittest.TestCase):
             result = dashboard_ui.transmit_evaluation_request("DEMO_A", "DEMO_B", "2026-09-18")
         self.assertEqual(order, ["internal", "X.04"])
         self.assertEqual(result["ranking"]["scores"][0]["score"], 60.0)
-
