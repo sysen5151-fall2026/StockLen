@@ -21,3 +21,11 @@ The first runtime attempt used a Python without uvicorn; the documented project 
 - Browser research lab: ranking rendered three stocks and source cards; later paths and returns were hidden until explicitly revealed. Desktop layout inspected.
 
 These are automated and agent-operated development checks, not human acceptance or a claim of live provider integration. Human prompt review, teammate contributions, and current Innoslate export review remain recorded in the submission checklist. Deployment verification is recorded separately when publishing succeeds.
+
+## Readiness inspection — 7 October 2026
+
+Remote main remained at 43b555c when rechecked. Against a clean snapshot of that commit, the current-session development verification passed four Python checks, three Node checks, source transcription and the real HTTP smoke check. The subsequent demo-review branch changes documentation only.
+
+The existing public Pages site at https://yihanzhou818.github.io/SYSEN5151/ was exercised with a headless browser: research ranking/explanation rendered; the UC.1 form returned the fixed scores and source; changing the requested symbol/date preserved the separately labelled fixture. No browser page errors were observed. The first automation probe expected an HTML table, whereas the research page uses another results layout; adjusting the probe resolved that test-harness mismatch. No site code fix was needed. The organization Pages URL returned 404.
+
+No new user-pilot, native-model update, independent human review or stakeholder acceptance evidence was obtained. The review does not claim them complete.

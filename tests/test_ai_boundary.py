@@ -3,11 +3,9 @@ import copy
 import unittest
 from unittest.mock import patch
 
-import ai_explanation_module
-import ai_model_service
-import dashboard_ui
-
-
+from walking_skeleton import ai_explanation_module
+from walking_skeleton import ai_model_service
+from walking_skeleton import dashboard_ui
 class ExplanationBoundaryTest(unittest.TestCase):
     def test_internal_module_delegates_once_without_changing_scores(self):
         payload = {"scores": [{"symbol": "DEMO_A", "score": 60.0}],

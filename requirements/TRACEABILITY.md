@@ -4,14 +4,14 @@ Source: submitted report Tables 7–8, 11–12 and 14–16. All eight shall stat
 
 | Need → requirement | Model allocation | Code / record | Verification / validation evidence | Status |
 |---|---|---|---|---|
-| N-01 → SR-01 | UC.1 (185145) | stocklens_system/; market_data_provider/; news_provider/; frontend/index.html | tests/test_uc1.py; scripts/check_http.py; MOE-01 method below | Fixed fixture only; no eligible-universe/scoring or user-task acceptance. |
-| N-02 → SR-02 | UC.1.6 (186309); UC.1.7 (186503) | ai_explanation_module/; ai_model_service/; frontend/index.html | tests/test_ai_boundary.py; tests/test_uc1.py; MOE-02 method below | Fixed explanation only; computed driver values and comprehension evidence pending. |
-| N-03 → SR-03 | UC.1.7 (186503) | frontend/index.html; news_provider/ | scripts/check_http.py; human source inspection pending; MOE-03 method below | Fictional source displayed; real claim support and user-task evidence pending. |
-| N-04 → SR-04 | UC.1 (185145); A-04 (219105) | docs/walking-skeleton.md; backend/main.py | scripts/check_http.py; limits review pending; MOE-04 method below | HTTP skeleton runs; approved time/service-resource limits pending. |
+| N-01 → SR-01 | UC.1 (185145) | walking_skeleton/stocklens_system/; walking_skeleton/market_data_provider/; walking_skeleton/news_provider/; walking_skeleton/frontend/index.html | tests/test_uc1.py; scripts/check_http.py; MOE-01 method below | Fixed fixture only; no eligible-universe/scoring or user-task acceptance. |
+| N-02 → SR-02 | UC.1.6 (186309); UC.1.7 (186503) | walking_skeleton/ai_explanation_module/; walking_skeleton/ai_model_service/; walking_skeleton/frontend/index.html | tests/test_ai_boundary.py; tests/test_uc1.py; MOE-02 method below | Fixed explanation only; computed driver values and comprehension evidence pending. |
+| N-03 → SR-03 | UC.1.7 (186503) | walking_skeleton/frontend/index.html; walking_skeleton/news_provider/ | scripts/check_http.py; human source inspection pending; MOE-03 method below | Fictional source displayed; real claim support and user-task evidence pending. |
+| N-04 → SR-04 | UC.1 (185145); A-04 (219105) | docs/walking-skeleton.md; walking_skeleton/backend/main.py | scripts/check_http.py; limits review pending; MOE-04 method below | HTTP skeleton runs; approved time/service-resource limits pending. |
 | N-05 → SR-05 | A-05 (216873) | model-artifacts/submitted-baseline.json; requirements/TRACEABILITY.md | scripts/check_baseline.py; native-model review pending; MOE-05 method below | All eight records mapped here; live model and independent inspection pending. |
 | N-06 → SR-06 | A-06 (217607) | docs/operations.md | independent operator/transition record pending; MOE-06 method below | Operating instructions available; independent transition exercise pending. |
 | N-07 → SR-07 | A-07 (217608) | docs/service-use.md | selected-provider actual-use review pending; MOE-07 method below | Only fictional stubs; no selected-provider actual-use assessment. |
-| N-08 → SR-08 | A-08 (217609) | ai_explanation_module/ (coordination only); docs/contracts.md | approved schema and content-control check pending; MOE-08 method below | No approved schema or executable content gate; request assessment pending. |
+| N-08 → SR-08 | A-08 (217609) | walking_skeleton/ai_explanation_module/ (coordination only); docs/contracts.md | approved schema and content-control check pending; MOE-08 method below | No approved schema or executable content gate; request assessment pending. |
 
 ## Submitted assessment methods
 

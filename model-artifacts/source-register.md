@@ -1,6 +1,6 @@
 # Supplied source register
 
-Current sources are the PDFs in the user-identified desktop `已提的作业/` folder, retained unchanged in this repository. The source hashes below were recomputed on 2026-10-06. The earlier archive BMA hash differed; its retained OpsCon transcription was checked against section 3.2.4 of the current PDF and matches after line wrapping and line-end hyphenation normalization.
+Current sources are the PDFs in the user-identified desktop `已提的作业/` folder, held outside the repository. The source hashes below were recomputed on 2026-10-06. Uploaded assignment PDF folders were subsequently removed in commit 43b555c; the recorded source paths identify provenance, not files currently present in this repository. The earlier archive BMA hash differed; its retained OpsCon transcription was checked against section 3.2.4 of the current PDF and matches after line wrapping and line-end hyphenation normalization.
 
 - BMA (`已提的作业/Business_or_Mission_Analysis (4).pdf`) SHA-256: `c64747c5c2d419091618884075fbf22a6eaff0f7d6909dce641c77521ba948b9`
 - OpsCon excerpt: section 3.2.4, printed page 11 / PDF page 15. Only PDF line wrapping and line-end hyphenation were normalized.

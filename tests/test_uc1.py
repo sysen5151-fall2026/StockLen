@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-import dashboard_ui, stocklens_system, market_data_provider, news_provider, ai_model_service
+from walking_skeleton import dashboard_ui, stocklens_system, market_data_provider, news_provider, ai_model_service
 
 class WalkingSkeletonTest(unittest.TestCase):
     def test_uc1_order_and_evidence_handoff(self):

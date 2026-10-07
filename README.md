@@ -10,20 +10,24 @@ Transcribed from BMA section 3.2.4; see [source register](model-artifacts/source
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
+## Walking Skeleton
+
+All skeleton code is in [walking_skeleton/](walking_skeleton/). Start with its [README](walking_skeleton/README.md) for the folder map and Windows startup.
+
 ## Run the Chapter 2 Walking Skeleton
 
 ```sh
-python3 -m venv backend/.venv
-backend/.venv/bin/python -m pip install -r backend/requirements.txt
-backend/.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
+python3 -m venv walking_skeleton/backend/.venv
+walking_skeleton/backend/.venv/bin/python -m pip install -r walking_skeleton/backend/requirements.txt
+walking_skeleton/backend/.venv/bin/python -m uvicorn walking_skeleton.backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
 ```
 Open http://127.0.0.1:8765 and select **Compare fixture**. One request traverses UI → StockLens → market stub → news stub → ranking stub → AI stub → UI. It returns fictional fixed data. No real provider or AI call occurs.
 
 ## Website
 
-`website/` contains the migrated research interface and `skeleton.html`, a browser-only mirror of UC.1. The research lab's numerical data is illustrative and awaits source verification. Its scoring is deterministic; its explanation is a template. This exploratory view is separate from the fixed-stub Chapter 2 deliverable. GitHub Pages hosts static files, not the Python API.
+`website/` contains the migrated research interface. `walking_skeleton/browser/` contains the browser-only mirror of UC.1; the site build publishes it as `skeleton.html`. The research lab's numerical data is illustrative and awaits source verification. Its scoring is deterministic; its explanation is a template. This exploratory view is separate from the fixed-stub Chapter 2 deliverable. GitHub Pages hosts static files, not the Python API.
 
-Preview: `python3 -m http.server 8080 --directory website --bind 127.0.0.1`.
+Preview: `python3 scripts/build_site.py` then `python3 -m http.server 8080 --directory .site --bind 127.0.0.1`.
 
 ## Engineering records
 
@@ -34,13 +38,14 @@ Preview: `python3 -m http.server 8080 --directory website --bind 127.0.0.1`.
 - [Model/code reconciliation](docs/model-code-reconciliation.md)
 - [Architecture decisions](docs/adr/)
 - [Validation and test evidence](docs/verification.md)
-- [Submission checklist](docs/submission-checklist.md)
+- [Milestone 1 checklist](docs/submission-checklist.md)
+- [Short demo script and questions](docs/presentation.md)
 - [Prompt log](docs/prompt-log.md)
 - [Innoslate project](https://cloud.innoslate.com/cornell/p/659/diagrams)
 
 ## Check
 
-Windows setup and shutdown: [operating guide](docs/operations.md). With the backend dependencies installed and Node.js 20+ on PATH, run all development checks with `backend/.venv/Scripts/python.exe scripts/verify.py` on Windows or `backend/.venv/bin/python scripts/verify.py` on macOS/Linux.
+Windows setup and shutdown: [operating guide](docs/operations.md). With the backend dependencies installed and Node.js 20+ on PATH, run all development checks with `walking_skeleton/backend/.venv/Scripts/python.exe scripts/verify.py` on Windows or `walking_skeleton/backend/.venv/bin/python scripts/verify.py` on macOS/Linux.
 
 ```sh
 python3 -m unittest discover -s tests -v

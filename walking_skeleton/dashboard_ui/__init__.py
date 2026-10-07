@@ -1,7 +1,5 @@
 """Dashboard / UI: request transmission and display payload."""
-import stocklens_system
-
-
+from walking_skeleton import stocklens_system
 def transmit_evaluation_request(stock_a: str, stock_b: str, analysis_date: str) -> dict:
     query = {"stock_pair": [stock_a, stock_b], "analysis_date": analysis_date}
     return stocklens_system.evaluate_comparison(query)

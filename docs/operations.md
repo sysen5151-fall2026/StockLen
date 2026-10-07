@@ -7,9 +7,9 @@ This procedure supports SR-06. A second member must execute it and record the ou
 From the repository root, with Python 3.12 installed:
 
 ```powershell
-py -3.12 -m venv backend/.venv
-./backend/.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
-./backend/.venv/Scripts/python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
+py -3.12 -m venv walking_skeleton/backend/.venv
+./walking_skeleton/backend/.venv/Scripts/python.exe -m pip install -r walking_skeleton/backend/requirements.txt
+./walking_skeleton/backend/.venv/Scripts/python.exe -m uvicorn walking_skeleton.backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
 ```
 
 Open `http://127.0.0.1:8765`, select **Compare fixture**, inspect the two fixed scores, explanation and source. Ctrl+C stops the server. Confirm the page cannot be freshly loaded from that server afterward.
@@ -17,9 +17,9 @@ Open `http://127.0.0.1:8765`, select **Compare fixture**, inspect the two fixed 
 ## macOS / Linux
 
 ```sh
-python3.12 -m venv backend/.venv
-backend/.venv/bin/python -m pip install -r backend/requirements.txt
-backend/.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
+python3.12 -m venv walking_skeleton/backend/.venv
+walking_skeleton/backend/.venv/bin/python -m pip install -r walking_skeleton/backend/requirements.txt
+walking_skeleton/backend/.venv/bin/python -m uvicorn walking_skeleton.backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
 ```
 
 Use the same demonstration and shutdown steps. No real data/AI account or credential is required. Static website preview and HTTP backend are separate; the website does not host the backend.
@@ -27,14 +27,14 @@ Use the same demonstration and shutdown steps. No real data/AI account or creden
 ## Verification
 
 ```powershell
-./backend/.venv/Scripts/python.exe -m unittest discover -s tests -v
-./backend/.venv/Scripts/python.exe scripts/check_http.py
-./backend/.venv/Scripts/python.exe scripts/check_baseline.py
-$env:PYTHON=(Resolve-Path ./backend/.venv/Scripts/python.exe).Path
+./walking_skeleton/backend/.venv/Scripts/python.exe -m unittest discover -s tests -v
+./walking_skeleton/backend/.venv/Scripts/python.exe scripts/check_http.py
+./walking_skeleton/backend/.venv/Scripts/python.exe scripts/check_baseline.py
+$env:PYTHON=(Resolve-Path ./walking_skeleton/backend/.venv/Scripts/python.exe).Path
 node --test tests/site.test.mjs
 ```
 
-On macOS/Linux use `backend/.venv/bin/python` and `PYTHON=backend/.venv/bin/python node --test tests/site.test.mjs`. Separate stakeholder acceptance checks are intentionally unmet: `python -m unittest discover -s acceptance -v`.
+On macOS/Linux use `walking_skeleton/backend/.venv/bin/python` and `PYTHON=walking_skeleton/backend/.venv/bin/python node --test tests/site.test.mjs`. Separate stakeholder acceptance checks are intentionally unmet: `python -m unittest discover -s acceptance -v`.
 
 ## Handover or retirement
 

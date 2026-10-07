@@ -1,8 +1,7 @@
 """StockLens System: UC.1.3 retrieval coordination and UC.1.5 fixed ranking."""
-import market_data_provider
-import news_provider
-import ai_explanation_module
-
+from walking_skeleton import market_data_provider
+from walking_skeleton import news_provider
+from walking_skeleton import ai_explanation_module
 def query_external_data_feeds(query: dict) -> dict:
     market = market_data_provider.return_market_data(query)
     news = news_provider.return_news_evidence(query)

@@ -186,17 +186,17 @@ Reconcile
 # Python Environment
 
 Backend:
-backend/
+walking_skeleton/backend/
 
 Python:
 3.12
 
 Virtual environment:
-backend/.venv
+walking_skeleton/backend/.venv
 
 Activate with:
 
-source backend/.venv/bin/activate
+source walking_skeleton/backend/.venv/bin/activate
 
 Backend framework:
 FastAPI

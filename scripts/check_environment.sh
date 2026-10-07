@@ -20,10 +20,10 @@ python3.12 --version || echo "Python 3.12 missing"
 
 echo ""
 echo "[Backend Virtual Environment]"
-if [ -d "backend/.venv" ]; then
-    echo "backend/.venv OK"
+if [ -d "walking_skeleton/backend/.venv" ]; then
+    echo "walking_skeleton/backend/.venv OK"
 else
-    echo "backend/.venv MISSING"
+    echo "walking_skeleton/backend/.venv MISSING"
 fi
 
 echo ""

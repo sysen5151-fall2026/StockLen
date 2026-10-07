@@ -14,7 +14,7 @@ def main():
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
-    server = subprocess.Popen([sys.executable, "-m", "uvicorn", "backend.main:app",
+    server = subprocess.Popen([sys.executable, "-m", "uvicorn", "walking_skeleton.backend.main:app",
                                "--host", "127.0.0.1", "--port", str(port), "--no-access-log"], cwd=root)
     base = f"http://127.0.0.1:{port}"
     try:

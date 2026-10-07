@@ -5,8 +5,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-import dashboard_ui
-
+from walking_skeleton import dashboard_ui
 app = FastAPI(title="StockLens Walking Skeleton")
 
 
