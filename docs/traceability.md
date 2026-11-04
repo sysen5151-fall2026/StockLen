@@ -45,3 +45,26 @@ CR-12 is allocated to P.4 and is outside this component. CR-11's test only check
 | F.2.2 | IO.07 market, IO.08 news, LF.02 context; IO.10 control | IF.02 accepted records or explicit failed envelope | P.2.2 Evidence Validation Module |
 
 `contracts/api-v1.yaml` models the same `AcquisitionContext` as F.2.1 output and F.2.2 input. Responses remain boundary inputs; they are not disguised as the LF.02 internal flow.
+
+## Retained original sixteen system obligations
+
+The system-requirements report uses numbered entities; the later form report uses SYS labels. These represent related obligations at different design stages. They are not new stakeholder SRs. “Partial” below means only the synthetic F.2 contribution is checked, not the full boundary/system obligation.
+
+| Original requirement / entity | Later system label | Current F.2 evidence or gap |
+|---|---|---|
+| 1.1.1 / 264904 stock pair/date input | SYS-IN-01 | Boundary precondition/context only: CR-01, CR-13; full user-input acceptance pending |
+| 1.1.2 / 264903 market input | SYS-IN-02 | Partial: `test_CR_02_retains_market_fields`, DR-04, CR-08 |
+| 1.1.3 / 264902 news input | SYS-IN-03 | Partial: `test_CR_03_excludes_unsupported_news`, CR-09 |
+| 1.1.4 / 264901 AI text input | SYS-IN-04 | Outside F.2; full implementation pending |
+| 1.1.5 / 264900 configuration input | SYS-IN-05 | Partial frozen configuration: CR-04, CR-15, CR-17; maintainer management pending |
+| 1.2.1 / 264899 comparison output | SYS-OUT-01 | Full v0.1 display integration pending |
+| 1.2.2 / 264898 market query | SYS-OUT-02 | Partial: `test_CR_05_market_contract`, DR-03 |
+| 1.2.3 / 264897 news query | SYS-OUT-03 | Partial: `test_CR_06_news_contract_and_limit`, DR-03 |
+| 1.2.4 / 264896 AI package | SYS-OUT-04 | Outside F.2; current approved-schema integration pending |
+| 1.2.5 / 264895 service status | SYS-OUT-05 | Full five-state P.5 integration pending; F.2 release status is not service status |
+| 1.3.1 / 264894 user interface | SYS-IF-01 | Local F.2 inspector only; full comparison interface pending |
+| 1.3.2 / 264893 market interface | SYS-IF-02 | Partial: `test_CR_08_market_query_response_association`; synthetic contract only |
+| 1.3.3 / 264892 news interface | SYS-IF-03 | Partial: `test_CR_09_news_query_response_association`; synthetic contract only |
+| 1.3.4 / 264891 AI interface | SYS-IF-04 | Outside F.2; live interface pending |
+| 1.3.5 / 264890 maintenance interface | SYS-IF-05 | Partial config conduit CR-15; maintainer workflow pending |
+| 1.4.1 / 264940 stock comparison | SYS-F-01–05 collectively | `test_SYS_F_02_acquires_and_validates_dated_evidence` checks F.2 contribution only; full comparison pending |

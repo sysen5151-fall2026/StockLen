@@ -26,7 +26,10 @@ class EvidenceRequirements(unittest.TestCase):
         self.assertEqual(len(result['news_records']), 2)
 
     def test_DR_03_full_universe_and_pair_queries(self):
-        """DR-03: issue IO.03/IO.04 and LF.02 with the accepted context."""
+        """DR-03: The P.2.1 Provider Acquisition Module shall issue IO.03 market queries for the frozen scoring universe and IO.04 news queries for the validated pair, using the accepted analysis date and Research Configuration, and provide the associated Evidence Acquisition Context in LF.02 to P.2.2.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         self.assertEqual(self.q['market_query']['symbols'], list(UNIVERSE))
         self.assertEqual(len(self.q['market_query']['observation_dates']), 21)
         self.assertEqual(self.q['news_query']['symbols'], ['AAPL', 'MSFT'])
@@ -34,7 +37,10 @@ class EvidenceRequirements(unittest.TestCase):
         self.assertEqual(self.q['news_query']['end_date'], '2026-09-21')
 
     def test_DR_04_invalid_core_never_released(self):
-        """DR-04: validate coverage, dates and provenance before releasing IF.02."""
+        """DR-04: The P.2.2 Evidence Validation Module shall validate evidence dates, configured market coverage and provenance before releasing IF.02.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         for case in ('missing_unselected_stock', 'missing_observation', 'post_cutoff', 'missing_source', 'mixed_request'):
             with self.subTest(case=case):
                 r = run_demo(case)['evidence']
@@ -44,13 +50,25 @@ class EvidenceRequirements(unittest.TestCase):
                 self.assertTrue(r['reason'])
 
     def test_CR_01_accepts_request_context(self):
+        """CR-01: The P.2 Evidence Acquisition Subsystem shall accept IF.01 from P.1 with the validated pair, common date and request identity.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         for k, v in self.request.items():
             self.assertEqual(self.q['context'][k], v)
 
     def test_CR_02_retains_market_fields(self):
+        """CR-02: The P.2 Evidence Acquisition Subsystem shall accept IO.07 from the Market Data Provider while retaining symbols, observation dates, adjusted prices and provider association.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         self.assertEqual(self.validate()['market_records'], self.market)
 
     def test_CR_03_excludes_unsupported_news(self):
+        """CR-03: The P.2 Evidence Acquisition Subsystem shall accept IO.08 from the News Provider while retaining source identity, publication date and query association.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         for change in ({'source_id': ''}, {'query_id': 'other'}, {'publication_date': '2026-09-22'},
                        {'publication_date': '2026-09-14'}, {'permitted': False}):
             with self.subTest(change=change):
@@ -61,15 +79,27 @@ class EvidenceRequirements(unittest.TestCase):
                 self.assertEqual(len(r['rejected_news']), 1)
 
     def test_CR_04_rejects_configuration_drift(self):
+        """CR-04: The P.2 Evidence Acquisition Subsystem shall apply IO.10 to acquisition and validation for the same comparison.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         changed = deepcopy(self.config); changed['configuration_id'] = 'changed'
         self.assertEqual(self.validate(config=changed)['reason'], 'configuration_mismatch')
 
     def test_CR_05_market_contract(self):
+        """CR-05: The P.2 Evidence Acquisition Subsystem shall provide IO.03 to the configured Market Data Provider for the required symbols and common observation window.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         q = self.q['market_query']
         self.assertEqual((q['provider_id'], q['field'], q['currency']), ('synthetic-market', 'adjusted_close', 'USD'))
         self.assertEqual(q['observation_dates'], self.config['observation_dates'])
 
     def test_CR_06_news_contract_and_limit(self):
+        """CR-06: The P.2 Evidence Acquisition Subsystem shall provide IO.04 to the configured News Provider with company/date bounds associated with IF.01.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         self.assertEqual(self.q['news_query']['provider_id'], 'synthetic-news')
         news = [{**self.news[0], 'source_id': f'ITEM-{i}'} for i in range(4)] + self.news[1:]
         r = self.validate(news=news)
@@ -77,6 +107,10 @@ class EvidenceRequirements(unittest.TestCase):
         self.assertEqual(len(r['rejected_news']), 2)
 
     def test_CR_07_valid_and_failed_envelopes(self):
+        """CR-07: The P.2 Evidence Acquisition Subsystem shall provide IF.02 to P.3 with validated market records, accepted news if any, source references, date context and applied configuration identity when core evidence is valid, or an explicit non-score-ready validation status with the failure reason, request identity and configuration identity when core evidence is invalid.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         self.assertEqual(self.validate()['configuration_id'], self.config['configuration_id'])
         failed = self.validate(market=[])
         self.assertEqual(failed['request_id'], self.request['request_id'])
@@ -84,18 +118,30 @@ class EvidenceRequirements(unittest.TestCase):
         self.assertEqual(failed['market_records'], [])
 
     def test_CR_08_market_query_response_association(self):
+        """CR-08: The P.2 Evidence Acquisition Subsystem shall interface with the Market Data Provider through the Market Data Interface, associating IO.03 and IO.07.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         for field in ('request_id', 'configuration_id', 'query_id', 'provider_id', 'conditions_id'):
             with self.subTest(field=field):
                 bad = deepcopy(self.market); bad[0][field] = 'wrong'
                 self.assertEqual(self.validate(market=bad)['reason'], 'market_association_mismatch')
 
     def test_CR_09_news_query_response_association(self):
+        """CR-09: The P.2 Evidence Acquisition Subsystem shall interface with the News Provider through the News Interface, associating IO.04 and IO.08.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         for field in ('request_id', 'configuration_id', 'query_id', 'provider_id', 'conditions_id'):
             with self.subTest(field=field):
                 bad = deepcopy(self.news); bad[0][field] = 'wrong'
                 self.assertEqual(len(self.validate(news=bad)['news_records']), 1)
 
     def test_CR_10_preserves_distinct_dates_and_sources(self):
+        """CR-10: The P.2 Evidence Acquisition Subsystem shall preserve source identifiers and separate analysis, observation and publication dates in released evidence.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         news = deepcopy(self.news); news[0]['publication_date'] = '2026-09-15'
         r = self.validate(news=news)
         self.assertEqual(r['analysis_date'], '2026-09-21')
@@ -104,12 +150,19 @@ class EvidenceRequirements(unittest.TestCase):
         self.assertEqual(r['market_records'][0]['source_id'], self.market[0]['source_id'])
 
     def test_CR_11_unreviewed_provider_blocked(self):
-        """Local synthetic condition gate only; no real-provider terms assessment."""
+        """CR-11: The P.2 Evidence Acquisition Subsystem shall acquire, retain and expose provider data only as permitted by the recorded conditions applicable to that provider and operation.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         bad = deepcopy(self.config); bad['providers']['market']['provider_id'] = 'unreviewed-live-provider'
         with self.assertRaises(ValueError):
             request_dated_records(self.request, bad)
 
     def test_CR_13_preserves_P1_boundary(self):
+        """CR-13: The P.2 Evidence Acquisition Subsystem shall interface with P.1 Request Management Subsystem through the request-context conduit carrying IF.01.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         original = deepcopy(self.request)
         request_dated_records(self.request, self.config)
         self.assertEqual(self.request, original)
@@ -118,17 +171,28 @@ class EvidenceRequirements(unittest.TestCase):
                 request_dated_records({**self.request, 'stock_pair': pair}, self.config)
 
     def test_CR_14_P3_receives_only_checked_core(self):
+        """CR-14: The P.2 Evidence Acquisition Subsystem shall interface with P.3 Ranking and Driver Subsystem through the validated-evidence conduit carrying IF.02.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         invalid = deepcopy(self.market); invalid[0]['adjusted_close'] = 0
         self.assertEqual(self.validate(market=invalid)['market_records'], [])
         self.assertEqual(len(self.validate()['market_records']), 210)
 
     def test_CR_15_both_modules_use_frozen_configuration(self):
+        """CR-15: The P.2 Evidence Acquisition Subsystem shall interface with the System Maintainer through the configuration conduit carrying IO.10.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         self.config['configuration_id'] = 'new-maintainer-version'
         self.assertEqual(self.q['context']['configuration_id'], 'v0.1-pmc2-synthetic-1')
         self.assertEqual(self.validate(config=self.q['context']['configuration'])['status'], 'accepted')
 
     def test_CR_16_evidence_decision_has_no_AI_dependency(self):
-        """Synthesis from SWR-04; no AI input or service call in F.2."""
+        """CR-16: The P.2 Evidence Acquisition Subsystem shall release core market evidence for scoring only when its configured coverage, date and provenance checks pass, independently of AI explanation availability.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         with patch('walking_skeleton.ai_model_service.synthesize_grounded_ai_explanation', side_effect=RuntimeError('AI unavailable')) as ai:
             self.assertTrue(self.validate()['score_ready'])
             self.assertFalse(self.validate(market=self.market[:-1])['score_ready'])
@@ -137,6 +201,10 @@ class EvidenceRequirements(unittest.TestCase):
         self.assertTrue(self.validate(news=[])['limitations'])
 
     def test_CR_17_interleaved_requests_preserve_identity(self):
+        """CR-17: The P.2 Evidence Acquisition Subsystem shall preserve the accepted request identity, common analysis date and applied configuration identity in LF.02 and IF.02.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         second_config = deepcopy(self.config); second_config['configuration_id'] = 'v0.1-synthetic-2'
         q2 = request_dated_records({**self.request, 'request_id': 'comparison-2', 'stock_pair': ['NVDA', 'XOM']}, second_config)
         m2, n2 = synthetic_responses(q2)
@@ -146,6 +214,10 @@ class EvidenceRequirements(unittest.TestCase):
         self.assertFalse(self.validate(market=m2)['score_ready'])
 
     def test_DR_04_malformed_prices_and_duplicate_dates(self):
+        """DR-04: The P.2.2 Evidence Validation Module shall validate evidence dates, configured market coverage and provenance before releasing IF.02.
+
+        Scope: controlled synthetic F.2 check; upstream/live-service acceptance is separate.
+        """
         for price in (float('nan'), float('inf'), -1, True, '100'):
             bad = deepcopy(self.market); bad[0]['adjusted_close'] = price
             self.assertFalse(self.validate(market=bad)['score_ready'])

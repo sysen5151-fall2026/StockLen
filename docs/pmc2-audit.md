@@ -37,3 +37,9 @@ For the video, open the actual green **PMC2 functional requirements** Actions ru
 Confirmed existing F.2/P.2 decomposition and mechanisms through the native UI. F.2 retains SYS-F-02 satisfaction allocation. F.2.2 receives IO.07, IO.08, IO.10 and LF.02, generates IF.02 and is performed by P.2.2. The component artifact references the subsystem functional and system-wide requirement groups. These existing design relationships should be retained. New controlled checks are code evidence and must not be marked as passed full verification plans in Innoslate.
 
 Use the model's existing SYS/DR/CR/SWR entities when recording implementation references; do not create duplicate stakeholder SR or boundary requirements. The earlier functional report's staged absence of physical mechanisms was superseded by the later form report. For PMC2 use the physical mechanisms already present in the live model.
+
+## Native implementation references saved
+
+F.2.1 (269045) and F.2.2 (269046) descriptions now link to PR #1 and name their respective callables. F.2.1 also clarifies full-universe market query scope versus pair-specific news scope, consistent with the submitted design. Existing descriptions were retained and extended. No hierarchy, interface relationship or verification verdict was changed.
+
+Remote CI on implementation commit `880bd2c7abe3111cbeb7715416d0dd7e6a788ec6`: PMC2 functional requirements, existing verify/build, and stakeholder readiness report all completed successfully. The readiness report is not an acceptance pass; PR deployment is skipped by the existing workflow conditions.
