@@ -68,3 +68,7 @@ The system-requirements report uses numbered entities; the later form report use
 | 1.3.4 / 264891 AI interface | SYS-IF-04 | Outside F.2; live interface pending |
 | 1.3.5 / 264890 maintenance interface | SYS-IF-05 | Partial config conduit CR-15; maintainer workflow pending |
 | 1.4.1 / 264940 stock comparison | SYS-F-01–05 collectively | `test_SYS_F_02_acquires_and_validates_dated_evidence` checks F.2 contribution only; full comparison pending |
+
+## Browser implementation
+
+`pmc2/browser/evidence.mjs` mirrors F.2.1 (`requestDatedRecords`) and F.2.2 (`validateEvidence`) for GitHub Pages. It preserves the same LF.02 and IF.02 fields and synthetic adapter bounds. `tests/evidence.test.mjs` compares complete browser/Python results for all eight scenarios and three stock pairs (24 comparisons), and exercises invalid prices, news, configurations and contexts. The hosted browser version does not invoke Python or the internal HTTP endpoints in the OpenAPI contract. Those remain the local transport implementation.

@@ -14,3 +14,7 @@ Implement F.2 acquisition and validation as pmc2/acquisition.py and pmc2/validat
 
 ## REVIEW / RECONCILE
 See docs/evidence-verification.md for verified results and remaining gaps. This increment is a controlled F.2 product slice, not stakeholder acceptance or real market evidence.
+
+## Browser hosting increment
+
+Locate/extract: user requests execution through GitHub instead of PowerShell; retain SYS-F-02, DR-03/04 and CR obligations, LF.02/IF.02 contract and synthetic data boundaries. Constraint: static GitHub Pages cannot execute Python; preserve Python transport and add a dependency-free browser implementation, with no real services or ranking claims. Bounded task: port F.2 functions and synthetic scenarios to pmc2/browser/, add full-output Python parity checks and negative cases, package evidence.html through the existing Pages build, enable workflow hosting and update project links. Review/reconciliation: use the same function/asset IDs and keep presentation-only instructions in this removable directory.

@@ -8,6 +8,8 @@ Teaching-team announcement dated October 31, 2026: on-campus demo **Wednesday No
 
 ## Start before class
 
+Open **https://sysen5151-fall2026.github.io/StockLen/evidence.html** for the browser version. It runs without PowerShell or a Python server. Use Complete evidence, Missing an unselected universe stock and No qualifying news. The model and product cases below are unchanged. The local Python startup below is optional.
+
 Run from the repository root, not inside `pmc2/`. Python 3.12 is the repository environment.
 
 Windows PowerShell:
@@ -48,7 +50,7 @@ The F.2 hierarchy route is a view of an existing decomposed Action, not a reques
 | 0:00–0:40 | First-level IDEF0, mechanism arrows | “StockLens helps students compare two stocks using the same date and scoring rules. These five functions handle the request, evidence, calculation, explanation and display. Each function has a software asset shown below it.” |
 | 0:40–1:35 | F.2 second-level IDEF0 | “We selected F.2, Acquire and Validate Dated Evidence. F.2.1 sends market and news queries. It passes the request and query context in LF.02. F.2.2 checks the returned records and releases IF.02. The research configuration controls both steps.” |
 | 1:35–2:10 | Function and asset hierarchies side by side | “F.2 has two child functions. P.2 has two matching modules. P.2.1 performs acquisition. P.2.2 performs validation. They are software modules, so we do not need separate servers.” |
-| 2:10–3:15 | `/pmc2`, AAPL/MSFT, Complete evidence → Run F.2; expand LF.02 and IF.02 | “This is a controlled demonstration with synthetic records. The market query covers all ten stocks and 21 aligned dates. News covers only our selected pair. Both steps keep the same request, analysis date and configuration. The valid result releases 210 price records for scoring.” |
+| 2:10–3:15 | `evidence.html`, AAPL/MSFT, Complete evidence → Run F.2; expand LF.02 and IF.02 | “This is a controlled demonstration with synthetic records. The market query covers all ten stocks and 21 aligned dates. News covers only our selected pair. Both steps keep the same request, analysis date and configuration. The valid result releases 210 price records for scoring.” |
 | 3:15–4:10 | Missing an unselected universe stock → Run F.2 | “Now we remove a stock that the user did not select. The result is blocked because normalization still needs the full ten-stock universe. IF.02 carries a reason and the request context, but no score-ready prices.” |
 | 4:10–5:00 | No qualifying news → Run F.2 | “With valid prices but no qualifying news, the evidence stays score-ready with a limitation. News does not determine the score. This completes the selected evidence function. Real-provider checks and the full stock-comparison product still need separate verification.” |
 

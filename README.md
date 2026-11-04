@@ -14,6 +14,10 @@ Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa S
 
 F.2 Acquire and Validate Dated Evidence is implemented by two software modules: F.2.1/P.2.1 builds provider queries and F.2.2/P.2.2 checks returned evidence. The Evidence Lab uses synthetic records and fictional sources. It does not call live providers or calculate stock rankings.
 
+**[Open the Evidence Lab online](https://sysen5151-fall2026.github.io/StockLen/evidence.html)** — runs in your browser without installation or a terminal. Select the stock pair and evidence case, then click **Run F.2**. The browser uses the same synthetic contract and is checked against the Python implementation for every supported scenario.
+
+The Python implementation is also available for local development:
+
 ```sh
 python -m pip install -r walking_skeleton/backend/requirements.txt
 python -m uvicorn walking_skeleton.backend.main:app --host 127.0.0.1 --port 8765 --no-access-log

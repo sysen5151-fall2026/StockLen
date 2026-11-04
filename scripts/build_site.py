@@ -13,6 +13,11 @@ def build():
     page = page.replace('href="../../website/index.html"', 'href="./index.html"')
     (target / "skeleton.html").write_text(page, encoding="utf-8")
     shutil.copyfile(browser / "skeleton.js", target / "js" / "skeleton.js")
+    evidence = ROOT / "pmc2" / "browser"
+    evidence_page = (evidence / "index.html").read_text(encoding="utf-8")
+    evidence_page = evidence_page.replace('"./evidence.mjs"', '"./js/evidence.mjs"')
+    (target / "evidence.html").write_text(evidence_page, encoding="utf-8")
+    shutil.copyfile(evidence / "evidence.mjs", target / "js" / "evidence.mjs")
     print("Static site ready in .site; preview with python -m http.server 8080 --directory .site")
 
 if __name__ == "__main__":
