@@ -1,0 +1,697 @@
+# OpenAPI YAML 1.2 (JSON-compatible serialization).
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "StockLens PMC2 F.2 logical interfaces",
+    "version": "0.1.0",
+    "description": "Local synthetic adapters only. LF.02 is AcquisitionContext between F.2.1 and F.2.2. Invalid evidence records are deliberately exercised by tests and result in failed envelopes or rejected news; schema describes valid normalized records. Provider review/calendar/production authentication remain pending."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8765"
+    }
+  ],
+  "paths": {
+    "/internal/f2/acquire": {
+      "post": {
+        "operationId": "requestDatedRecords",
+        "summary": "F.2.1 Request Dated Market and News Records",
+        "x-function-id": "F.2.1",
+        "x-decomposes": "F.2",
+        "x-internal": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcquisitionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Controlled function result; failed evidence is a normal typed result, not HTTP success of scoring",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcquisitionResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Malformed input or rejected precondition"
+          }
+        }
+      }
+    },
+    "/internal/f2/validate": {
+      "post": {
+        "operationId": "validateEvidence",
+        "summary": "F.2.2 Validate Evidence Dates and Provenance",
+        "x-function-id": "F.2.2",
+        "x-decomposes": "F.2",
+        "x-internal": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Controlled function result; failed evidence is a normal typed result, not HTTP success of scoring",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Malformed input or rejected precondition"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProviderPolicy": {
+        "type": "object",
+        "properties": {
+          "provider_id": {
+            "type": "string"
+          },
+          "conditions_id": {
+            "type": "string"
+          },
+          "allowed_operations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "provider_id",
+          "conditions_id",
+          "allowed_operations"
+        ]
+      },
+      "ComparisonRequest": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "stock_pair": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AAPL",
+                "MSFT",
+                "AMZN",
+                "GOOGL",
+                "META",
+                "NVDA",
+                "TSLA",
+                "JPM",
+                "JNJ",
+                "XOM"
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "analysis_date": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "request_id",
+          "stock_pair",
+          "analysis_date"
+        ]
+      },
+      "ResearchConfiguration": {
+        "type": "object",
+        "properties": {
+          "configuration_id": {
+            "type": "string"
+          },
+          "universe": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 10,
+            "maxItems": 10
+          },
+          "observation_dates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "minItems": 21,
+            "maxItems": 21,
+            "uniqueItems": true
+          },
+          "news_days": {
+            "type": "integer",
+            "enum": [
+              7
+            ]
+          },
+          "max_news_per_stock": {
+            "type": "integer",
+            "enum": [
+              2
+            ]
+          },
+          "providers": {
+            "type": "object",
+            "properties": {
+              "market": {
+                "$ref": "#/components/schemas/ProviderPolicy"
+              },
+              "news": {
+                "$ref": "#/components/schemas/ProviderPolicy"
+              }
+            },
+            "required": [
+              "market",
+              "news"
+            ]
+          }
+        },
+        "required": [
+          "configuration_id",
+          "universe",
+          "observation_dates",
+          "news_days",
+          "max_news_per_stock",
+          "providers"
+        ]
+      },
+      "MarketQuery": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "configuration_id": {
+            "type": "string"
+          },
+          "query_id": {
+            "type": "string"
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "conditions_id": {
+            "type": "string"
+          },
+          "stock_pair": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "analysis_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "symbols": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "observation_dates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "adjusted_close"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD"
+            ]
+          },
+          "allowed_operations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "request_id",
+          "configuration_id",
+          "query_id",
+          "provider_id",
+          "conditions_id",
+          "stock_pair",
+          "analysis_date",
+          "symbols",
+          "observation_dates",
+          "field",
+          "currency",
+          "allowed_operations"
+        ]
+      },
+      "NewsQuery": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "configuration_id": {
+            "type": "string"
+          },
+          "query_id": {
+            "type": "string"
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "conditions_id": {
+            "type": "string"
+          },
+          "stock_pair": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "analysis_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "symbols": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "max_per_stock": {
+            "type": "integer",
+            "enum": [
+              2
+            ]
+          },
+          "allowed_operations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "request_id",
+          "configuration_id",
+          "query_id",
+          "provider_id",
+          "conditions_id",
+          "stock_pair",
+          "analysis_date",
+          "symbols",
+          "start_date",
+          "end_date",
+          "max_per_stock",
+          "allowed_operations"
+        ]
+      },
+      "AcquisitionContext": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "stock_pair": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AAPL",
+                "MSFT",
+                "AMZN",
+                "GOOGL",
+                "META",
+                "NVDA",
+                "TSLA",
+                "JPM",
+                "JNJ",
+                "XOM"
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "analysis_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "configuration_id": {
+            "type": "string"
+          },
+          "market_query": {
+            "$ref": "#/components/schemas/MarketQuery"
+          },
+          "news_query": {
+            "$ref": "#/components/schemas/NewsQuery"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/ResearchConfiguration"
+          }
+        },
+        "required": [
+          "request_id",
+          "stock_pair",
+          "analysis_date",
+          "configuration_id",
+          "market_query",
+          "news_query",
+          "configuration"
+        ]
+      },
+      "MarketRecord": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "configuration_id": {
+            "type": "string"
+          },
+          "query_id": {
+            "type": "string"
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "conditions_id": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "observation_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "adjusted_close": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD"
+            ]
+          },
+          "source_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "configuration_id",
+          "query_id",
+          "provider_id",
+          "conditions_id",
+          "symbol",
+          "observation_date",
+          "adjusted_close",
+          "currency",
+          "source_id"
+        ]
+      },
+      "NewsRecord": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "configuration_id": {
+            "type": "string"
+          },
+          "query_id": {
+            "type": "string"
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "conditions_id": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "publication_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "source_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "permitted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request_id",
+          "configuration_id",
+          "query_id",
+          "provider_id",
+          "conditions_id",
+          "symbol",
+          "publication_date",
+          "source_id",
+          "title",
+          "permitted"
+        ]
+      },
+      "EvidenceResult": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "stock_pair": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AAPL",
+                "MSFT",
+                "AMZN",
+                "GOOGL",
+                "META",
+                "NVDA",
+                "TSLA",
+                "JPM",
+                "JNJ",
+                "XOM"
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "analysis_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "configuration_id": {
+            "type": "string"
+          },
+          "score_ready": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "accepted_with_limitations",
+              "failed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "market_records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarketRecord"
+            }
+          },
+          "news_records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewsRecord"
+            }
+          },
+          "rejected_news": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source_id": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_id",
+                "reason"
+              ]
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "request_id",
+          "stock_pair",
+          "analysis_date",
+          "configuration_id",
+          "score_ready",
+          "status",
+          "reason",
+          "market_records",
+          "news_records",
+          "rejected_news",
+          "limitations"
+        ]
+      },
+      "AcquisitionInput": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/ComparisonRequest"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/ResearchConfiguration"
+          }
+        },
+        "required": [
+          "request",
+          "configuration"
+        ]
+      },
+      "AcquisitionResult": {
+        "type": "object",
+        "properties": {
+          "market_query": {
+            "$ref": "#/components/schemas/MarketQuery"
+          },
+          "news_query": {
+            "$ref": "#/components/schemas/NewsQuery"
+          },
+          "context": {
+            "$ref": "#/components/schemas/AcquisitionContext"
+          }
+        },
+        "required": [
+          "market_query",
+          "news_query",
+          "context"
+        ]
+      },
+      "ValidationInput": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/AcquisitionContext"
+          },
+          "market_records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarketRecord"
+            }
+          },
+          "news_records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewsRecord"
+            }
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/ResearchConfiguration"
+          }
+        },
+        "required": [
+          "context",
+          "market_records",
+          "news_records",
+          "configuration"
+        ]
+      },
+      "DemoInput": {
+        "type": "object",
+        "properties": {
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "valid",
+              "missing_unselected_stock",
+              "missing_observation",
+              "post_cutoff",
+              "missing_source",
+              "mixed_request",
+              "no_news",
+              "bad_news"
+            ]
+          },
+          "stock_a": {
+            "type": "string"
+          },
+          "stock_b": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    }
+  }
+}

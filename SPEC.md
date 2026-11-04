@@ -1,5 +1,9 @@
 # SPEC — StockLens
 
+## Current component baseline
+
+The original stakeholder text below is retained verbatim. Its “Current evidence” notes describe the earlier M1 increment. For PMC2, [the six-source register](docs/pmc2-baseline.md) records the later system/physical design and [the traceability table](docs/traceability.md) maps F.2 to SYS-F-02, DR-03/04 and the P.2 component requirements. Controlled F.2 tests add evidence for that slice; they do not replace the proposed human MOEs or claim the full system is complete.
+
 ## Needs and Acceptance Criteria
 
 N-01–N-08 and SR-01–SR-08 below are transcribed from our submitted report, Tables 7–8. Acceptance criteria are transcribed from Tables 11–12 and remain proposed, as in the report. Only PDF line wrapping is normalized. [Source and exact-text record](model-artifacts/submitted-baseline.json).

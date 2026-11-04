@@ -1,3 +1,9 @@
+# PMC2 reconciliation update
+
+The later submitted physical design selects F.2 (269035), implemented by P.2 (290840) with two leaf modules. [Source precedence](pmc2-baseline.md), [audit and gaps](pmc2-audit.md), [current code trace](traceability.md) and [route audit](route-table.md) supersede the historical increment notes below for this component. The previous fixed UC.1 fixture is preserved as an earlier transport demonstration, not as the current scoring implementation.
+
+---
+
 # Model–code reconciliation
 
 | Model behavior | Code | Verification |
