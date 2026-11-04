@@ -10,7 +10,28 @@ Transcribed from BMA section 3.2.4; see [source register](model-artifacts/source
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
-## Walking Skeleton
+## Milestone Check 2 — November 4 classroom demo
+
+**Use the F.2 Evidence Lab for PMC2.** [Start and present it](docs/pmc2-demo.md). The selected function is **F.2 Acquire and Validate Dated Evidence**, decomposed into F.2.1/P.2.1 acquisition and F.2.2/P.2.2 validation, matching the submitted physical-design report. The product slice runs real acquisition/validation logic on clearly labelled synthetic records. It does not call live providers, run the v0.1 ranking engine, or establish stakeholder acceptance.
+
+```sh
+python -m pip install -r walking_skeleton/backend/requirements.txt
+python -m uvicorn walking_skeleton.backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
+```
+
+Open **http://127.0.0.1:8765/pmc2**. Try Complete evidence, Missing an unselected universe stock, and No qualifying news. CLI fallback: `python -m pmc2 --scenario valid`.
+
+- [Function / requirement / module / test trace](docs/traceability.md)
+- [Product entry points → use cases](docs/route-table.md)
+- [Internal flow API contract](contracts/api-v1.yaml)
+- [Requirement tests](tests/test_functional_requirements.py) and [CI workflow](.github/workflows/tests.yml)
+- [Submitted baseline and source precedence](docs/pmc2-baseline.md)
+- [Review findings and remaining gaps](docs/pmc2-audit.md)
+- [Five-minute class and ten-minute video scripts](docs/pmc2-demo.md)
+
+The submitted v0.1 uses two selected stocks within a fixed ten-stock universe, 21 aligned adjusted closes, and 50/50 momentum and lower-volatility average-tie ranks. News supports explanations and does not enter the score. The old research lab differs from these rules and is excluded from PMC2 conformance evidence.
+
+## Historical Milestone 1 Walking Skeleton
 
 All skeleton code is in [walking_skeleton/](walking_skeleton/). Start with its [README](walking_skeleton/README.md) for the folder map and Windows startup.
 
@@ -51,7 +72,7 @@ Windows setup and shutdown: [operating guide](docs/operations.md). With the back
 python3 -m unittest discover -s tests -v
 node --test tests/site.test.mjs
 ```
-SPEC.md retains all eight submitted stakeholder requirements and proposed acceptance criteria. [Five emerging system-function candidates](requirements/FUNCTIONAL-CANDIDATES.md) await approval and native-model allocation. Proposed user MOEs are not completed test results. The stakeholder-readiness workflow reports all eight as **not assessed**; a green report job only means the report was generated. The strict acceptance scaffold remains available through the manual workflow option or `python -m unittest discover -s acceptance -v`, and still fails while evidence is missing.
+SPEC.md retains all eight submitted stakeholder requirements and proposed acceptance criteria. The [earlier five system-function candidates](requirements/FUNCTIONAL-CANDIDATES.md) are a historical M1 record. For the later submitted SYS-F/DR/CR/SWR baseline and current native-model observations, use [the PMC2 source register](docs/pmc2-baseline.md). Proposed user MOEs are not completed test results. The stakeholder-readiness workflow reports all eight as **not assessed**; a green report job only means the report was generated. The strict acceptance scaffold remains available through the manual workflow option or `python -m unittest discover -s acceptance -v`, and still fails while evidence is missing.
 
 Website publishing requires **Settings → Pages → Source: GitHub Actions**. The workflow builds and checks the site on every run; when Pages is unavailable, deployment is skipped with a setup notice. Skipped deployment does not mean the website was published. After enabling Pages, run **Verify and publish StockLens** from the Actions tab.
 
