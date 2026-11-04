@@ -4,11 +4,11 @@ Source: [submitted baseline and model observations](design-baseline.md). Test fi
 
 | Requirement | Function | Module / callable | Test name | Evidence scope |
 |---|---|---|---|---|
-| SYS-F-01 | F.1 | — | — | Not implemented by this component; duplicate/outside pair guard is only a boundary precondition |
+| SYS-F-01 | F.1 | `pmc2/browser/system.mjs::validatePair,preserveRequest` | DR-01/02 group in `tests/comparison.test.mjs` | Controlled request validation |
 | SYS-F-02 | F.2 | pmc2/demo.py::run_demo | test_SYS_F_02_acquires_and_validates_dated_evidence | Controlled synthetic integration |
-| SYS-F-03 | F.3 | — | — | Current v0.1 scoring not implemented in this repo |
-| SYS-F-04 | F.4 | — | — | M1 fixed AI stub only; real grounded integration pending |
-| SYS-F-05 | F.5 | — | — | F.2 evidence inspector only; full comparison and service-state integration pending |
+| SYS-F-03 | F.3 | `pmc2/browser/system.mjs::computeScores,identifyDrivers` | DR-05 reference and DR-05/06 tie groups | Controlled v0.1 scores and drivers |
+| SYS-F-04 | F.4 | `pmc2/browser/system.mjs::packageExplanation,checkExplanation` | DR-07/08 and SWR-04 groups | Synthetic adapter and unavailable fallback; real AI pending |
+| SYS-F-05 | F.5 | `pmc2/browser/system.mjs::renderComparison,reportStatus` | DR-09/10 group | Controlled comparison and five-state status |
 
 ## Selected F.2 leaf and component specification
 
@@ -35,7 +35,7 @@ N-01/N-03 → SR-01/SR-03 → SYS-F-02 (290910) → F.2 (269035). F.2.1 (269045)
 | CR-16 | SWR-04 / AI independence, synthesis | F.2.2 | `pmc2/validation.py::validate_evidence` | `test_CR_16_evidence_decision_has_no_AI_dependency` |
 | CR-17 | SWR-05 / LF.02 + IF.02 | F.2.2 | `pmc2/validation.py::validate_evidence` | `test_CR_17_interleaved_requests_preserve_identity` |
 
-CR-12 is allocated to P.4 and is outside this component. CR-11's test only checks that unreviewed adapters are disabled; no real provider terms, retention or display compliance is claimed. CR-16's F.2 implementation has no AI parameter or service dependency; preserving actual computed scores through P.3–P.5 is still an integration obligation. SYS-F-01/03/04/05 remain gaps, not passing rows. Original stakeholder acceptance records remain in `requirements/TRACEABILITY.md`.
+CR-12 is allocated to P.4 and is outside this component. CR-11's test only checks that unreviewed adapters are disabled; no real provider terms, retention or display compliance is claimed. CR-16's F.2 implementation has no AI parameter or service dependency; preserving actual computed scores through P.3–P.5 is still an integration obligation. The integrated browser implementation adds controlled SYS-F-01/03/04/05 coverage as recorded below; real-service and stakeholder acceptance remain separate. Original stakeholder acceptance records remain in `requirements/TRACEABILITY.md`.
 
 ## ICOM and interface map
 
@@ -52,23 +52,40 @@ The system-requirements report uses numbered entities; the later form report use
 
 | Original requirement / entity | Later system label | Current F.2 evidence or gap |
 |---|---|---|
-| 1.1.1 / 264904 stock pair/date input | SYS-IN-01 | Boundary precondition/context only: CR-01, CR-13; full user-input acceptance pending |
+| 1.1.1 / 264904 stock pair/date input | SYS-IN-01 | Boundary precondition/context only: CR-01, CR-13; controlled browser input checks added; real user-task acceptance pending |
 | 1.1.2 / 264903 market input | SYS-IN-02 | Partial: `test_CR_02_retains_market_fields`, DR-04, CR-08 |
 | 1.1.3 / 264902 news input | SYS-IN-03 | Partial: `test_CR_03_excludes_unsupported_news`, CR-09 |
-| 1.1.4 / 264901 AI text input | SYS-IN-04 | Outside F.2; full implementation pending |
+| 1.1.4 / 264901 AI text input | SYS-IN-04 | Controlled browser explanation substitute; real AI integration pending |
 | 1.1.5 / 264900 configuration input | SYS-IN-05 | Partial frozen configuration: CR-04, CR-15, CR-17; maintainer management pending |
-| 1.2.1 / 264899 comparison output | SYS-OUT-01 | Full v0.1 display integration pending |
+| 1.2.1 / 264899 comparison output | SYS-OUT-01 | Controlled browser comparison display implemented; real-service display acceptance pending |
 | 1.2.2 / 264898 market query | SYS-OUT-02 | Partial: `test_CR_05_market_contract`, DR-03 |
 | 1.2.3 / 264897 news query | SYS-OUT-03 | Partial: `test_CR_06_news_contract_and_limit`, DR-03 |
-| 1.2.4 / 264896 AI package | SYS-OUT-04 | Outside F.2; current approved-schema integration pending |
-| 1.2.5 / 264895 service status | SYS-OUT-05 | Full five-state P.5 integration pending; F.2 release status is not service status |
-| 1.3.1 / 264894 user interface | SYS-IF-01 | Local F.2 inspector only; full comparison interface pending |
+| 1.2.4 / 264896 AI package | SYS-OUT-04 | Controlled browser payload allowlist implemented; real vendor schema review pending |
+| 1.2.5 / 264895 service status | SYS-OUT-05 | Controlled browser five-state status implemented; F.2 release status remains separate |
+| 1.3.1 / 264894 user interface | SYS-IF-01 | Browser pair form, score/driver/evidence display and F.2 inspector implemented; human MOEs pending |
 | 1.3.2 / 264893 market interface | SYS-IF-02 | Partial: `test_CR_08_market_query_response_association`; synthetic contract only |
 | 1.3.3 / 264892 news interface | SYS-IF-03 | Partial: `test_CR_09_news_query_response_association`; synthetic contract only |
 | 1.3.4 / 264891 AI interface | SYS-IF-04 | Outside F.2; live interface pending |
 | 1.3.5 / 264890 maintenance interface | SYS-IF-05 | Partial config conduit CR-15; maintainer workflow pending |
-| 1.4.1 / 264940 stock comparison | SYS-F-01–05 collectively | `test_SYS_F_02_acquires_and_validates_dated_evidence` checks F.2 contribution only; full comparison pending |
+| 1.4.1 / 264940 stock comparison | SYS-F-01–05 collectively | `test_SYS_F_02_acquires_and_validates_dated_evidence` checks F.2 contribution only; controlled browser comparison implemented; real-service acceptance pending |
 
 ## Browser implementation
 
 `pmc2/browser/evidence.mjs` mirrors F.2.1 (`requestDatedRecords`) and F.2.2 (`validateEvidence`) for GitHub Pages. It preserves the same LF.02 and IF.02 fields and synthetic adapter bounds. `tests/evidence.test.mjs` compares complete browser/Python results for all eight scenarios and three stock pairs (24 comparisons), and exercises invalid prices, news, configurations and contexts. The hosted browser version does not invoke Python or the internal HTTP endpoints in the OpenAPI contract. Those remain the local transport implementation.
+
+## Integrated browser leaf-function allocation
+
+All rows use `pmc2/browser/system.mjs`; F.2 continues to use its existing Python/browser modules. `tests/comparison.test.mjs` provides six test groups covering the listed obligations, including independent Python reference calculations rather than a duplicate of the JavaScript scoring code.
+
+| Requirement | Function / asset | Callable | Verification |
+|---|---|---|---|
+| DR-01 | F.1.1 / P.1.1 | validatePair | Valid, normalized, duplicate and outside-universe inputs |
+| DR-02 | F.1.2 / P.1.2 | preserveRequest | Accepted context preserved; unsupported synthetic snapshot rejected |
+| DR-05 | F.3.1 / P.3.1 | computeScores | Independent Python statistics/average-rank reference; constant-price tie case |
+| DR-06 | F.3.2 / P.3.2 | identifyDrivers | Both factors, unrounded contribution differences and source references |
+| DR-07 | F.4.1 / P.4.1 | packageExplanation | Explicit outgoing allowlist; credentials/extra personal fields omitted |
+| DR-08 | F.4.2 / P.4.2 | checkExplanation | Mismatched request/config/pair/scores/drivers/sources rejected; scores unchanged |
+| DR-09 | F.5.1 / P.5.1 | renderComparison | Two-decimal display and exact authoritative record retained |
+| DR-10 | F.5.2 / P.5.2 | reportStatus | ready, processing, completed, completed_with_limitations, failed |
+
+The accepted synthetic date is 2026-09-21; the fixture's explicit Sep 1–21 dates are not an exchange calendar. “Completed” here means the controlled synthetic workflow completed, not that a live AI call or stakeholder validation passed. The system fixture has no automatic external call or retry. The OpenAPI operations cover optional local Python F.1 and F.2 transport and are not claimed as HTTP calls from the static page. F.1 HTTP handoff checks are also exercised by scripts/check_pmc2_http.py; tests/test_request_requirements.py contains named DR-01/DR-02 cases.

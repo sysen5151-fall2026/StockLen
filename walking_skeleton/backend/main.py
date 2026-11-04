@@ -82,3 +82,31 @@ def check_evidence(query: ValidationInput):
         return validate_evidence(query.context, query.market_records, query.news_records, query.configuration)
     except (KeyError, TypeError, ValueError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+from pmc2.request import validate_pair, preserve_request
+
+
+class PairValidationInput(BaseModel):
+    stock_a: str
+    stock_b: str
+
+
+class RequestContextInput(BaseModel):
+    pair_result: dict
+    analysis_date: str
+    request_id: str
+    configuration: dict
+
+
+@app.post('/internal/f1/validate-pair')
+def validate_comparison_pair(query: PairValidationInput):
+    return validate_pair(query.stock_a, query.stock_b)
+
+
+@app.post('/internal/f1/preserve-context')
+def preserve_comparison_context(query: RequestContextInput):
+    try:
+        return preserve_request(query.pair_result, query.analysis_date, query.request_id, query.configuration)
+    except (KeyError, TypeError, ValueError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error

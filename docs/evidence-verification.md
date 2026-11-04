@@ -13,8 +13,8 @@ The evidence component implements the F.2 decomposition in the physical design. 
 | Missing internal-flow API contract | Added OpenAPI `contracts/api-v1.yaml` and two actual local internal endpoints | Normalized synthetic adapter contract; real provider mapping pending |
 | Missing route → use case map | Added `docs/route-table.md`, including legacy/exploratory routes and developer endpoints | No claim that every historical UI control implements current v0.1 |
 | README treated later function requirements as awaiting allocation | Added later source precedence, native IDs, startup and implementation links | Historical records preserved |
-| Research lab uses sentiment, selected-set min/max scores and later-return reveal | Added explicit nonconformance label; excluded it from v0.1 conformance evidence | Current v0.1 P.3/P.4/P.5 integrated product remains future work |
-| No distinction between system status and evidence-release status | Documented local IF.02 result states separately | Full five-state P.5 service integration pending |
+| Research lab uses sentiment, selected-set min/max scores and later-return reveal | Added explicit nonconformance label; excluded it from v0.1 conformance evidence | Controlled browser P.3/P.4/P.5 added; real services remain pending |
+| No distinction between system status and evidence-release status | Documented local IF.02 result states separately | Controlled browser five-state service history added; real service monitoring remains pending |
 | Prior PDF reported local tests not present in repository | Kept those as historical evidence; new checks are reproducible from this commit | Did not claim to reproduce unavailable historical source code |
 
 ## Local verification
@@ -43,3 +43,7 @@ Use the model's existing SYS/DR/CR/SWR entities when recording implementation re
 F.2.1 (269045) and F.2.2 (269046) descriptions now link to PR #1 and name their respective callables. F.2.1 also clarifies full-universe market query scope versus pair-specific news scope, consistent with the submitted design. Existing descriptions were retained and extended. No hierarchy, interface relationship or verification verdict was changed.
 
 Remote CI on implementation commit `880bd2c7abe3111cbeb7715416d0dd7e6a788ec6`: the functional requirements workflow, existing verify/build, and stakeholder readiness report all completed successfully. The readiness report is not an acceptance pass; PR deployment is skipped by the existing workflow conditions.
+
+## Integrated comparison verification
+
+The browser comparison adds F.1 request checks, F.3 exact v0.1 scores and drivers, F.4 a checked synthetic service boundary and unavailable/rejected fallback, and F.5 display/status. Six additional Node test groups pass, for 13 Node groups total plus the 26 Python tests (including new DR-01/DR-02 cases). Scoring is checked against an independent Python calculation using `statistics.stdev` and average ranks across the ten-stock universe. Constant-price fixtures yield 50-point ties. Invalid input or missing core coverage produces no ranking. Absent or invalid explanation leaves scores and displayed stock values unchanged. No new live-provider, real AI, performance or user-study verdict is inferred.

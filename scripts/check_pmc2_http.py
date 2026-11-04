@@ -37,6 +37,12 @@ def main():
                 time.sleep(.05)
         else:
             raise RuntimeError('local server did not start')
+        pair = post('/internal/f1/validate-pair', {'stock_a': ' aapl ', 'stock_b': 'MSFT'})
+        assert pair['valid'] and pair['stock_pair'] == ['AAPL', 'MSFT']
+        context = post('/internal/f1/preserve-context', {'pair_result': pair, 'analysis_date': '2026-09-21', 'request_id': 'http-f1', 'configuration': demo_configuration()})
+        assert context['accepted'] and context['request']['request_id'] == 'http-f1'
+        duplicate = post('/internal/f1/validate-pair', {'stock_a': 'AAPL', 'stock_b': 'AAPL'})
+        assert not duplicate['valid'] and duplicate['reason'] == 'duplicate_symbols'
         valid = post('/api/pmc2/demo', {'scenario': 'valid'})
         assert valid['evidence']['score_ready'] and len(valid['evidence']['market_records']) == 210
         assert not post('/api/pmc2/demo', {'scenario': 'missing_unselected_stock'})['evidence']['score_ready']
@@ -51,7 +57,7 @@ def main():
             raise AssertionError('duplicate pair accepted')
         except HTTPError as error:
             assert error.code == 422
-        print('PASS: evidence page, valid/blocked/limited cases, internal LF.02 HTTP handoff, invalid-pair 422')
+        print('PASS: F.1 pair/context HTTP handoff, evidence page, valid/blocked/limited cases, internal LF.02 HTTP handoff, invalid-pair 422')
     finally:
         process.terminate()
         process.wait(timeout=5)

@@ -10,6 +10,14 @@ Transcribed from BMA section 3.2.4; see [source register](model-artifacts/source
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
+## Stock comparison
+
+**[Open StockLens online](https://sysen5151-fall2026.github.io/StockLen/compare.html)** — compare two stocks directly in your browser.
+
+The controlled workflow validates a distinct eligible pair (F.1), acquires and validates synthetic evidence (F.2), calculates the v0.1 scores and driver differences (F.3), checks a synthetic explanation response or marks it unavailable (F.4), and displays the authoritative comparison with service status (F.5). Expand **Engineering trace** to inspect request context, evidence, scores, explanation boundaries and state history.
+
+The snapshot uses generated prices and fictional news. The checked explanation is a labelled synthetic template, not an external AI service. Real provider terms/calendar suitability, external AI integration, end-to-end performance and user-task acceptance remain separate work. The optional Python modules and internal HTTP interfaces implement F.1 and F.2; the integrated F.1–F.5 workflow runs in the browser.
+
 ## Evidence acquisition and validation
 
 F.2 Acquire and Validate Dated Evidence is implemented by two software modules: F.2.1/P.2.1 builds provider queries and F.2.2/P.2.2 checks returned evidence. The Evidence Lab uses synthetic records and fictional sources. It does not call live providers or calculate stock rankings.

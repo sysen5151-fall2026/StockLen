@@ -1,80 +1,56 @@
-# PMC2 presentation guide — Group 29
+# Milestone 2 presentation — Group 29
 
-This folder contains optional course presentation material. It is not imported by the application or test suite and may be deleted as a whole.
+This directory contains optional presentation material. The application, build and tests do not depend on it. It may be deleted as a whole.
 
-## Dates and submissions
+## Selected function: F.1 Accept and Validate Comparison Request
 
-Teaching-team announcement dated October 31, 2026: on-campus demo **Wednesday November 4**; individual three peer-review worksheets completed in class (submission flexibility until **November 11**); approximately ten-minute team video due **November 11**. Afternoon LEC003 presents in class and reviews the other three afternoon teams. The AM six-round schedule does not apply to LEC003. Each student's written peer-review answers must be their own.
+F.1 is easier to explain than evidence-validation details: a user submits two stocks, the system checks eligibility and whether they are different, and then preserves the accepted date/request context. Invalid input stops before provider queries.
 
-## Start before class
+Open **https://sysen5151-fall2026.github.io/StockLen/compare.html**. No PowerShell or local installation is needed. Expand **Engineering trace** before presenting.
 
-Open **https://sysen5151-fall2026.github.io/StockLen/evidence.html** for the browser version. It runs without PowerShell or a Python server. Use Complete evidence, Missing an unselected universe stock and No qualifying news. The model and product cases below are unchanged. The local Python startup below is optional.
-
-Run from the repository root, not inside `pmc2/`. Python 3.12 is the repository environment.
-
-Windows PowerShell:
-
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r walking_skeleton/backend/requirements.txt
-.\.venv\Scripts\python.exe -m uvicorn walking_skeleton.backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
-```
-
-macOS/Linux:
-
-```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r walking_skeleton/backend/requirements.txt
-.venv/bin/python -m uvicorn walking_skeleton.backend.main:app --host 127.0.0.1 --port 8765 --no-access-log
-```
-
-Open **http://127.0.0.1:8765/pmc2**. Keep the terminal running; Ctrl+C stops it. GitHub Pages cannot run this Python slice. Do not open the old research lab as evidence for the v0.1 algorithm. An offline fallback is `python -m pmc2 --scenario valid` and `python -m pmc2 --scenario missing_unselected_stock`; these call the same functions.
-
-Open these native views in advance:
+Open these existing model views:
 
 | View | Link |
 |---|---|
-| First-level physical IDEF0 | https://cloud.innoslate.com/cornell/p/659/diagrams/idef0/264782 |
-| Selected F.2 second-level IDEF0 | https://cloud.innoslate.com/cornell/p/659/diagrams/idef0/269035 |
-| F.2 function hierarchy | https://cloud.innoslate.com/cornell/p/659/diagrams/hierarchy/269035 |
-| P.2 asset hierarchy | https://cloud.innoslate.com/cornell/p/659/diagrams/hierarchy/290840 |
-| SYS-F-02 | https://cloud.innoslate.com/cornell/p/659/database/entity/290910 |
-| P.2 component specification | https://cloud.innoslate.com/cornell/p/659/database/entity/290873 |
+| First-level IDEF0 with mechanisms | https://cloud.innoslate.com/cornell/p/659/diagrams/idef0/264782 |
+| F.1 second-level IDEF0 | https://cloud.innoslate.com/cornell/p/659/diagrams/idef0/269034 |
+| F.1 function hierarchy | https://cloud.innoslate.com/cornell/p/659/diagrams/hierarchy/269034 |
+| P.1 asset hierarchy | https://cloud.innoslate.com/cornell/p/659/diagrams/hierarchy/290841 |
+| F.1.1 | https://cloud.innoslate.com/cornell/p/659/database/entity/269043 |
+| F.1.2 | https://cloud.innoslate.com/cornell/p/659/database/entity/269044 |
 
-The F.2 hierarchy route is a view of an existing decomposed Action, not a request to create replacement entities. Fit the IDEF0 to the window and check label readability before recording.
+## Five-minute classroom plan
 
-## Five-minute classroom demo
-
-| Time | Screen and action | Simple English narration |
+| Time | Show | Simple English |
 |---|---|---|
-| 0:00–0:40 | First-level IDEF0, mechanism arrows | “StockLens helps students compare two stocks using the same date and scoring rules. These five functions handle the request, evidence, calculation, explanation and display. Each function has a software asset shown below it.” |
-| 0:40–1:35 | F.2 second-level IDEF0 | “We selected F.2, Acquire and Validate Dated Evidence. F.2.1 sends market and news queries. It passes the request and query context in LF.02. F.2.2 checks the returned records and releases IF.02. The research configuration controls both steps.” |
-| 1:35–2:10 | Function and asset hierarchies side by side | “F.2 has two child functions. P.2 has two matching modules. P.2.1 performs acquisition. P.2.2 performs validation. They are software modules, so we do not need separate servers.” |
-| 2:10–3:15 | `evidence.html`, AAPL/MSFT, Complete evidence → Run F.2; expand LF.02 and IF.02 | “This is a controlled demonstration with synthetic records. The market query covers all ten stocks and 21 aligned dates. News covers only our selected pair. Both steps keep the same request, analysis date and configuration. The valid result releases 210 price records for scoring.” |
-| 3:15–4:10 | Missing an unselected universe stock → Run F.2 | “Now we remove a stock that the user did not select. The result is blocked because normalization still needs the full ten-stock universe. IF.02 carries a reason and the request context, but no score-ready prices.” |
-| 4:10–5:00 | No qualifying news → Run F.2 | “With valid prices but no qualifying news, the evidence stays score-ready with a limitation. News does not determine the score. This completes the selected evidence function. Real-provider checks and the full stock-comparison product still need separate verification.” |
+| 0:00–0:40 | First-level IDEF0 | “StockLens compares two stocks using the same date and scoring rules. These five functions handle the request, evidence, scores, explanation and display. The software asset below each box performs that function.” |
+| 0:40–1:30 | F.1 second-level IDEF0 | “We selected F.1, Accept and Validate Comparison Request. F.1.1 checks that both symbols are eligible and different. F.1.2 keeps the accepted pair, analysis date and request identity together.” |
+| 1:30–2:10 | Function and asset hierarchies | “F.1 has two child functions. P.1 has two matching software modules. P.1.1 checks eligibility, and P.1.2 preserves the request context.” |
+| 2:10–3:10 | AAPL / MSFT, Sep 21 2026, Compare stocks | “Both stocks are in our ten-stock universe. They are different, so the request is accepted. In the engineering trace, IF.01 keeps the pair, date, request ID and configuration version. The other functions can now use the same context.” |
+| 3:10–4:00 | AAPL / AAPL, Compare stocks | “Now I select the same stock twice. F.1.1 rejects the request. The system gives a clear reason and does not request data or calculate a ranking.” |
+| 4:00–4:40 | Type OUTSIDE / MSFT, Compare stocks | “This symbol is outside our configured universe. The request is rejected before acquisition. This prevents unsupported comparisons.” |
+| 4:40–5:00 | Restore AAPL / MSFT | “These cases show the two child functions in the model. The page uses synthetic data. We are demonstrating request validation, not real-provider access or investment performance.” |
 
-The classroom requirement is model → product in three steps. A long repository tour is not needed inside these five minutes. Keep the exact same selected function for the team video.
+The data package supports the single synthetic snapshot 2026-09-21. A different date is explicitly rejected as unsupported. The generated price paths can give tied total scores because the factors offset; a tie is a valid calculation, not an application error. F.1 is about accepting or rejecting the request, so no winning stock is needed for this demonstration.
 
-## Approximately ten-minute team submission video
+## Approximately ten-minute team video
 
-| Time | Required evidence |
-|---|---|
-| 0:00–4:30 | The same physical IDEF0, F.2 decomposition, function/asset hierarchies and product cases above |
-| 4:30–5:30 | `docs/traceability.md`: read SYS-F-02 → F.2 → module path → test name; then DR-03 and DR-04 rows |
-| 5:30–6:30 | `pmc2/acquisition.py` and `pmc2/validation.py`: function IDs in docstrings; arguments/outputs follow ICOM; LF.02 separates queries/context from boundary responses |
-| 6:30–7:15 | `tests/test_functional_requirements.py`, `.github/workflows/tests.yml` and an actual successful Actions run for the video commit. Do not show only a badge or claim a queued run passed |
-| 7:15–8:00 | `contracts/api-v1.yaml`: acquire operation yields context; validate operation consumes that exact LF.02 context plus IO.07/08. `docs/route-table.md`: Run F.2 → UC.1 |
-| 8:00–9:00 | Innoslate: SYS-F-02 as system parent; P.2 specification DR-03/DR-04 and boundary/interface CRs. Show the native relationships, not just this Markdown |
-| 9:00–10:00 | SWR-01 → CR-10: **equivalence**, same source/date preservation obligation at P.2. Show separate analysis, observation and publication dates in IF.02. Optionally SWR-04 → CR-16: **synthesis**, evidence checks support AI-independent ranking. State test and integration limits |
+Use the same F.1 function as the classroom demonstration.
 
-Suggested division among the four report contributors, subject to team agreement: Yihan introduces model/product; Shuxuan explains second-level functions and matching assets; Henian explains requirements/flow-down; Xinyuan explains interfaces/code/test links. This is a suggested speaking plan, not a new claim about completed contributions.
+1. 0:00–4:30: the same model views, hierarchies and valid/duplicate/outside-universe product cases.
+2. 4:30–5:30: `docs/traceability.md`, SYS-F-01 → F.1 → DR-01/DR-02 → `pmc2/browser/system.mjs` → DR-01/02 test group in `tests/comparison.test.mjs`.
+3. 5:30–6:30: `validatePair` (F.1.1/P.1.1) and `preserveRequest` (F.1.2/P.1.2), with docstrings and IF.01 fields. The private validation-result handoff is an in-process browser value, not a new public HTTP call.
+4. 6:30–7:15: the test cases and an actual green Actions run for the video commit, especially Node tests within the Verify and publish workflow. The existing tests.yml checks the Python evidence component; it is not the only test job.
+5. 7:15–8:00: `docs/route-table.md`: Compare stocks → UC.1 → F.1–F.5. `contracts/api-v1.yaml`: F.1.1 validate-pair produces PairValidationResult, and F.1.2 preserve-context consumes it. These are implemented optional Python endpoints; the static product uses the corresponding in-process JavaScript calls. `docs/request-contract.md` documents both routes and the internal handoff. Do not claim the hosted page makes Python HTTP calls.
+6. 8:00–9:00: native system parent SYS-F-01, DR-01/DR-02 and associated input/configuration/IF.01 relationships. Show the actual component specification and link direction in Innoslate.
+7. 9:00–10:00: SWR-05 context consistency → DR-02 / F.1.2: preserve request identity and common date unchanged in the accepted request (equivalence for those context fields); record applied config identity from IO.10 in the implementation. Explain the field-by-field check and show IF.01. Do not invent a new native CR number or claim the entire SWR-05 passed from this F.1 check. Full SWR-05 still spans F.2–F.5.
 
-## Likely questions
+## Other available functions
 
-- **Why ten stocks when comparing two?** The two displayed scores are normalized against one frozen ten-stock universe. Pair-only normalization changes the comparison basis.
-- **Why separate acquisition and validation?** Receiving records is not proof that they have the right dates, coverage or provenance.
-- **Does green CI mean the whole project is validated?** No. It checks the controlled component and retained development tests. Real provider suitability, end-to-end timing and human MOEs remain separate.
-- **Why no ranking in this screen?** This screen demonstrates the selected F.2 function and its IF.02 result. P.3 owns numerical ranking; P.4 owns AI coordination; P.5 owns completed comparison display.
-- **What does no news do?** It marks a limitation while keeping valid core evidence available; it does not create news or change scores.
-- **Are the stock prices real?** No. They are generated fixtures under an explicit synthetic calendar, clearly labelled in the product.
+The integrated page also executes F.2 evidence checks, F.3 average-tie rank scoring and driver selection, F.4 synthetic explanation checks, and F.5 display/service-state history. Advanced options exercise missing core evidence, unavailable news and invalid/unavailable synthetic explanations. These support follow-up questions; do not try to explain every case in the five-minute slot.
+
+The external market/news providers and AI service remain unconnected. Synthetic checked templates are explicitly labelled. Provider/calendar review, end-to-end performance and human MOEs remain separate acceptance work.
+
+## Individual work and dates
+
+On-campus demo: November 4. Team video: November 11. Afternoon LEC003 reviews the other three afternoon teams. Each student completes three specific peer-review sheets independently; written answers must be their own. The AM rotation schedule does not apply to LEC003.

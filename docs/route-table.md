@@ -2,6 +2,8 @@
 
 | Entry point | Use case / role | Model functions | Status and code |
 |---|---|---|---|
+| Pages `compare.html`, **Compare stocks** | UC.1 comparison / Research User | F.1–F.5 | Controlled integrated workflow in `pmc2/browser/system.mjs`, request validation, scoring, checked synthetic explanation and display |
+| `compare.html` input fields and **Engineering trace** | UC.1 request/context and observation | F.1.1/F.1.2; F.5 | Duplicate/ineligible inputs stop before F.2; trace is browser observation, not an extra API call |
 | Pages `evidence.html`, **Run F.2** | UC.1 evidence-acquisition segment | F.2.1 → F.2.2 | Implemented in `pmc2/browser/evidence.mjs`; browser-only synthetic adapters; no Python HTTP call |
 | GET `/pmc2` | UC.1 evidence-acquisition segment, Research User / observer | F.2.1 → F.2.2 | Implemented, `pmc2/index.html`, live local Python backend |
 | Select pair and scenario; **Run F.2**, POST `/api/pmc2/demo` | UC.1 (185145), particularly UC.1.3/1.4 provider exchange | F.2 → F.2.1/F.2.2 | Implemented controlled synthetic slice, `pmc2/demo.py`; no ranking or external service |
