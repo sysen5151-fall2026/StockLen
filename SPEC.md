@@ -2,7 +2,7 @@
 
 ## Current component baseline
 
-The original stakeholder text below is retained verbatim. Its “Current evidence” notes describe the earlier M1 increment. For PMC2, [the six-source register](docs/pmc2-baseline.md) records the later system/physical design and [the traceability table](docs/traceability.md) maps F.2 to SYS-F-02, DR-03/04 and the P.2 component requirements. Controlled F.2 tests add evidence for that slice; they do not replace the proposed human MOEs or claim the full system is complete.
+The original stakeholder text below is retained verbatim. Its “Current evidence” notes describe the earlier M1 increment. For the evidence acquisition component, [the six-source register](docs/design-baseline.md) records the later system/physical design and [the traceability table](docs/traceability.md) maps F.2 to SYS-F-02, DR-03/04 and the P.2 component requirements. Controlled F.2 tests add evidence for that slice; they do not replace the proposed human MOEs or claim the full system is complete.
 
 ## Needs and Acceptance Criteria
 

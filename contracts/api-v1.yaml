@@ -2,7 +2,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "StockLens PMC2 F.2 logical interfaces",
+    "title": "StockLens F.2 evidence interfaces",
     "version": "0.1.0",
     "description": "Local synthetic adapters only. LF.02 is AcquisitionContext between F.2.1 and F.2.2. Invalid evidence records are deliberately exercised by tests and result in failed envelopes or rejected news; schema describes valid normalized records. Provider review/calendar/production authentication remain pending."
   },

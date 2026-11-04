@@ -1,9 +1,3 @@
-# Current presentation
-
-For November 4 PMC2, use [the five-minute classroom demo and ten-minute video guide](pmc2-demo.md). It follows the later submitted F.2/P.2 physical design and a controlled evidence product slice. The script below is retained for historical M1 context only.
-
----
-
 # StockLens Milestone 1 presentation
 
 Use this as a rehearsal aid and adapt it to your own speaking style. The live review is a short core-proof demo, not a full slide presentation. Aim for about 2 minutes 20 seconds including clicks. Speak slowly; do not read the screen instructions aloud.

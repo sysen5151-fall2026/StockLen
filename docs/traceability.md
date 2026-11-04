@@ -1,10 +1,10 @@
-# Function → requirement → code → test (Chapter 5 / PMC2)
+# Function → requirement → code → test
 
-Source: [submitted baseline and model observations](pmc2-baseline.md). Test file: `tests/test_functional_requirements.py`, class `EvidenceRequirements`. Every `test_…` below is in that file. Run `python -m unittest discover -s tests -v`. A test proves only the stated controlled scope, not the whole upstream obligation. One row per system-level functional requirement is retained, including gaps.
+Source: [submitted baseline and model observations](design-baseline.md). Test file: `tests/test_functional_requirements.py`, class `EvidenceRequirements`. Every `test_…` below is in that file. Run `python -m unittest discover -s tests -v`. A test proves only the stated controlled scope, not the whole upstream obligation. One row per system-level functional requirement is retained, including gaps.
 
 | Requirement | Function | Module / callable | Test name | Evidence scope |
 |---|---|---|---|---|
-| SYS-F-01 | F.1 | — | — | Not implemented by PMC2; duplicate/outside pair guard is only a boundary precondition |
+| SYS-F-01 | F.1 | — | — | Not implemented by this component; duplicate/outside pair guard is only a boundary precondition |
 | SYS-F-02 | F.2 | pmc2/demo.py::run_demo | test_SYS_F_02_acquires_and_validates_dated_evidence | Controlled synthetic integration |
 | SYS-F-03 | F.3 | — | — | Current v0.1 scoring not implemented in this repo |
 | SYS-F-04 | F.4 | — | — | M1 fixed AI stub only; real grounded integration pending |

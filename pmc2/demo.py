@@ -30,7 +30,7 @@ def synthetic_responses(queries):
                'currency': 'USD', 'source_id': f'SYNTHETIC-PRICE-{s}-{d}'}
               for i, s in enumerate(mq['symbols']) for j, d in enumerate(mq['observation_dates'])]
     news = [{**identity(nq), 'symbol': s, 'publication_date': nq['end_date'],
-             'source_id': f'SYNTHETIC-NEWS-{s}', 'title': f'Fictional {s} classroom record',
+             'source_id': f'SYNTHETIC-NEWS-{s}', 'title': f'Fictional {s} synthetic record',
              'permitted': True} for s in nq['symbols']]
     return market, news
 

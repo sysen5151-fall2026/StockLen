@@ -1,4 +1,4 @@
-# PMC2 baseline and source register
+# Design baseline and source register
 
 ## Source precedence
 
@@ -17,7 +17,7 @@ The form report names the system obligations SYS-IN/OUT/IF/F and adds system-wid
 
 ## Innoslate observations
 
-Observed through the signed-in UI during the PMC2 review:
+Observed through the signed-in UI during the evidence-component review:
 
 - F.2: 269035; children F.2.1 269045 and F.2.2 269046; performed by P.2 290840.
 - F.2 native description explicitly requires full ten-stock coverage, 21 aligned prices and invalid-core non-release.
@@ -26,7 +26,7 @@ Observed through the signed-in UI during the PMC2 review:
 - P.2 hierarchy displays P.2.1 Provider Acquisition Module and P.2.2 Evidence Validation Module.
 - Top-level F.0 264782 has first-level functional decomposition and mechanism arrows.
 
-These are scoped observations, not a fresh global Intelligence pass. The native diagrams have long wrapped/truncated labels at the saved zoom. Fit the view and read full names in the sidebar while presenting. No new model entities or satisfaction verdicts are needed merely to represent the new controlled code tests. A relationship means allocation, not a passed real-service test.
+These are scoped observations, not a fresh global Intelligence pass. No new model entities or satisfaction verdicts are needed merely to represent the new controlled code tests. A relationship means allocation, not a passed real-service test.
 
 ## Constraints carried forward
 

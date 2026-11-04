@@ -1,8 +1,8 @@
-# PMC2 review and reconciliation
+# Evidence acquisition verification and reconciliation
 
 ## Review result
 
-The linked repository at the start of this review was still organized around Milestone 1. Its fixed Chapter 2 path was correctly labelled as fictional, but it did not supply the later F.2 implementation or the filenames required for PMC2. The Innoslate model had already progressed to the submitted physical design. Replacing its diagrams with the older code structure would have moved the model backwards.
+The evidence component implements the F.2 decomposition in the physical design. Acquisition and validation remain separate modules with shared request and configuration context. The following records describe implementation coverage and remaining gaps.
 
 | Finding | Change made | Remaining limitation |
 |---|---|---|
@@ -12,8 +12,8 @@ The linked repository at the start of this review was still organized around Mil
 | Missing named functional requirement tests and required workflow path | Added 20 F.2 tests and `.github/workflows/tests.yml` | Controlled component verification only |
 | Missing internal-flow API contract | Added OpenAPI `contracts/api-v1.yaml` and two actual local internal endpoints | Normalized synthetic adapter contract; real provider mapping pending |
 | Missing route → use case map | Added `docs/route-table.md`, including legacy/exploratory routes and developer endpoints | No claim that every historical UI control implements current v0.1 |
-| README treated later function requirements as awaiting allocation | Added later source precedence, native IDs, startup and presentation links | Historical records preserved |
-| Research lab uses sentiment, selected-set min/max scores and later-return reveal | Added explicit nonconformance label; excluded it from PMC2 evidence | Current v0.1 P.3/P.4/P.5 integrated product remains future work |
+| README treated later function requirements as awaiting allocation | Added later source precedence, native IDs, startup and implementation links | Historical records preserved |
+| Research lab uses sentiment, selected-set min/max scores and later-return reveal | Added explicit nonconformance label; excluded it from v0.1 conformance evidence | Current v0.1 P.3/P.4/P.5 integrated product remains future work |
 | No distinction between system status and evidence-release status | Documented local IF.02 result states separately | Full five-state P.5 service integration pending |
 | Prior PDF reported local tests not present in repository | Kept those as historical evidence; new checks are reproducible from this commit | Did not claim to reproduce unavailable historical source code |
 
@@ -26,20 +26,20 @@ Performed from the repository root with Python 3.12.14 and Node 24.22.1 (CI sele
 - `python scripts/check_http.py`: existing M1 HTTP checks passed.
 - `python scripts/check_baseline.py`: original eight stakeholder requirement transcriptions and OpsCon retained.
 - `node --test tests/site.test.mjs`: three existing checks passed.
-- `python scripts/build_site.py`: existing static build passed. It does not publish or run the Python PMC2 app.
+- `python scripts/build_site.py`: existing static build passed. It does not publish or run the Python evidence app.
 
 The live backend binds to 127.0.0.1; fixture records, IDs and sources are clearly labelled. No API key, live stock data, external AI call, provider redistribution or user-study result is added. UI state is exercised separately when possible; successful page delivery alone does not prove browser interaction.
 
-For the video, open the actual green **PMC2 functional requirements** Actions run for the exact video commit. Local results above are not a substitute for a remote CI result. Real-provider CR-11 and complete upstream SWR acceptance remain unassessed.
+CI verifies controlled component behavior and retained development checks. It does not establish real-provider suitability or complete upstream SWR acceptance.
 
 ## Model disposition
 
 Confirmed existing F.2/P.2 decomposition and mechanisms through the native UI. F.2 retains SYS-F-02 satisfaction allocation. F.2.2 receives IO.07, IO.08, IO.10 and LF.02, generates IF.02 and is performed by P.2.2. The component artifact references the subsystem functional and system-wide requirement groups. These existing design relationships should be retained. New controlled checks are code evidence and must not be marked as passed full verification plans in Innoslate.
 
-Use the model's existing SYS/DR/CR/SWR entities when recording implementation references; do not create duplicate stakeholder SR or boundary requirements. The earlier functional report's staged absence of physical mechanisms was superseded by the later form report. For PMC2 use the physical mechanisms already present in the live model.
+Use the model's existing SYS/DR/CR/SWR entities when recording implementation references; do not create duplicate stakeholder SR or boundary requirements. The earlier functional report's staged absence of physical mechanisms was superseded by the later form report. Use the physical mechanisms already present in the live model.
 
 ## Native implementation references saved
 
 F.2.1 (269045) and F.2.2 (269046) descriptions now link to PR #1 and name their respective callables. F.2.1 also clarifies full-universe market query scope versus pair-specific news scope, consistent with the submitted design. Existing descriptions were retained and extended. No hierarchy, interface relationship or verification verdict was changed.
 
-Remote CI on implementation commit `880bd2c7abe3111cbeb7715416d0dd7e6a788ec6`: PMC2 functional requirements, existing verify/build, and stakeholder readiness report all completed successfully. The readiness report is not an acceptance pass; PR deployment is skipped by the existing workflow conditions.
+Remote CI on implementation commit `880bd2c7abe3111cbeb7715416d0dd7e6a788ec6`: the functional requirements workflow, existing verify/build, and stakeholder readiness report all completed successfully. The readiness report is not an acceptance pass; PR deployment is skipped by the existing workflow conditions.

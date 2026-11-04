@@ -1,5 +1,7 @@
 # PMC2 presentation guide — Group 29
 
+This folder contains optional course presentation material. It is not imported by the application or test suite and may be deleted as a whole.
+
 ## Dates and submissions
 
 Teaching-team announcement dated October 31, 2026: on-campus demo **Wednesday November 4**; individual three peer-review worksheets completed in class (submission flexibility until **November 11**); approximately ten-minute team video due **November 11**. Afternoon LEC003 presents in class and reviews the other three afternoon teams. The AM six-round schedule does not apply to LEC003. Each student's written peer-review answers must be their own.

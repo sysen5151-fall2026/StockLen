@@ -28,7 +28,7 @@ def compare(query: ComparisonQuery):
     return dashboard_ui.render_comparison_dashboard(result)
 
 
-# PMC2 F.2 product slice; M1 routes above retain their historical contract.
+# F.2 evidence component; existing fixture routes retain their transport contract.
 from fastapi import HTTPException
 from pmc2.demo import run_demo
 

@@ -31,4 +31,4 @@ The existing demo is available at https://yihanzhou818.github.io/SYSEN5151/skele
 
 ## Remaining team actions
 
-Before review, reconcile native AI allocation and confirm the open baseline definitions if possible. If either remains unresolved, retain the dated follow-up in the self-assessment and agree a completion date with the reviewer before Milestone 2. Also rehearse one model-to-demo trace and complete the required independent review. These are specific remaining actions, not a reason to build beyond the milestone.
+Before review, reconcile native AI allocation and confirm the open baseline definitions if possible. If either remains unresolved, retain the dated follow-up in the self-assessment and agree a completion date with the reviewer for the next review. Also rehearse one model-to-demo trace and complete the required independent review. These are specific remaining actions, not a reason to build beyond the milestone.

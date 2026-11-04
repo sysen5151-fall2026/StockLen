@@ -51,7 +51,7 @@ def main():
             raise AssertionError('duplicate pair accepted')
         except HTTPError as error:
             assert error.code == 422
-        print('PASS: PMC2 page, valid/blocked/limited cases, internal LF.02 HTTP handoff, invalid-pair 422')
+        print('PASS: evidence page, valid/blocked/limited cases, internal LF.02 HTTP handoff, invalid-pair 422')
     finally:
         process.terminate()
         process.wait(timeout=5)

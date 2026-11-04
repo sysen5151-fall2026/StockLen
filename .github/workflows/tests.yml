@@ -1,4 +1,4 @@
-name: PMC2 functional requirements
+name: Evidence functional requirements
 on:
   push:
   pull_request:
