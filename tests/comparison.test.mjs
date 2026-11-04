@@ -61,3 +61,12 @@ test('DR-09/10: display precision, service states, no score on invalid core and 
  const limited=run({scenario:'no_news'});assert.equal(limited.history.at(-1).state,'completed_with_limitations');assert.deepEqual(limited.display.stocks,valid.display.stocks);
  assert.throws(()=>reportStatus('invented',requestId));
 });
+
+test('Pages assembly resolves comparison module imports under the repository subpath',async()=>{
+ const {readFileSync,existsSync}=await import('node:fs');
+ execFileSync(process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['scripts/build_site.py'],{encoding:'utf8'});
+ const html=readFileSync('.site/compare.html','utf8');
+ for(const match of html.matchAll(/from ['"](\.\/[^'"]+)['"]/g)) assert.ok(existsSync('.site/'+match[1].slice(2)),match[1]);
+ assert.ok(html.includes("from './js/system.mjs'"));
+ assert.ok(existsSync('.site/js/evidence.mjs'));
+});
