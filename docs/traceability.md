@@ -4,7 +4,7 @@ Source: [submitted baseline and model observations](design-baseline.md). Python 
 
 | Requirement | Function | Module / callable | Test name | Evidence scope |
 |---|---|---|---|---|
-| SYS-F-01 | F.1 | `pmc2/browser/system.mjs::validatePair,preserveRequest` | `test_DR_01_pair_eligibility`, `test_DR_02_preserved_context` in `tests/test_functional_requirements.py`; DR-01/02 browser group in `tests/comparison.test.mjs` | Controlled request validation |
+| SYS-F-01 | F.1 | Python: `pmc2/request.py::validate_pair,preserve_request`; browser: `pmc2/browser/system.mjs::validatePair,preserveRequest` | `test_DR_01_pair_eligibility`, `test_DR_02_preserved_context` in `tests/test_functional_requirements.py`; DR-01/02 browser group in `tests/comparison.test.mjs` | Controlled request validation |
 | SYS-F-02 | F.2 | pmc2/demo.py::run_demo | test_SYS_F_02_acquires_and_validates_dated_evidence | Controlled synthetic integration |
 | SYS-F-03 | F.3 | `pmc2/browser/system.mjs::computeScores,identifyDrivers` | DR-05 reference and DR-05/06 tie groups | Controlled v0.1 scores and drivers |
 | SYS-F-04 | F.4 | `pmc2/browser/system.mjs::packageExplanation,checkExplanation` | DR-07/08 and SWR-04 groups | Synthetic adapter and unavailable fallback; real AI pending |

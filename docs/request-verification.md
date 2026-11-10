@@ -16,4 +16,4 @@ This relocation changes neither runtime behavior nor native Innoslate requiremen
 
 Five native component requirements now supplement unchanged DR-01/DR-02: P1-IN-01/02, P1-OUT-01, P1-IF-01 and P1-NF-01. P1-NF-01 derives SWR-05 by equivalence and is satisfied by P.1. The full statement and zero-mismatch method are retained in the native Rationale and in p1-component-specification.md.
 
-Local checks: 31 Python tests, 15 Node tests and F.1/F.2 HTTP checks passed. The new tests check actual IF.01-to-F.2.1 transfer and two independently interleaved contexts. Original DR-01/02 and F.2 test bodies remain unchanged. ICOM docstrings now name inputs, control binding, outputs and mechanisms; public signatures and runtime behavior are unchanged.
+Local checks: 31 Python tests, 15 Node tests and F.1/F.2 HTTP checks passed. The new tests check actual IF.01-to-F.2.1 transfer and two independently interleaved contexts. Original DR-01/02 assertions and all F.2 tests remain unchanged. DR-01/02 docstrings now quote the full native shall statements. ICOM docstrings now name inputs, control binding, outputs and mechanisms; public signatures and runtime behavior are unchanged.

@@ -228,13 +228,13 @@ class EvidenceRequirements(unittest.TestCase):
 
 class RequestRequirements(unittest.TestCase):
     def test_DR_01_pair_eligibility(self):
-        """DR-01: validate the configured universe; reject duplicate/ineligible symbols."""
+        """DR-01: P.1.1 Eligibility Validation Module shall validate the submitted pair against the configured stock universe and reject duplicate or ineligible symbols."""
         self.assertEqual(validate_pair(' aapl ', 'msft'), {'valid': True, 'reason': None, 'stock_pair': ['AAPL', 'MSFT']})
         self.assertEqual(validate_pair('AAPL', 'AAPL')['reason'], 'duplicate_symbols')
         self.assertEqual(validate_pair('OUTSIDE', 'MSFT')['reason'], 'ineligible_symbol')
 
     def test_DR_02_preserved_context(self):
-        """DR-02: preserve validated pair, common date and identity in IF.01."""
+        """DR-02: P.1.2 Request Context Module shall preserve the validated pair, common analysis date and request identity in IF.01."""
         pair = validate_pair('AAPL', 'MSFT')
         c = demo_configuration()
         r = preserve_request(pair, '2026-09-21', 'request-1', c)
