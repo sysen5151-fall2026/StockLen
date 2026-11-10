@@ -27,3 +27,6 @@ The browser executes F.1 locally. The static page uses in-process JavaScript cal
 An invalid pair returns `accepted: false`, a reason, and `request: null`. Duplicate symbols and outside-universe symbols are distinguished. Symbols are trimmed and uppercased before checking. This synthetic data package supplies only the 2026-09-21 snapshot; other dates are rejected as unsupported, rather than being relabelled as the available fixture date.
 
 DR-01/DR-02 Python checks are `RequestRequirements.test_DR_01_pair_eligibility` and `RequestRequirements.test_DR_02_preserved_context` in `tests/test_functional_requirements.py`. The corresponding browser checks are in `tests/comparison.test.mjs`. This component contributes to SYS-F-01, SYS-IN-01 and SWR-05; its local field checks do not establish complete upstream user-task or end-to-end acceptance. Native F.1 children are 269043 and 269044 under 269034. The implementation uses the existing model identifiers and does not introduce a duplicate native requirement or flow ID for a browser value.
+
+
+[P.1 component specification](p1-component-specification.md) contains the input, output, interface and SWR-05 flow-down requirements and their verification map.

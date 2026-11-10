@@ -70,3 +70,20 @@ test('Pages assembly resolves comparison module imports under the repository sub
  assert.ok(html.includes("from './js/system.mjs'"));
  assert.ok(existsSync('.site/js/evidence.mjs'));
 });
+
+
+test('P1-IN-01/02, P1-OUT-01, P1-IF-01, P1-NF-01: accepted context survives interleaved browser handoffs',()=>{
+ const first=run({stockA:' aapl ',stockB:'msft',requestId:'first'});
+ const second=run({stockA:'NVDA',stockB:'TSLA',requestId:'second'});
+ assert.deepEqual(first.request.request.stock_pair,['AAPL','MSFT']);
+ assert.deepEqual(second.request.request.stock_pair,['NVDA','TSLA']);
+ for(const result of [second,first]) {
+  const accepted=result.request.request;
+  for(const field of ['stock_pair','analysis_date','request_id','configuration_id']) assert.deepEqual(result.evidence.evidence[field],accepted[field]);
+ }
+ assert.equal(first.request.request.request_id,'first');
+ assert.equal(second.request.request.request_id,'second');
+ for(const options of [{stockB:'AAPL'},{stockA:'OUTSIDE'},{analysisDate:'2026-09-20'}]) {
+  const failed=run(options);assert.equal(failed.request.accepted,false);assert.equal(failed.request.request,null);assert.equal(failed.evidence,null);
+ }
+});

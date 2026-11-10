@@ -244,5 +244,51 @@ class RequestRequirements(unittest.TestCase):
         self.assertFalse(preserve_request({'valid': True, 'reason': None, 'stock_pair': ['AAPL', 'AAPL']}, '2026-09-21', 'request-1', c)['accepted'])
 
 
+class RequestComponentRequirements(unittest.TestCase):
+    def context(self, first=' aapl ', second='msft', identity='p1-check', date='2026-09-21', config=None):
+        return preserve_request(validate_pair(first, second), date, identity, demo_configuration() if config is None else config)
+
+    def test_P1_IN_01_request_input(self):
+        """P1-IN-01: The P.1 Request Management Subsystem shall accept the submitted stock pair and common analysis date from IO.01 for validation."""
+        result = self.context()['request']
+        self.assertEqual(result['stock_pair'], ['AAPL', 'MSFT'])
+        self.assertEqual(result['analysis_date'], '2026-09-21')
+        self.assertIsNone(self.context(first='OUTSIDE')['request'])
+
+    def test_P1_IN_02_configuration_input(self):
+        """P1-IN-02: The P.1 Request Management Subsystem shall accept IO.10 Research Configuration with the eligible stock universe and applied configuration identity."""
+        config = demo_configuration()
+        self.assertEqual(self.context(config=config)['request']['configuration_id'], config['configuration_id'])
+        changed = deepcopy(config); changed['configuration_id'] = 'unsupported'
+        self.assertFalse(self.context(config=changed)['accepted'])
+
+    def test_P1_OUT_01_accepted_context(self):
+        """P1-OUT-01: The P.1 Request Management Subsystem shall release IF.01 with the validated pair, common analysis date, request identity and applied configuration identity only after request validation succeeds."""
+        self.assertEqual(set(self.context()['request']), {'stock_pair', 'analysis_date', 'request_id', 'configuration_id'})
+        for values in ({'second': 'AAPL'}, {'first': 'OUTSIDE'}, {'date': '2026-09-20'}, {'identity': ''}):
+            with self.subTest(values=values):
+                result = self.context(**values)
+                self.assertFalse(result['accepted']); self.assertIsNone(result['request'])
+
+    def test_P1_IF_01_P2_handoff(self):
+        """P1-IF-01: The P.1 Request Management Subsystem shall provide IF.01 to P.2 through the request interface without changing its accepted pair, analysis date, request identity or configuration identity."""
+        config = demo_configuration(); accepted = self.context(config=config)['request']
+        query = request_dated_records(accepted, config)
+        for field, value in accepted.items():
+            self.assertEqual(query['context'][field], value)
+
+    def test_P1_NF_01_context_equivalence(self):
+        """P1-NF-01: The P.1 Request Management Subsystem shall preserve the accepted common analysis date, request identity and applied configuration identity unchanged in each IF.01 handoff."""
+        config = demo_configuration()
+        first = self.context(identity='first')['request']
+        second = self.context(first='NVDA', second='TSLA', identity='second')['request']
+        for accepted in (second, first):
+            result = request_dated_records(accepted, config)['context']
+            for field in ('analysis_date', 'request_id', 'configuration_id'):
+                self.assertEqual(result[field], accepted[field])
+        self.assertEqual(first['request_id'], 'first'); self.assertEqual(first['stock_pair'], ['AAPL', 'MSFT'])
+        self.assertEqual(second['request_id'], 'second'); self.assertEqual(second['stock_pair'], ['NVDA', 'TSLA'])
+
+
 if __name__ == '__main__':
     unittest.main()
