@@ -1,10 +1,10 @@
 # Function → requirement → code → test
 
-Source: [submitted baseline and model observations](design-baseline.md). Test file: `tests/test_functional_requirements.py`, class `EvidenceRequirements`. Every `test_…` below is in that file. Run `python -m unittest discover -s tests -v`. A test proves only the stated controlled scope, not the whole upstream obligation. One row per system-level functional requirement is retained, including gaps.
+Source: [submitted baseline and model observations](design-baseline.md). Python test file: `tests/test_functional_requirements.py`, classes `RequestRequirements` (F.1) and `EvidenceRequirements` (F.2). Named Python tests below are in that file; browser test groups have their own explicit paths. Run `python -m unittest discover -s tests -v`. A test proves only the stated controlled scope, not the whole upstream obligation. One row per system-level functional requirement is retained, including gaps.
 
 | Requirement | Function | Module / callable | Test name | Evidence scope |
 |---|---|---|---|---|
-| SYS-F-01 | F.1 | `pmc2/browser/system.mjs::validatePair,preserveRequest` | DR-01/02 group in `tests/comparison.test.mjs` | Controlled request validation |
+| SYS-F-01 | F.1 | Python: `pmc2/request.py::validate_pair,preserve_request`; browser: `pmc2/browser/system.mjs::validatePair,preserveRequest` | `test_DR_01_pair_eligibility`, `test_DR_02_preserved_context` in `tests/test_functional_requirements.py`; DR-01/02 browser group in `tests/comparison.test.mjs` | Controlled request validation |
 | SYS-F-02 | F.2 | pmc2/demo.py::run_demo | test_SYS_F_02_acquires_and_validates_dated_evidence | Controlled synthetic integration |
 | SYS-F-03 | F.3 | `pmc2/browser/system.mjs::computeScores,identifyDrivers` | DR-05 reference and DR-05/06 tie groups | Controlled v0.1 scores and drivers |
 | SYS-F-04 | F.4 | `pmc2/browser/system.mjs::packageExplanation,checkExplanation` | DR-07/08 and SWR-04 groups | Synthetic adapter and unavailable fallback; real AI pending |
@@ -88,4 +88,19 @@ All rows use `pmc2/browser/system.mjs`; F.2 continues to use its existing Python
 | DR-09 | F.5.1 / P.5.1 | renderComparison | Two-decimal display and exact authoritative record retained |
 | DR-10 | F.5.2 / P.5.2 | reportStatus | ready, processing, completed, completed_with_limitations, failed |
 
-The accepted synthetic date is 2026-09-21; the fixture's explicit Sep 1–21 dates are not an exchange calendar. “Completed” here means the controlled synthetic workflow completed, not that a live AI call or stakeholder validation passed. The system fixture has no automatic external call or retry. The OpenAPI operations cover optional local Python F.1 and F.2 transport and are not claimed as HTTP calls from the static page. F.1 HTTP handoff checks are also exercised by scripts/check_pmc2_http.py; tests/test_request_requirements.py contains named DR-01/DR-02 cases.
+The accepted synthetic date is 2026-09-21; the fixture's explicit Sep 1–21 dates are not an exchange calendar. “Completed” here means the controlled synthetic workflow completed, not that a live AI call or stakeholder validation passed. The system fixture has no automatic external call or retry. The OpenAPI operations cover optional local Python F.1 and F.2 transport and are not claimed as HTTP calls from the static page. F.1 HTTP handoff checks are also exercised by scripts/check_pmc2_http.py; tests/test_functional_requirements.py contains named DR-01/DR-02 cases.
+
+
+## P.1 complete component boundary
+
+See [P.1 component specification](p1-component-specification.md) for the exact native shall statements, ICOM table and SWR-05 equivalence allocation. DR-01/02 remain unchanged.
+
+| Function | Requirement | Python module | Named test in tests/test_functional_requirements.py |
+|---|---|---|---|
+| F.1.1/F.1.2 | P1-IN-01 | pmc2/request.py | test_P1_IN_01_request_input |
+| F.1.1/F.1.2 | P1-IN-02 | pmc2/request.py | test_P1_IN_02_configuration_input |
+| F.1.2 | P1-OUT-01 | pmc2/request.py | test_P1_OUT_01_accepted_context |
+| F.1.2 to F.2.1 | P1-IF-01 | pmc2/request.py; pmc2/acquisition.py | test_P1_IF_01_P2_handoff |
+| F.1.2 | P1-NF-01 derived from SWR-05 | pmc2/request.py | test_P1_NF_01_context_equivalence |
+
+Browser counterpart: pmc2/browser/system.mjs; P1 component group in tests/comparison.test.mjs. The Python requirement tests exercise the Python module; they do not directly execute JavaScript.

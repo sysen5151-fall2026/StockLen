@@ -6,14 +6,24 @@ const copy=v=>structuredClone(v);
 export const CONFIG_ID='v0.1-pmc2-synthetic-1';
 export const CUTOFF='2026-09-21';
 
-/** F.1.1 / P.1.1 / DR-01: IO.01 + IO.10 -> eligible distinct pair. */
+/** F.1.1 / P.1.1 / DR-01; P1-IN-01/02.
+ * Input IO.01: stockA, stockB; analysisDate is forwarded to F.1.2.
+ * Control IO.10: frozen eligible universe, bound to imported UNIVERSE.
+ * Output LF.01: {valid, reason, stock_pair}; mechanism P.1.1 in this module.
+ * This signature exposes symbol inputs; its control is a frozen dependency.
+ */
 export function validatePair(stockA,stockB) {
   const pair=[stockA,stockB].map(s=>typeof s==='string'?s.trim().toUpperCase():'');
   if(pair.some(s=>!UNIVERSE.includes(s))) return {valid:false,reason:'ineligible_symbol',stock_pair:pair};
   if(pair[0]===pair[1]) return {valid:false,reason:'duplicate_symbols',stock_pair:pair};
   return {valid:true,reason:null,stock_pair:pair};
 }
-/** F.1.2 / P.1.2 / DR-02: preserve accepted pair/date/identity in IF.01. */
+/** F.1.2 / P.1.2 / DR-02; P1-OUT-01/IF-01/NF-01.
+ * Inputs: LF.01 pairResult, analysisDate, requestId; control IO.10 configuration.
+ * Output IF.01: accepted pair/date/request/config IDs, or explicit rejection.
+ * Mechanism: P.1.2 Request Context Module, in-process on GitHub Pages.
+ * SWR-05 equivalence: the three accepted context fields retain their values.
+ */
 export function preserveRequest(pairResult,analysisDate,requestId,configuration=syntheticConfiguration()) {
   if(!pairResult.valid) return {accepted:false,reason:pairResult.reason,request:null};
   const checked=validatePair(...pairResult.stock_pair);
