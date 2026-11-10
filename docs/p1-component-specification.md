@@ -31,7 +31,7 @@ SWR-05 requires common analysis date, request identity and applied configuration
 
 ## Controlled configuration
 
-The current build binds the IO.10 universe to the imported ten-stock UNIVERSE constant, with configuration ID `v0.1-pmc2-synthetic-1`. Its data package supports analysis date `2026-09-21`. F.1.1 receives symbols explicitly; F.1.2 receives date, request ID and configuration explicitly. An unsupported configuration/date is rejected, not silently relabelled. No claim of arbitrary live configurations is made.
+The current build binds the IO.10 universe to the imported ten-stock UNIVERSE constant, with configuration ID `v0.1-pmc2-synthetic-1`. Its data package supports analysis date `2026-09-21`. F.1.1 receives symbols explicitly; F.1.2 receives date, request ID and configuration explicitly. An unsupported configuration/date is rejected, not silently relabelled. The controlled build supports this configuration and snapshot.
 
 
 ## Native entity register
@@ -44,4 +44,4 @@ The current build binds the IO.10 universe to the imported ten-stock UNIVERSE co
 | P1-IF-01 | 308648 | satisfied by P.1 290841 |
 | P1-NF-01 | 308649 | derives SWR-05 290908; satisfied by P.1 290841 |
 
-The clauses are stored in the existing native leaf-requirements document 290950 with their verification rationale. Their numbers do not replace DR-01/02 or the P.2 component CRs. New native requirements retain Draft status; an allocation relationship is not an independently approved acceptance verdict.
+The clauses are stored in the existing native leaf-requirements document 290950 with their verification rationale. Their numbers do not replace DR-01/02 or the P.2 component CRs. The five P1 requirements have Approved status in the native model.

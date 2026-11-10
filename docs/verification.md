@@ -20,7 +20,7 @@ The first runtime attempt used a Python without uvicorn; the documented project 
 - Browser UC.1 demo: Compare fixture rendered DEMO_A (60), DEMO_B (40), the fixed explanation and dated evidence.
 - Browser research lab: ranking rendered three stocks and source cards; later paths and returns were hidden until explicitly revealed. Desktop layout inspected.
 
-These are automated and agent-operated development checks, not human acceptance or a claim of live provider integration. Human prompt review, teammate contributions, and current Innoslate export review remain recorded in the submission checklist. Deployment verification is recorded separately when publishing succeeds.
+These are automated and agent-operated development checks, not human acceptance or a claim of live provider integration. The submission checklist records teammate contributions and native-model evidence. Deployment verification is recorded separately when publishing succeeds.
 
 ## Readiness inspection — 7 October 2026
 

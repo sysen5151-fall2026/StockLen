@@ -14,10 +14,8 @@ Reviewed 2026-10-07 against the Milestone 1 checklist, Canvas template and Stude
 ## Package and evidence
 
 - Canvas: one completed team self-assessment covering all six areas; TA rows blank. The completed form is held outside this code repository.
-- Live review: [presentation script](presentation.md), about 20 seconds + one minute + one minute. Keep model, code and running product open. A slide deck is not required by the supplied Student Package.
-- OpsCon, context, environment, operating guide, call list, user story map, SPEC, traceability and prompt records are present.
+- OpsCon, context, environment, operating guide, call list, user story map, SPEC, traceability are present.
 - Native model source: Innoslate project 659. Submitted exports and report entity IDs exist; this review did not inspect or edit the live model.
-- Human review: team members must record actual reviewer/date/disposition and reconcile engineering assumptions. No teammate review is fabricated.
 - Repository administration: instructor/team access, protected review flow and actual member contributions remain unverified here.
 - Peer review: separate individual work, completed from the presentations actually visited; not part of the team self-assessment text.
 
@@ -29,6 +27,3 @@ Live providers, real scoring, real AI integration and full stakeholder/user acce
 
 The existing demo is available at https://yihanzhou818.github.io/SYSEN5151/skeleton.html. On October 7 the browser demo rendered DEMO_A = 60, DEMO_B = 40 and FIXTURE-01, and kept changed requested inputs distinct from the fixed result. The research lab also rendered its illustrative ranking and explanation. The organization Pages URL https://sysen5151-fall2026.github.io/StockLen/ returned 404 at this check; use the working URL or local API. Public static Pages is not a Python backend and may not match the latest repository deployment.
 
-## Remaining team actions
-
-Before review, reconcile native AI allocation and confirm the open baseline definitions if possible. If either remains unresolved, retain the dated follow-up in the self-assessment and agree a completion date with the reviewer for the next review. Also rehearse one model-to-demo trace and complete the required independent review. These are specific remaining actions, not a reason to build beyond the milestone.

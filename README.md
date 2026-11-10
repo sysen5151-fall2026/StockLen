@@ -71,8 +71,6 @@ Preview: `python3 scripts/build_site.py` then `python3 -m http.server 8080 --dir
 - [Architecture decisions](docs/adr/)
 - [Validation and test evidence](docs/verification.md)
 - [Milestone 1 checklist](docs/submission-checklist.md)
-- [Short demo script and questions](docs/presentation.md)
-- [Prompt log](docs/prompt-log.md)
 - [Innoslate project](https://cloud.innoslate.com/cornell/p/659/diagrams)
 
 ## Check

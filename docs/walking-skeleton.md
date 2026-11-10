@@ -43,4 +43,3 @@ For a shareable browser-only mirror open the website's UC.1 demo link. It exerci
 
 ## Milestone 1 station pitch
 
-Use the [short presentation script](presentation.md): introduce the system, run one request, then trace N-02 → SR-02 → UC.1.6/UC.1.7 in the native model and back to the result.

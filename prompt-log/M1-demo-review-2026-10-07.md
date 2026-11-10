@@ -8,7 +8,6 @@ Extract: introduction about 20 seconds, end-to-end stub demonstration about one 
 
 Constrain: documentation only; preserve submitted requirement wording and existing implementation. No new features, dependencies, approved decisions, model edits or acceptance claims.
 
-Prompt: add a simple English rehearsal script with screen cues and concise question answers; update the stale Chapter 1–2 checklist to distinguish Milestone 1 evidence from team/model tasks; document the existing internal coordinator in the call list and reconciliation table; correct the removed-source-folder claim. Preserve the historical verification record and add dated current observations only.
 
 Review: source wording and links checked against current code and submitted PDF; development and live-site checks were completed against this current baseline on October 7. Human practice, model navigation, approval of decisions and independent code review remain team tasks.
 

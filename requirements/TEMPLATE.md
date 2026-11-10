@@ -43,9 +43,9 @@ Test / Analysis / Inspection / Demonstration
 Innoslate / Course Artifact / Stakeholder / Other
 
 ## Status
-Draft
+Not assigned
 # SYSEN 5151 Traceability Matrix
 
 | Stakeholder Need | Function | Requirement | Interface | Implementation | Test | Status |
 |---|---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | TBD | TBD | Draft |
+| TBD | TBD | TBD | TBD | TBD | TBD | Not assigned |
