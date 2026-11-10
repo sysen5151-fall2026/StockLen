@@ -7,6 +7,8 @@
 | Pages `evidence.html`, **Run F.2** | UC.1 evidence-acquisition segment | F.2.1 → F.2.2 | Implemented in `pmc2/browser/evidence.mjs`; browser-only synthetic adapters; no Python HTTP call |
 | GET `/pmc2` | UC.1 evidence-acquisition segment, Research User / observer | F.2.1 → F.2.2 | Implemented, `pmc2/index.html`, live local Python backend |
 | Select pair and scenario; **Run F.2**, POST `/api/pmc2/demo` | UC.1 (185145), particularly UC.1.3/1.4 provider exchange | F.2 → F.2.1/F.2.2 | Implemented controlled synthetic slice, `pmc2/demo.py`; no ranking or external service |
+| POST `/internal/f1/validate-pair` | Internal operation supporting UC.1 request validation | F.1.1 / P.1.1 | Implemented, `pmc2/request.py::validate_pair`; consumes IO.01 symbols with frozen IO.10 control and returns LF.01 PairValidationResult |
+| POST `/internal/f1/preserve-context` | Internal operation supporting UC.1 accepted context | F.1.2 / P.1.2 | Implemented, `pmc2/request.py::preserve_request`; consumes LF.01, date, request identity and IO.10, and returns accepted IF.01 or rejection |
 | POST `/internal/f2/acquire` | Internal operation supporting UC.1; not an extra user use case | F.2.1 / P.2.1 | Implemented, `pmc2/acquisition.py`; emits IO.03, IO.04 and LF.02 |
 | POST `/internal/f2/validate` | Internal operation supporting UC.1 | F.2.2 / P.2.2 | Implemented, `pmc2/validation.py`; consumes LF.02 plus IO.07/08, emits IF.02 |
 | CLI `python -m pmc2 --scenario …` | Maintainer/test observation of the same UC.1 segment | F.2.1/F.2.2 | Implemented; full JSON queries and envelope; no parallel business logic |
