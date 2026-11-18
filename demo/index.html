@@ -1,0 +1,303 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>StockLens | Stock Comparison</title><style>
+:root{font-family:system-ui,sans-serif;color:#152b3b;background:#f0f4f8}*{box-sizing:border-box}body{margin:0}main{max-width:1160px;margin:auto;padding:36px 24px}nav{display:flex;gap:18px;align-items:center;margin-bottom:40px}nav strong{font-size:22px;margin-right:auto}a{color:#08756e}h1{font-size:42px;letter-spacing:-1px;margin:8px 0 16px}h2{font-size:23px}p{line-height:1.6}.intro{max-width:810px;color:#4b6476}.eyebrow{font-size:12px;letter-spacing:2px;font-weight:700;color:#08756e}.panel{background:white;border:1px solid #d9e3eb;border-radius:16px;padding:24px;margin:20px 0}form{display:flex;gap:18px;align-items:end;flex-wrap:wrap}label{display:grid;gap:8px;font-size:14px;font-weight:600}input,select,button{font:inherit;padding:12px;border:1px solid #acbdca;border-radius:8px}input{width:160px}button{background:#08756e;color:white;cursor:pointer;font-weight:650;border:0}button:disabled{opacity:.6}button.secondary{background:#e5efed;color:#07635d}#status{font-weight:700;font-size:21px}#status[data-state=failed]{color:#9a2839}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{padding:24px;border-radius:14px;background:#f1f7f6;border:1px solid #d8e9e5}.score{font-size:42px;font-weight:750;margin:10px 0}.muted{color:#526c7e;font-size:14px}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:12px;border-bottom:1px solid #dae3e9}th{color:#496273;font-size:13px}.scroll{overflow:auto}details{margin:18px 0}summary{cursor:pointer;font-weight:650}pre{font:12px ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;padding:18px;background:#f0f4f8;border-radius:8px}.trace{display:flex;gap:8px;flex-wrap:wrap}.trace span{padding:8px 12px;background:#e8eff5;border-radius:7px}.trace .ok{background:#dcefe6;color:#145c3b}.trace .bad{background:#f9e2e5;color:#8f2336}[hidden]{display:none!important}@media(max-width:680px){.grid{grid-template-columns:1fr}h1{font-size:32px}main{padding:22px 16px}}
+</style></head><body><main><nav><strong>StockLens</strong><a href="https://sysen5151-fall2026.github.io/StockLen/evidence.html">Evidence Lab</a><a href="https://github.com/sysen5151-fall2026/StockLen">Project</a></nav>
+<div class="eyebrow">A COMMON BASIS FOR COMPARISON</div><h1>Compare two stocks.<br>Understand the difference.</h1><p class="intro">Compare a pair using the same date, price window and scoring rules. This controlled research prototype uses generated synthetic prices and fictional news. Scores describe this fixture; they do not predict returns or provide investment advice.</p>
+<section class="panel"><form id="form"><label>First stock<input id="a" list="symbols" value="AAPL" autocomplete="off" maxlength="16"></label><label>Second stock<input id="b" list="symbols" value="MSFT" autocomplete="off" maxlength="16"></label><label>Analysis date<input id="date" type="date" value="2026-09-21"></label><datalist id="symbols"></datalist><button type="submit" id="run">Compare stocks</button></form><p class="muted">Available snapshot: September 21, 2026. Choose two different symbols from AAPL, MSFT, AMZN, GOOGL, META, NVDA, TSLA, JPM, JNJ and XOM.</p>
+<details><summary>Controlled data and explanation options</summary><p class="muted">These options inject known conditions to inspect system behavior. “Checked template” is a synthetic service substitute, not an external AI response.</p><form><label>Evidence case<select id="case"><option value="valid">Complete evidence</option><option value="missing_unselected_stock">Missing an unselected universe stock</option><option value="missing_observation">Missing one observation</option><option value="post_cutoff">Market record after cutoff</option><option value="missing_source">Missing market source</option><option value="mixed_request">Wrong request identity</option><option value="no_news">No qualifying news</option><option value="bad_news">News after cutoff</option></select></label><label>Explanation<select id="explanation"><option value="synthetic">Checked synthetic template</option><option value="unavailable">Unavailable</option><option value="invalid">Incorrect synthetic response</option></select></label></form></details></section>
+<p id="status" role="status" data-state="ready">Ready to compare</p><p id="message" class="muted">Enter a pair and select Compare stocks.</p>
+<section id="result" class="panel" hidden><h2 id="winner"></h2><div id="scores" class="grid"></div><h2>What drives the difference?</h2><p class="muted">Each factor contributes up to 50 points. Momentum prefers higher values; volatility prefers lower values. Scores use average-tie ranks across all ten stocks.</p><div class="scroll"><table><thead><tr><th>Factor</th><th id="firstHead">First stock</th><th id="secondHead">Second stock</th><th>Weighted gap (first − second)</th></tr></thead><tbody id="drivers"></tbody></table></div><section id="priceInsights"></section><h2>Explanation</h2><p id="explanationText"></p><h2>News background</h2><p class="muted">Seven-day news window ending on the analysis date. Fictional demo records only; news does not enter the score or establish what caused a price change.</p><div id="sources"></div><p class="muted">Synthetic observation window: Sep 1–21, 2026 (not an exchange calendar). Analysis date, market observation dates and news publication dates remain separate.</p></section>
+<section class="panel"><details id="engineering"><summary>Engineering trace</summary><p class="muted">Follow the accepted request through evidence, scoring, explanation checks and display. Invalid requests stop before provider queries.</p><div id="steps" class="trace"></div><h2>F.1 — Accept and validate comparison request</h2><div class="grid"><div class="card"><strong>F.1.1 · Validate pair eligibility</strong><p id="pairResult">Not run</p></div><div class="card"><strong>F.1.2 · Preserve comparison context</strong><p id="contextResult">Not run</p></div></div><details><summary>IF.01 · Accepted comparison request</summary><pre id="requestOutput">Not run</pre></details><details><summary>F.2 / IF.02 · Evidence release</summary><pre id="evidenceOutput">Not run</pre></details><details><summary>F.3 / IF.03 · Authoritative scores and drivers</summary><pre id="scoreOutput">Not run</pre></details><details><summary>F.4 / IO.05 + IF.04 · Explanation boundary</summary><pre id="aiOutput">Not run</pre></details><details><summary>F.5 / IO.06 · Observed state history</summary><pre id="stateOutput">Not run</pre></details></details></section>
+<p class="muted">All calculations run in your browser. No account, API key or local terminal is required.</p></main><script type="module">
+/** F.2 browser implementation. Synthetic adapters only; no provider or AI calls.
+ * F.2.1: IF.01 + IO.10 -> IO.03, IO.04, LF.02; mechanism P.2.1.
+ * F.2.2: LF.02 + IO.07 + IO.08 + IO.10 -> IF.02; mechanism P.2.2.
+ */
+const UNIVERSE = Object.freeze(['AAPL','MSFT','AMZN','GOOGL','META','NVDA','TSLA','JPM','JNJ','XOM']);
+const SCENARIOS = Object.freeze(['valid','missing_unselected_stock','missing_observation','post_cutoff','missing_source','mixed_request','no_news','bad_news']);
+const clone = value => structuredClone(value);
+const fields = ['request_id','configuration_id','query_id','provider_id','conditions_id'];
+const identity = query => Object.fromEntries(fields.map(k => [k,query[k]]));
+const canonical = value => JSON.stringify(value && typeof value === 'object' ? (Array.isArray(value) ? value.map(v=>JSON.parse(canonical(v))) : Object.fromEntries(Object.keys(value).sort().map(k=>[k,JSON.parse(canonical(value[k]))]))) : value);
+const equal = (a,b) => canonical(a) === canonical(b);
+function isoDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('Expected an ISO date');
+  const date = new Date(value+'T00:00:00Z');
+  if (!Number.isFinite(date.valueOf()) || date.toISOString().slice(0,10) !== value) throw new Error('Invalid ISO date');
+  return date;
+}
+const shifted = (day, offset) => { const date=isoDate(day); date.setUTCDate(date.getUTCDate()+offset); return date.toISOString().slice(0,10); };
+
+function syntheticConfiguration() {
+  return {configuration_id:'v0.1-pmc2-synthetic-1',universe:[...UNIVERSE],
+    observation_dates:Array.from({length:21},(_,i)=>shifted('2026-09-01',i)),
+    news_days:7,max_news_per_stock:2,
+    providers:Object.fromEntries(['market','news'].map(kind=>[kind,{provider_id:'synthetic-'+kind,conditions_id:'local-synthetic-v1',allowed_operations:['acquire','retain','display']}]))};
+}
+
+function requestDatedRecords(request, configuration) {
+  const config=clone(configuration), pair=request.stock_pair, dates=config.observation_dates;
+  isoDate(request.analysis_date);
+  if (!request.request_id || !Array.isArray(pair) || pair.length!==2 || new Set(pair).size!==2 || !pair.every(s=>UNIVERSE.includes(s))) throw new Error('IF.01 must contain an identified eligible distinct pair');
+  if (!equal(config.universe,UNIVERSE) || !config.configuration_id || !Array.isArray(dates) || dates.length!==21 || new Set(dates).size!==21 || !equal(dates,[...dates].sort()) || dates.some(d=>{isoDate(d);return d>request.analysis_date;})) throw new Error('IO.10 requires a version and 21 explicit aligned dates for the frozen ten-stock universe');
+  if (config.news_days!==7 || config.max_news_per_stock!==2) throw new Error('IO.10 differs from the v0.1 news bounds');
+  for (const kind of ['market','news']) {
+    const policy=config.providers[kind];
+    if (policy.provider_id!=='synthetic-'+kind || policy.conditions_id!=='local-synthetic-v1' || !equal(policy.allowed_operations,['acquire','retain','display'])) throw new Error('Only the reviewed local synthetic adapters are enabled');
+  }
+  const context={...clone(request),configuration_id:config.configuration_id};
+  const market={...context,query_id:request.request_id+':market',symbols:[...UNIVERSE],observation_dates:dates,field:'adjusted_close',currency:'USD',...config.providers.market};
+  const news={...context,query_id:request.request_id+':news',symbols:[...pair],start_date:shifted(request.analysis_date,-6),end_date:request.analysis_date,max_per_stock:2,...config.providers.news};
+  return clone({market_query:market,news_query:news,context:{...context,market_query:market,news_query:news,configuration:config}});
+}
+
+function validateEvidence(context, marketRecords, newsRecords, configuration) {
+  const result={...Object.fromEntries(['request_id','stock_pair','analysis_date','configuration_id'].map(k=>[k,clone(context[k])])),score_ready:false,status:'failed',reason:null,market_records:[],news_records:[],rejected_news:[],limitations:[]};
+  const fail=reason=>({...result,reason});
+  if (!equal(configuration,context.configuration)) return fail('configuration_mismatch');
+  try {
+    const request=Object.fromEntries(['request_id','stock_pair','analysis_date'].map(k=>[k,context[k]]));
+    if (!equal(context,requestDatedRecords(request,configuration).context)) return fail('invalid_acquisition_context');
+  } catch {return fail('invalid_acquisition_context');}
+  const key=(s,d)=>s+'|'+d, expected=new Set(configuration.universe.flatMap(s=>configuration.observation_dates.map(d=>key(s,d)))),seen=new Set();
+  const mq=context.market_query,nq=context.news_query, associated=(item,q)=>fields.every(k=>item[k]===q[k]);
+  for (const record of marketRecords) {
+    if (!associated(record,mq)) return fail('market_association_mismatch');
+    const k=key(record.symbol,record.observation_date);
+    if (!expected.has(k) || seen.has(k)) return fail('market_date_symbol_or_duplicate');
+    if (typeof record.adjusted_close!=='number' || !Number.isFinite(record.adjusted_close) || record.adjusted_close<=0 || record.currency!=='USD' || typeof record.source_id!=='string' || !record.source_id.trim()) return fail('invalid_price_units_or_source');
+    seen.add(k);
+  }
+  if (seen.size!==expected.size) return fail('incomplete_frozen_universe_window');
+  const accepted=[],rejected=[],ids=new Set(),counts=new Map();
+  const text=v=>v===undefined?'':String(v);
+  const ordered=[...newsRecords].sort((a,b)=>{
+    const a1=text(a.publication_date),b1=text(b.publication_date),a2=text(a.source_id),b2=text(b.source_id);
+    return a1===b1?(a2===b2?0:(a2>b2?-1:1)):(a1>b1?-1:1);
+  });
+  for (const item of ordered) {
+    let validDate=false;
+    try {isoDate(item.publication_date);validDate=item.publication_date>=nq.start_date&&item.publication_date<=nq.end_date;} catch {}
+    const symbol=item.symbol,source=item.source_id;
+    const valid=associated(item,nq)&&nq.symbols.includes(symbol)&&validDate&&typeof source==='string'&&source.trim()&&typeof item.title==='string'&&item.title.trim()&&item.permitted===true&&!ids.has(source);
+    if (!valid) rejected.push({source_id:source??null,reason:'unsupported_or_mismatched_news'});
+    else if ((counts.get(symbol)||0)>=nq.max_per_stock) rejected.push({source_id:source,reason:'news_limit'});
+    else {accepted.push(clone(item));ids.add(source);counts.set(symbol,(counts.get(symbol)||0)+1);}
+  }
+  const limitations=context.stock_pair.some(s=>!counts.get(s))?['qualifying_news_unavailable_for_one_or_both_stocks']:[];
+  return {...result,score_ready:true,status:limitations.length?'accepted_with_limitations':'accepted',market_records:clone(marketRecords),news_records:accepted,rejected_news:rejected,limitations};
+}
+
+function syntheticResponses(queries) {
+  const mq=queries.market_query,nq=queries.news_query;
+  const market=mq.symbols.flatMap((s,i)=>mq.observation_dates.map((d,j)=>({...identity(mq),symbol:s,observation_date:d,adjusted_close:Math.round((80+i*9+j*(i+1)/10)*100)/100,currency:'USD',source_id:`SYNTHETIC-PRICE-${s}-${d}`})));
+  const news=nq.symbols.map(s=>({...identity(nq),symbol:s,publication_date:nq.end_date,source_id:`SYNTHETIC-NEWS-${s}`,title:`Fictional ${s} synthetic record`,permitted:true}));
+  return [market,news];
+}
+
+function runEvidence(scenario='valid',stockA='AAPL',stockB='MSFT',requestId=crypto.randomUUID()) {
+  if (!SCENARIOS.includes(scenario)) throw new Error('unknown scenario');
+  const config=syntheticConfiguration(),request={request_id:requestId,stock_pair:[stockA,stockB],analysis_date:'2026-09-21'};
+  const queries=requestDatedRecords(request,config);
+  let [market,news]=syntheticResponses(queries);
+  if (scenario==='missing_unselected_stock') {const missing=UNIVERSE.find(s=>!request.stock_pair.includes(s));market=market.filter(r=>r.symbol!==missing);}
+  else if (scenario==='missing_observation') market.pop();
+  else if (scenario==='post_cutoff') market[0].observation_date='2026-09-22';
+  else if (scenario==='missing_source') market[0].source_id='';
+  else if (scenario==='mixed_request') market[0].request_id='another-comparison';
+  else if (scenario==='no_news') news=[];
+  else if (scenario==='bad_news') news[0].publication_date='2026-09-22';
+  return {mode:'controlled-synthetic-F2',scenario,queries,received_market_count:market.length,received_news_count:news.length,evidence:validateEvidence(queries.context,market,news,config)};
+}
+
+/** StockLens v0.1 controlled browser system, F.1–F.5 / DR-01–DR-10.
+ * No live market/news/AI calls. Existing F.2 supplies checked synthetic evidence.
+ */
+const copy=v=>structuredClone(v);
+const CONFIG_ID='v0.1-pmc2-synthetic-1';
+const CUTOFF='2026-09-21';
+
+/** F.1.1 / P.1.1 / DR-01; P1-IN-01/02.
+ * Input IO.01: stockA, stockB; analysisDate is forwarded to F.1.2.
+ * Control IO.10: frozen eligible universe, bound to imported UNIVERSE.
+ * Output LF.01: {valid, reason, stock_pair}; mechanism P.1.1 in this module.
+ * This signature exposes symbol inputs; its control is a frozen dependency.
+ */
+function validatePair(stockA,stockB) {
+  const pair=[stockA,stockB].map(s=>typeof s==='string'?s.trim().toUpperCase():'');
+  if(pair.some(s=>!UNIVERSE.includes(s))) return {valid:false,reason:'ineligible_symbol',stock_pair:pair};
+  if(pair[0]===pair[1]) return {valid:false,reason:'duplicate_symbols',stock_pair:pair};
+  return {valid:true,reason:null,stock_pair:pair};
+}
+/** F.1.2 / P.1.2 / DR-02; P1-OUT-01/IF-01/NF-01.
+ * Inputs: LF.01 pairResult, analysisDate, requestId; control IO.10 configuration.
+ * Output IF.01: accepted pair/date/request/config IDs, or explicit rejection.
+ * Mechanism: P.1.2 Request Context Module, in-process on GitHub Pages.
+ * SWR-05 equivalence: the three accepted context fields retain their values.
+ */
+function preserveRequest(pairResult,analysisDate,requestId,configuration=syntheticConfiguration()) {
+  if(!pairResult.valid) return {accepted:false,reason:pairResult.reason,request:null};
+  const checked=validatePair(...pairResult.stock_pair);
+  if(!checked.valid || checked.reason!==pairResult.reason || JSON.stringify(checked.stock_pair)!==JSON.stringify(pairResult.stock_pair)) return {accepted:false,reason:'invalid_pair_result',request:null};
+  // The controlled data package supplies one snapshot; other dates have no coverage.
+  if(analysisDate!==CUTOFF) return {accepted:false,reason:'unsupported_snapshot_date',request:null};
+  if(!requestId || configuration.configuration_id!==CONFIG_ID) return {accepted:false,reason:'invalid_request_or_configuration',request:null};
+  return {accepted:true,reason:null,request:{request_id:requestId,stock_pair:[...pairResult.stock_pair],analysis_date:analysisDate,configuration_id:configuration.configuration_id}};
+}
+function averageRanks(values) {
+  return values.map(value=>1+values.filter(x=>x<value).length+(values.filter(x=>x===value).length-1)/2);
+}
+/** F.3.1 / P.3.1 / DR-05: IF.02 + IO.10 -> unrounded authoritative scores. */
+function computeScores(evidence) {
+  if(!evidence.score_ready) return null;
+  const config=syntheticConfiguration();
+  if(evidence.configuration_id!==config.configuration_id || evidence.analysis_date!==CUTOFF) throw new Error('Evidence/configuration mismatch');
+  const rows=config.universe.map(symbol=>{
+    const records=evidence.market_records.filter(r=>r.symbol===symbol).sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
+    if(records.length!==21 || records.some((r,i)=>r.observation_date!==config.observation_dates[i] || !Number.isFinite(r.adjusted_close) || r.adjusted_close<=0)) throw new Error('Incomplete aligned price window');
+    const prices=records.map(r=>r.adjusted_close),returns=prices.slice(1).map((p,i)=>p/prices[i]-1),mean=returns.reduce((a,b)=>a+b,0)/20;
+    return {symbol,momentum:prices[20]/prices[0]-1,volatility:Math.sqrt(returns.reduce((s,r)=>s+(r-mean)**2,0)/19),market_source_ids:records.map(r=>r.source_id)};
+  });
+  if(evidence.market_records.length!==210) throw new Error('Unexpected universe records');
+  const mr=averageRanks(rows.map(r=>r.momentum)),vr=averageRanks(rows.map(r=>r.volatility));
+  return rows.map((r,i)=>({...r,momentum_rank:mr[i],volatility_rank:vr[i],contributions:{momentum:50*(mr[i]-1)/9,volatility:50*(10-vr[i])/9},score:50*(mr[i]-1)/9+50*(10-vr[i])/9}));
+}
+/** F.3.2 / P.3.2 / DR-06: retain exact values and references in IF.03. */
+function identifyDrivers(scores,evidence) {
+  if(!scores) return null;
+  const pair=evidence.stock_pair.map(s=>scores.find(r=>r.symbol===s));
+  if(pair.some(r=>!r)) throw new Error('Pair missing from scoring universe');
+  const [a,b]=pair;
+  const drivers=['momentum','volatility'].map(factor=>({factor,first_value:a[factor],second_value:b[factor],contribution_difference:a.contributions[factor]-b.contributions[factor]})).sort((x,y)=>Math.abs(y.contribution_difference)-Math.abs(x.contribution_difference));
+  const difference=a.score-b.score,tied=Math.abs(difference)<=1e-6;
+  return {request_id:evidence.request_id,configuration_id:evidence.configuration_id,analysis_date:evidence.analysis_date,stock_pair:[...evidence.stock_pair],stocks:copy(pair),drivers,winner:tied?null:(difference>0?a.symbol:b.symbol),tied,score_difference:difference,news:copy(evidence.news_records)};
+}
+/** F.4.1 / P.4.1 / DR-07: IF.03 -> allowlisted IO.05. */
+function packageExplanation(record) {
+  if(!record) return null;
+  return {request_id:record.request_id,configuration_id:record.configuration_id,analysis_date:record.analysis_date,stock_pair:[...record.stock_pair],stocks:record.stocks.map(({symbol,score,momentum,volatility,contributions})=>({symbol,score,momentum,volatility,contributions:copy(contributions)})),drivers:copy(record.drivers),news:record.news.map(({symbol,source_id,publication_date,title})=>({symbol,source_id,publication_date,title}))};
+}
+/** Controlled external-service substitute, never presented as generated AI. */
+function syntheticExplanation(payload) {
+  return {request_id:payload.request_id,configuration_id:payload.configuration_id,analysis_date:payload.analysis_date,stock_pair:[...payload.stock_pair],scores:payload.stocks.map(s=>({symbol:s.symbol,score:s.score})),drivers:copy(payload.drivers),source_ids:payload.news.map(n=>n.source_id),mode:'synthetic_checked_template'};
+}
+/** F.4.2 / P.4.2 / DR-08: IO.09 + IF.03 -> checked IF.04 or unavailable. */
+function checkExplanation(candidate,payload) {
+  const unavailable=reason=>({available:false,reason,text:null,mode:'unavailable'});
+  if(!candidate || !payload) return unavailable('explanation_unavailable');
+  const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  if(candidate.request_id!==payload.request_id || candidate.configuration_id!==payload.configuration_id || candidate.analysis_date!==payload.analysis_date || !equal(candidate.stock_pair,payload.stock_pair)) return unavailable('explanation_context_mismatch');
+  if(!equal(candidate.scores,payload.stocks.map(s=>({symbol:s.symbol,score:s.score}))) || !equal(candidate.drivers,payload.drivers) || !equal(candidate.source_ids,payload.news.map(n=>n.source_id)) || candidate.mode!=='synthetic_checked_template') return unavailable('unsupported_explanation_content');
+  const [a,b]=payload.stocks, gap=a.score-b.score;
+  const lead=Math.abs(gap)<=1e-6?'The two stocks are tied.':`${gap>0?a.symbol:b.symbol} has the higher calculated score.`;
+  const strongest=payload.drivers[0];
+  return {available:true,reason:null,mode:'synthetic_checked_template',text:`${lead} ${strongest.factor} has the largest absolute difference in weighted contributions (${Math.abs(strongest.contribution_difference).toFixed(2)} points). Both factors are shown below. This is a checked synthetic template, not an external AI response.`};
+}
+/** F.5.1 / P.5.1 / DR-09: IF.03 + IF.04 -> coherent IO.02 view. */
+function renderComparison(record,explanation) {
+  if(!record) return null;
+  return {...copy(record),stocks:record.stocks.map(s=>({...copy(s),display_score:s.score.toFixed(2)})),explanation:copy(explanation)};
+}
+/** F.5.2 / P.5.2 / DR-10: workflow state -> observed IO.06. */
+function reportStatus(state,requestId,reason=null) {
+  if(!['ready','processing','completed','completed_with_limitations','failed'].includes(state)) throw new Error('Unknown service state');
+  return {state,request_id:requestId,configuration_id:CONFIG_ID,reason};
+}
+/** F.0: controlled F.1 -> F.2 -> F.3 -> F.4 -> F.5 orchestration. */
+function compareStocks({stockA='AAPL',stockB='MSFT',analysisDate=CUTOFF,scenario='valid',explanationMode='synthetic',requestId=crypto.randomUUID()}={}) {
+  const history=[reportStatus('ready',null),reportStatus('processing',requestId)];
+  const eligibility=validatePair(stockA,stockB),request=preserveRequest(eligibility,analysisDate,requestId);
+  const failure=(reason,evidence=null)=>({mode:'controlled-synthetic-comparison',eligibility,request,evidence,record:null,explanation:{available:false,reason:'comparison_failed',text:null},display:null,history:[...history,reportStatus('failed',requestId,reason)]});
+  if(!request.accepted) return failure(request.reason);
+  const evidenceRun=runEvidence(scenario,...request.request.stock_pair,requestId),evidence=evidenceRun.evidence;
+  if(!evidence.score_ready) return failure(evidence.reason,evidenceRun);
+  const scores=computeScores(evidence),record=identifyDrivers(scores,evidence),payload=packageExplanation(record);
+  let candidate=explanationMode==='unavailable'?null:syntheticExplanation(payload);
+  if(explanationMode==='invalid') candidate.scores[0].score+=1;
+  const explanation=checkExplanation(candidate,payload),display=renderComparison(record,explanation);
+  const limited=evidence.limitations.length>0||!explanation.available;
+  return {mode:'controlled-synthetic-comparison',eligibility,request,evidence:evidenceRun,record,payload,explanation,display,history:[...history,reportStatus(limited?'completed_with_limitations':'completed',requestId)]};
+}
+
+/** Descriptive F.5 demo extension; never changes ranking or explanation inputs. */
+function pricePath(records) {
+  if (records.length < 2) throw new Error('At least two observations required');
+  const sorted = [...records].sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
+  if (new Set(sorted.map(r=>r.observation_date)).size !== sorted.length || sorted.some(r=>!Number.isFinite(r.adjusted_close)||r.adjusted_close<=0)) throw new Error('Invalid price observations');
+  let peak=sorted[0], maxDrawdown=0, peakDate=null, troughDate=null;
+  const points=sorted.map(r=>{
+    if(r.adjusted_close>peak.adjusted_close) peak=r;
+    const loss=1-r.adjusted_close/peak.adjusted_close;
+    if(loss>maxDrawdown){maxDrawdown=loss;peakDate=peak.observation_date;troughDate=r.observation_date;}
+    return {date:r.observation_date,price:r.adjusted_close,index:100*r.adjusted_close/sorted[0].adjusted_close};
+  });
+  return {points,maxDrawdown,peakDate,troughDate};
+}
+
+function comparisonInsights(evidence) {
+  if(!evidence?.score_ready) return null;
+  const series=evidence.stock_pair.map(symbol=>({symbol,...pricePath(evidence.market_records.filter(r=>r.symbol===symbol))}));
+  if(series.some(s=>s.points.length!==21)||JSON.stringify(series[0].points.map(p=>p.date))!==JSON.stringify(series[1].points.map(p=>p.date))) throw new Error('Aligned 21-observation window required');
+  return series;
+}
+
+function renderInsights(root,evidence) {
+  root.replaceChildren();
+  const series=comparisonInsights(evidence); if(!series) return;
+  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
+  const colors=['#08756e','#6951b8'];
+  root.append(el('h2','Price paths & downside'),el('p','Synthetic prices · Both paths start at 100. These descriptive measures do not enter the score.','muted'));
+  const cards=el('div',undefined,'grid');
+  series.forEach((s,i)=>{
+    const card=el('div',undefined,'card');card.style.borderTop=`4px solid ${colors[i]}`;
+    card.append(el('strong',`${s.symbol} · Maximum drawdown`),el('div',`${(s.maxDrawdown*100).toFixed(2)}%`,'score'),el('p',s.maxDrawdown>0?`Largest peak-to-later-trough loss: ${s.peakDate} → ${s.troughDate}.`:'No peak-to-trough decline in this synthetic window.','muted'));
+    cards.append(card);
+  });
+  root.append(cards,el('p','Maximum drawdown is the largest percentage fall from a previous peak within these 21 observations. Zero here does not imply no future risk.','muted'));
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 920 340');svg.setAttribute('role','img');svg.setAttribute('aria-label',`Normalized synthetic price comparison for ${series.map(s=>s.symbol).join(' and ')}. First observation equals 100; exact values in the table below.`);svg.style.cssText='width:100%;height:auto;display:block';
+  const add=(tag,attrs,text)=>{const n=document.createElementNS(ns,tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;svg.append(n);};
+  const values=series.flatMap(s=>s.points.map(p=>p.index));let lo=Math.min(...values),hi=Math.max(...values);const pad=Math.max((hi-lo)*.15,.5);lo-=pad;hi+=pad;
+  const x=i=>70+i*40,y=v=>275-(v-lo)/(hi-lo)*240;
+  for(let i=0;i<5;i++){const value=lo+(hi-lo)*i/4;add('line',{x1:70,x2:870,y1:y(value),y2:y(value),stroke:'#d9e3eb'});add('text',{x:60,y:y(value)+4,'text-anchor':'end',fill:'#526c7e','font-size':13},value.toFixed(1));}
+  add('line',{x1:70,x2:870,y1:y(100),y2:y(100),stroke:'#8797a5','stroke-dasharray':'5 5'});
+  series.forEach((s,i)=>add('polyline',{points:s.points.map((p,j)=>`${x(j)},${y(p.index)}`).join(' '),fill:'none',stroke:colors[i],'stroke-width':3,...(i?{'stroke-dasharray':'8 4'}:{})}));
+  for(const i of [0,5,10,15,20])add('text',{x:x(i),y:302,'text-anchor':'middle',fill:'#526c7e','font-size':13},series[0].points[i].date.slice(5));
+  add('text',{x:70,y:20,fill:'#526c7e','font-size':13},'Indexed price (start = 100)');
+  const legend=el('div',undefined,'trace');series.forEach((s,i)=>{const n=el('span',`${s.symbol} · ${i?'dashed':'solid'} · End ${s.points.at(-1).index.toFixed(2)}`);n.style.color=colors[i];legend.append(n);});root.append(legend,svg);
+  const details=el('details');details.append(el('summary','View all 21 price observations'));
+  const scroll=el('div',undefined,'scroll'),table=el('table'),thead=el('thead'),header=el('tr');['Observation date',...series.flatMap(s=>[`${s.symbol} adjusted close (USD)`,`${s.symbol} index`])].forEach(t=>header.append(el('th',t)));thead.append(header);table.append(thead);const body=el('tbody');
+  series[0].points.forEach((p,j)=>{const row=el('tr');[p.date,...series.flatMap(s=>[s.points[j].price.toFixed(2),s.points[j].index.toFixed(2)])].forEach(t=>row.append(el('td',t)));body.append(row);});table.append(body);scroll.append(table);details.append(scroll);root.append(details);
+}
+
+function renderNews(root,pair,news,analysisDate) {
+  root.replaceChildren();root.className='grid';
+  for(const symbol of pair){
+    const column=document.createElement('div');column.className='card';const heading=document.createElement('h3');heading.textContent=symbol;column.append(heading);
+    const items=news.filter(n=>n.symbol===symbol);
+    if(!items.length){const p=document.createElement('p');p.textContent='No qualifying news in this window. Price-based scores remain available.';column.append(p);}
+    for(const item of items){
+      const article=document.createElement('article');const badge=document.createElement('p');badge.className='eyebrow';badge.textContent='FICTIONAL DEMO RECORD';const title=document.createElement('h4');title.textContent=item.title;
+      const date=document.createElement('p');date.className='muted';date.textContent=`Published ${item.publication_date} · Analysis ${analysisDate}`;
+      const source=document.createElement('p');source.className='muted';source.style.overflowWrap='anywhere';source.textContent=`Source: ${item.source_id}`;
+      const note=document.createElement('p');note.textContent='Synthetic placeholder for a dated news item; no real event or price impact is asserted.';
+      const details=document.createElement('details'),summary=document.createElement('summary'),pre=document.createElement('pre');summary.textContent='Inspect source record';pre.textContent=JSON.stringify(item,null,2);details.append(summary,pre);article.append(badge,title,date,source,note,details);column.append(article);
+    }root.append(column);
+  }
+}
+
+
+const $=id=>document.getElementById(id),json=x=>JSON.stringify(x,null,2);
+for(const s of ['AAPL','MSFT','AMZN','GOOGL','META','NVDA','TSLA','JPM','JNJ','XOM']){const o=document.createElement('option');o.value=s;$('symbols').append(o);}
+const messages={duplicate_symbols:'Choose two different stocks. The same symbol cannot be compared with itself.',ineligible_symbol:'One or both symbols are outside the supported ten-stock universe.',unsupported_snapshot_date:'This synthetic data package supports September 21, 2026 only.',incomplete_frozen_universe_window:'The ten-stock price window is incomplete. No ranking is released.',invalid_price_units_or_source:'Core market evidence has an invalid price, unit or source.',market_association_mismatch:'Market records belong to a different request or configuration.',market_date_symbol_or_duplicate:'Market records contain an invalid date, symbol or duplicate.'};
+$('form').onsubmit=async event=>{event.preventDefault();$('run').disabled=true;$('result').hidden=true;$('status').textContent='Processing comparison…';$('status').dataset.state='processing';await new Promise(resolve=>requestAnimationFrame(resolve));try{
+const d=compareStocks({stockA:$('a').value,stockB:$('b').value,analysisDate:$('date').value,scenario:$('case').value,explanationMode:$('explanation').value});
+const final=d.history.at(-1);$('status').dataset.state=final.state;$('status').textContent={completed:'Comparison completed',completed_with_limitations:'Comparison completed with limitations',failed:'Comparison stopped'}[final.state];$('message').textContent=final.state==='failed'?(messages[final.reason]||final.reason):`Synthetic data · ${d.request.request.stock_pair.join(' / ')} · ${d.request.request.analysis_date} · ${d.request.request.configuration_id}`;
+$('pairResult').textContent=d.eligibility.valid?`Accepted: ${d.eligibility.stock_pair.join(' and ')} are distinct eligible stocks.`:(messages[d.eligibility.reason]||d.eligibility.reason);$('contextResult').textContent=d.request.accepted?`Preserved date ${d.request.request.analysis_date}, request identity and configuration version.`:(d.eligibility.valid?'Rejected: '+(messages[d.request.reason]||d.request.reason):'Not run: pair validation failed.');
+$('requestOutput').textContent=json(d.request);$('evidenceOutput').textContent=json(d.evidence?.evidence||{not_run:true});$('scoreOutput').textContent=json(d.record||{not_run:true});$('aiOutput').textContent=json({payload:d.payload||null,result:d.explanation});$('stateOutput').textContent=json(d.history);
+$('steps').replaceChildren();for(const [name,ran,ok] of [['F.1 Request',true,d.request.accepted],['F.2 Evidence',!!d.evidence,d.evidence?.evidence.score_ready],['F.3 Scores',!!d.record,!!d.record],['F.4 Explanation',!!d.record,d.explanation.available],['F.5 Display / status',true,final.state!=='failed']]){const el=document.createElement('span');el.textContent=name+(ran?(ok?' · accepted':' · rejected / limited'):' · not run');el.className=ran?(ok?'ok':'bad'):'';$('steps').append(el);}
+if(d.display){const r=d.display;$('result').hidden=false;$('winner').textContent=r.tied?'The two stocks are tied':`${r.winner} has the higher calculated score`;$('scores').replaceChildren();for(const s of r.stocks){const card=document.createElement('div');card.className='card';const title=document.createElement('strong');title.textContent=s.symbol;const score=document.createElement('div');score.className='score';score.textContent=s.display_score;const note=document.createElement('p');note.className='muted';note.textContent=`Momentum: ${s.contributions.momentum.toFixed(2)} points · Lower volatility: ${s.contributions.volatility.toFixed(2)} points`;card.append(title,score,note);$('scores').append(card);}
+$('firstHead').textContent=r.stock_pair[0];$('secondHead').textContent=r.stock_pair[1];$('drivers').replaceChildren();for(const driver of r.drivers){const tr=document.createElement('tr');for(const text of [driver.factor,(driver.first_value*100).toFixed(4)+'%',(driver.second_value*100).toFixed(4)+'%',driver.contribution_difference.toFixed(2)+' points']){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('drivers').append(tr);}
+$('explanationText').textContent=r.explanation.available?r.explanation.text:`Explanation unavailable (${r.explanation.reason}). The calculated scores remain unchanged.`;renderInsights($('priceInsights'),d.evidence.evidence);renderNews($('sources'),r.stock_pair,r.news,r.analysis_date);}
+else $('engineering').open=true;
+}catch(error){$('status').textContent='Comparison stopped';$('status').dataset.state='failed';$('message').textContent=String(error);}finally{$('run').disabled=false;}};
+</script></body></html>
