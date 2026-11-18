@@ -2,6 +2,10 @@
 
 Updated controlled product demo: maximum drawdown, normalized price comparison, and a two-column news panel.
 
+## Open online
+
+https://sysen5151-fall2026.github.io/StockLen/demo/
+
 ## Run
 
 Download `index.html` and open it in a modern browser. Everything needed for the comparison is bundled into this file; no API key or installation is required.

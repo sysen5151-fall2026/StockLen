@@ -22,6 +22,7 @@ def build():
     comparison_page = comparison_page.replace("./system.mjs", "./js/system.mjs")
     (target / "compare.html").write_text(comparison_page, encoding="utf-8")
     shutil.copyfile(evidence / "system.mjs", target / "js" / "system.mjs")
+    shutil.copytree(ROOT / "demo", target / "demo", dirs_exist_ok=True)
     print("Static site ready in .site; preview with python -m http.server 8080 --directory .site")
 
 if __name__ == "__main__":
