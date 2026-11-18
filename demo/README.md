@@ -6,6 +6,12 @@ Updated controlled product demo: maximum drawdown, normalized price comparison, 
 
 https://sysen5151-fall2026.github.io/StockLen/demo/
 
+## OpsCon diagram (Innoslate)
+
+[StockLens Universe Context (OpsCon / SCD)](https://cloud.innoslate.com/cornell/p/659/diagrams/asset/199029)
+
+System context diagram showing StockLens, the Research User, Market Data Provider, News Provider, AI Model Service, and System Maintainer. Requires an Innoslate account with access to project 659.
+
 ## Run
 
 Download `index.html` and open it in a modern browser. Everything needed for the comparison is bundled into this file; no API key or installation is required.
