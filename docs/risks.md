@@ -19,3 +19,5 @@ F.4.2 checks the returned context, scores, drivers and sources against the accep
 Run `node --test tests/explanation-guardrail.test.mjs` from the repository root.
 
 At integration review, record the checked contract version, the number of wrong explanations accepted, fallback status and whether the calculated results stayed intact. Require zero incorrect outputs accepted in the controlled cases before demonstration. Repeat the checks with a runtime service when it is connected. The controlled browser uses synthetic evidence and a checked template.
+
+The [local inference path](../pmc2/browser/local-explanation.mjs) also checks the model's leading-factor selection. The [runtime tests](../tests/local-explanation.test.mjs) verify a valid response, incorrect factor, changed score, and an unavailable service. Each failure preserves the calculated comparison and produces the limitation state.
