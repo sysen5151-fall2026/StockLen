@@ -19,11 +19,13 @@ def build():
     (target / "evidence.html").write_text(evidence_page, encoding="utf-8")
     shutil.copyfile(evidence / "evidence.mjs", target / "js" / "evidence.mjs")
     comparison_page = (evidence / "compare.html").read_text(encoding="utf-8")
-    comparison_page = comparison_page.replace("./system.mjs", "./js/system.mjs")
+    for module in ("system.mjs", "local-explanation.mjs"):
+        comparison_page = comparison_page.replace(f"./{module}", f"./js/{module}")
+        shutil.copyfile(evidence / module, target / "js" / module)
     (target / "compare.html").write_text(comparison_page, encoding="utf-8")
-    shutil.copyfile(evidence / "system.mjs", target / "js" / "system.mjs")
     shutil.copytree(ROOT / "demo", target / "demo", dirs_exist_ok=True)
     print("Static site ready in .site; preview with python -m http.server 8080 --directory .site")
 
 if __name__ == "__main__":
     build()
+
