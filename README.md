@@ -14,9 +14,9 @@ Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa S
 
 **[Open StockLens online](https://sysen5151-fall2026.github.io/StockLen/compare.html)** — compare two stocks directly in your browser.
 
-The controlled workflow validates a distinct eligible pair (F.1), acquires and validates synthetic evidence (F.2), calculates the v0.1 scores and driver differences (F.3), checks a synthetic explanation response or marks it unavailable (F.4), and displays the authoritative comparison with service status (F.5). Expand **Engineering trace** to inspect request context, evidence, scores, explanation boundaries and state history.
+The controlled workflow validates a distinct eligible pair (F.1), acquires and validates synthetic evidence (F.2), calculates the v0.1 scores and driver differences (F.3), runs and checks the same-host explanation model or marks its result unavailable (F.4), and displays the authoritative comparison with service status (F.5). Expand **Engineering trace** to inspect request context, evidence, scores, explanation boundaries and state history.
 
-The snapshot uses generated prices and fictional news. The checked explanation is a labelled synthetic template, not an external AI service. Real provider terms/calendar suitability, external AI integration, end-to-end performance and user-task acceptance remain separate work. The optional Python modules and internal HTTP interfaces implement F.1 and F.2; the integrated F.1–F.5 workflow runs in the browser.
+The snapshot uses generated prices and fictional news. The default comparison uses the local model from ADR-01. The controlled options retain the checked template and response failure cases. Real provider terms/calendar suitability, external AI integration, end-to-end performance and user-task acceptance remain separate work. The optional Python modules and internal HTTP interfaces implement F.1 and F.2; the integrated F.1–F.5 workflow runs in the browser.
 
 ## Evidence acquisition and validation
 
@@ -88,3 +88,4 @@ Website publishing requires **Settings → Pages → Source: GitHub Actions**. T
 ## Reference and provenance
 
 The existing StockLens website was supplied by the project owner and migrated with corrections recorded in ADR 0002. [EarthBreath](https://github.com/hg533-web/earthbreath-dashboard) was inspected for README/setup organization only. No EarthBreath code or dataset was copied. Its later-stage APIs and accounts are not requirements for this Chapter 2 increment.
+
