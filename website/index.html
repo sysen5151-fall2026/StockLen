@@ -70,9 +70,10 @@
       <h2 id="forecast-title">News forecast</h2>
       <p id="forecast-status" role="status"></p>
       <p>Directional estimates use stock-specific news sentiment and, where available, an on-device interpretation of the article summary. Outperformance and underperformance are relative to SPY.</p>
+      <p id="forecast-suggestions" hidden></p>
       <div class="table-scroll">
         <table aria-label="Forecasts by stock">
-          <thead><tr><th scope="col">Stock</th><th scope="col">Expected reaction vs. SPY</th><th scope="col">News rationale</th></tr></thead>
+          <thead><tr><th scope="col">Stock</th><th scope="col">Article relevance</th><th scope="col">Expected reaction vs. SPY</th><th scope="col">News rationale</th></tr></thead>
           <tbody id="forecast-rows"></tbody>
         </table>
       </div>

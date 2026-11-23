@@ -282,12 +282,22 @@ function showDetail(stock, result) {
   get('stock-title').focus();
 }
 
-function renderForecast({ group, horizon, predictions }) {
+function renderForecast({ source, group, horizon, predictions }) {
   const directional = predictions.filter(row => ['outperformance', 'underperformance'].includes(row.outlook)).length;
   get('forecast-status').textContent = `${directional} of ${group.length} selected stocks have a directional forecast for ${horizon} trading session${horizon === 1 ? '' : 's'}. This view uses the selected story’s signals only.`;
+  const indirect = predictions.filter(row => row.relevance === 'Possible indirect link').length;
+  if (indirect) get('forecast-status').textContent += ` ${indirect} selected stocks have possible indirect links.`;
+  const selected = new Set(group.map(stock => stock.ticker));
+  const suggestions = predictNewsOutlook(source, universe.filter(stock => !selected.has(stock.ticker)))
+    .filter(row => row.relevance !== 'Insufficient evidence').slice(0, 8);
+  const hint = get('forecast-suggestions');
+  hint.textContent = suggestions.length
+    ? `Also worth comparing: ${suggestions.map(({ ticker }) => ticker).join(', ')}. Find them in the stock selector above.`
+    : '';
+  hint.hidden = suggestions.length === 0;
   get('forecast-rows').replaceChildren(...predictions.map(prediction => {
     const row = element('tr');
-    for (const text of [prediction.ticker, outlookLabels[prediction.outlook], prediction.explanation]) {
+    for (const text of [prediction.ticker, prediction.relevance, outlookLabels[prediction.outlook], prediction.explanation]) {
       row.append(element('td', text));
     }
     return row;
@@ -320,6 +330,7 @@ get('rank-button').addEventListener('click', async () => {
     if (sequence !== rankingSequence) return;
     get('forecast').hidden = false;
     get('actual-button').disabled = true;
+    get('forecast-suggestions').hidden = true;
     get('forecast-rows').replaceChildren();
     get('forecast-status').textContent = error.message;
   }

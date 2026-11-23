@@ -92,20 +92,63 @@ export function explainAvailableEvidence(article, rows, ranking) {
   return lines;
 }
 
+const exposureChannels = [
+  {
+    cue: /\b(?:AI chips?|AI accelerators?|GPU (?:supply|shortage|demand)|semiconductor (?:demand|export controls?|shortage))\b/i,
+    groups: [
+      ['NVDA AMD INTC AVGO', 'Chip designers may be exposed through demand, competition or access to markets.'],
+      ['AMAT LRCX', 'Chip equipment suppliers may be exposed if manufacturers change their investment plans.'],
+    ],
+  },
+  {
+    cue: /\b(?:AI infrastructure|data[- ]center (?:spending|capacity|expansion)|GPU (?:supply|shortage))\b/i,
+    groups: [
+      ['MSFT AMZN GOOGL META', 'Large infrastructure operators may be exposed through computing capacity and capital spending.'],
+      ['MU', 'Changes in server investment may affect demand for memory.'],
+    ],
+  },
+  {
+    cue: /\b(?:oil (?:supply|prices?|production)|crude (?:oil|prices?)|OPEC\+?)\b/i,
+    groups: [
+      ['XOM CVX COP', 'Oil producers may be exposed through changes in realized crude prices and production economics.'],
+    ],
+  },
+  {
+    cue: /\b(?:bank (?:funding|lending|capital)|deposit costs?|net interest margins?)\b/i,
+    groups: [
+      ['JPM BAC WFC C GS MS', 'Banks may be exposed through funding costs, lending conditions or capital requirements.'],
+    ],
+  },
+];
+
+function inferExposure(article, ticker) {
+  for (const { cue, groups } of exposureChannels) {
+    const evidence = article.title?.match(cue)?.[0] ?? article.description?.match(cue)?.[0];
+    if (!evidence) continue;
+    const group = groups.find(([symbols]) => symbols.split(' ').includes(ticker));
+    if (group) return `“${evidence}” — ${group[1]}`;
+  }
+  return null;
+}
+
 /** Forecast input deliberately excludes all observed returns. */
 export function predictNewsOutlook(article, stocks) {
   const rows = compareNewsEvidence(article, stocks.map(stock => stock.ticker), null);
   const symbols = new Map(stocks.map(stock => [stock.ticker, stock]));
   const priority = { outperformance: 0, underperformance: 1, neutral: 2, insufficient: 3 };
+  const relevancePriority = { 'Provider-linked': 0, 'Possible indirect link': 1, 'Insufficient evidence': 2 };
   return rows.map(({ ticker, insight, mentioned }) => {
+    const linked = Boolean(mentioned || insight);
+    const exposure = linked ? null : inferExposure(article, ticker);
+    const relevance = linked ? 'Provider-linked' : exposure ? 'Possible indirect link' : 'Insufficient evidence';
     const outlook = { positive: 'outperformance', negative: 'underperformance', neutral: 'neutral' }[insight?.sentiment]
       ?? 'insufficient';
     const explanation = insight?.reasoning || (insight
       ? 'The news provider supplied a sentiment label without a supporting rationale.'
       : mentioned ? 'The story references this ticker, but no stock-specific sentiment was supplied.'
-        : 'The news provider did not associate this ticker with the story.');
-    return { ...symbols.get(ticker), outlook, explanation };
-  }).sort((a, b) => priority[a.outlook] - priority[b.outlook] || a.ticker.localeCompare(b.ticker));
+        : exposure ?? 'The headline and available summary do not support a specific connection.');
+    return { ...symbols.get(ticker), outlook, relevance, explanation };
+  }).sort((a, b) => priority[a.outlook] - priority[b.outlook] || relevancePriority[a.relevance] - relevancePriority[b.relevance] || a.ticker.localeCompare(b.ticker));
 }
 
 export function compareOutlookWithActual(forecasts, ranking) {

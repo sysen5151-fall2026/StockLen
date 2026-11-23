@@ -156,3 +156,21 @@ test('on-device outlook accepts only selected linked tickers and exact source qu
   assert.equal(result[0].outlook, 'underperformance');
   assert.equal(result[1].outlook, 'insufficient');
 });
+
+test('news relevance connects industry news without inventing a directional forecast', async () => {
+  const { predictNewsOutlook } = await import('../website/research/news-ai.mjs');
+  const stocks = ['AAPL', 'NVDA', 'AMD', 'AMAT', 'MSFT'].map(ticker => ({ ticker }));
+  const article = { title: 'Demand for AI chips rises', description: 'Analysts report data-center expansion.', tickers: ['NVDA'] };
+  const rows = predictNewsOutlook(article, stocks);
+  assert.equal(rows[0].ticker, 'NVDA');
+  assert.equal(rows[0].relevance, 'Provider-linked');
+  for (const ticker of ['AMD', 'AMAT', 'MSFT']) {
+    const row = rows.find(item => item.ticker === ticker);
+    assert.equal(row.relevance, 'Possible indirect link');
+    assert.equal(row.outlook, 'insufficient');
+    assert.match(row.explanation, /“(?:AI chips|data-center expansion)”/);
+  }
+  assert.equal(rows.find(row => row.ticker === 'AAPL').relevance, 'Insufficient evidence');
+  const founderNews = { title: 'Nvidia founder announces departure', tickers: ['NVDA'] };
+  assert.equal(predictNewsOutlook(founderNews, stocks).find(row => row.ticker === 'AMD').relevance, 'Insufficient evidence');
+});
