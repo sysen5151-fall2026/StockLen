@@ -1,6 +1,6 @@
 import { universe } from './universe.mjs';
 import { hydrateSessions, rankReaction } from './event-ranking.mjs';
-import { analyzeNews, compareNewsEvidence } from './news-ai.mjs';
+import { analyzeNews, compareNewsEvidence, explainAvailableEvidence } from './news-ai.mjs';
 
 const get = id => document.getElementById(id);
 const form = get('news-search');
@@ -23,6 +23,8 @@ let cursor = null;
 const selection = new Set(['AAPL', 'MSFT', 'NVDA']);
 let analysisSequence = 0;
 let localAiRunning = false;
+let localModelState = 'unavailable';
+const browserModel = globalThis.LanguageModel;
 
 function element(tag, value) {
   const node = document.createElement(tag);
@@ -56,7 +58,9 @@ function renderNewsAnalysis() {
   const content = get('news-analysis-content');
   const message = get('news-analysis-status');
   const source = selectedArticle;
-  get('ai-button').disabled = !source || localAiRunning;
+  const canInterpret = localModelState !== 'unavailable' && (source?.description?.trim().length ?? 0) >= 30;
+  get('local-ai').hidden = !canInterpret;
+  get('ai-button').disabled = !canInterpret || localAiRunning;
   content.hidden = !source;
   if (!source) {
     message.textContent = 'Select an article to see its company references and available sentiment.';
@@ -67,10 +71,12 @@ function renderNewsAnalysis() {
   message.textContent = count
     ? `Massive supplied stock-specific sentiment for ${count} of ${rows.length} selected stocks.`
     : 'Massive did not supply stock-specific sentiment for the selected stocks in this article.';
-  const top = currentRanking?.covered[0];
-  get('news-analysis-summary').textContent = top
-    ? `${top.ticker} had the largest absolute difference from SPY (${points(top.relative)} signed). Rank uses the observed price difference.`
-    : 'Run the ranking to compare the article evidence with observed price moves.';
+  const explanation = explainAvailableEvidence(source, rows, currentRanking)
+    .map(line => element('li', line));
+  get('news-analysis-summary').replaceChildren(...explanation);
+  const excerpt = source.description?.trim();
+  get('news-source-excerpt').hidden = !excerpt;
+  get('news-source-excerpt').textContent = excerpt ?? '';
   get('news-analysis-rows').replaceChildren(...rows.map(({ticker, mentioned, insight, reaction}) => {
     const row = element('tr');
     const coverage = mentioned || insight ? 'Linked by provider' : 'No provider association';
@@ -298,11 +304,7 @@ get('rank-button').addEventListener('click', async () => {
     get('rank-content').hidden = false;
     currentRanking = result;
     renderNewsAnalysis();
-    const browserModel = globalThis.LanguageModel;
-    if (source.description.length >= 30 && browserModel) {
-      const state = await browserModel.availability().catch(() => 'unavailable');
-      if (sequence === rankingSequence && state === 'available') void runLocalAi();
-    }
+    if (source.description?.trim().length >= 30 && localModelState === 'available') void runLocalAi();
   } catch (error) {
     if (sequence === rankingSequence) status.textContent = error.message;
   } finally {
@@ -322,7 +324,7 @@ async function runLocalAi() {
   try {
     const source = article();
     if (!source.description) throw new Error('The provider has no summary for this article.');
-    const result = await analyzeNews(globalThis.LanguageModel, source, source.description, fraction => {
+    const result = await analyzeNews(browserModel, source, source.description, fraction => {
       if (sequence === analysisSequence) aiStatus.textContent = `Downloading the browser model… ${Math.round(fraction * 100)}%`;
     });
     if (sequence !== analysisSequence) return;
@@ -334,8 +336,17 @@ async function runLocalAi() {
     if (sequence === analysisSequence) aiStatus.textContent = error.message;
   } finally {
     localAiRunning = false;
-    button.disabled = !selectedArticle;
+    renderNewsAnalysis();
   }
 }
 
 get('ai-button').addEventListener('click', () => void runLocalAi());
+
+if (browserModel?.availability) {
+  Promise.resolve().then(() => browserModel.availability()).then(state => {
+    if (['available', 'downloadable', 'downloading'].includes(state)) {
+      localModelState = state;
+      renderNewsAnalysis();
+    }
+  }).catch(() => {});
+}

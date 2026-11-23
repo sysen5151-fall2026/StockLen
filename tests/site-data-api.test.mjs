@@ -109,3 +109,19 @@ test('keyword-first search defaults to seven Eastern dates and recognizes compan
   assert.equal(params.get('ticker'), 'NVDA');
   assert.deepEqual((await result.json()).articles.map(item => item.id), ['title', 'tagged']);
 });
+
+test('evidence explanation stays useful when sentiment or market data is missing', async () => {
+  const { explainAvailableEvidence } = await import('../website/research/news-ai.mjs');
+  const withoutData = explainAvailableEvidence({}, [{ticker: 'NVDA', mentioned: false}], null).join(' ');
+  assert.match(withoutData, /did not supply a summary/);
+  assert.match(withoutData, /sentiment is unavailable/);
+  assert.match(withoutData, /when price comparison results are available/);
+
+  const completed = explainAvailableEvidence({ description: 'Earnings release.' }, [
+    { ticker: 'NVDA', mentioned: true, insight: { sentiment: 'negative' } },
+  ], { covered: [{ ticker: 'NVDA', relative: -.03 }], missing: ['AAPL'] }).join(' ');
+  assert.match(completed, /NVDA: negative/);
+  assert.match(completed, /3.00 percentage points below SPY/);
+  assert.match(completed, /missing for 1/);
+  assert.match(completed, /do not establish/);
+});

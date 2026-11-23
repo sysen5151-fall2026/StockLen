@@ -57,3 +57,37 @@ export function compareNewsEvidence(article, symbols, ranking) {
   })).sort((first, second) => (first.reaction?.rank ?? Infinity) - (second.reaction?.rank ?? Infinity)
     || Number(Boolean(second.insight)) - Number(Boolean(first.insight)) || first.ticker.localeCompare(second.ticker));
 }
+
+export function explainAvailableEvidence(article, rows, ranking) {
+  const linked = rows.filter(row => row.mentioned || row.insight).map(row => row.ticker);
+  const sentiment = rows.filter(row => row.insight).map(row => `${row.ticker}: ${row.insight.sentiment}`);
+  const lines = [];
+  if (!article.description?.trim()) {
+    lines.push('The publisher did not supply a summary. Open the original story to read more.');
+  }
+  if (linked.length) {
+    lines.push(`The news provider links this story to ${linked.join(', ')} among your selected stocks.`);
+  } else {
+    lines.push('The news provider did not link this story to any of your selected stocks.');
+  }
+  if (sentiment.length) {
+    lines.push(`Reported news sentiment: ${sentiment.join('; ')}.`);
+  } else {
+    lines.push('Stock-specific news sentiment is unavailable for this selection.');
+  }
+
+  const top = ranking?.covered[0];
+  if (top) {
+    const direction = top.relative > 0 ? 'above' : 'below';
+    lines.push(top.relative === 0
+      ? 'The ranked stocks matched SPY over the selected window.'
+      : `${top.ticker} ranked first by absolute difference from SPY. Its return was ${(100 * Math.abs(top.relative)).toFixed(2)} percentage points ${direction} SPY.`);
+    if (ranking.missing.length) {
+      lines.push(`Price coverage was missing for ${ranking.missing.length} selected stocks.`);
+    }
+    lines.push('These observed returns do not establish that this story caused the price moves.');
+  } else {
+    lines.push('A market reaction explanation will appear when price comparison results are available.');
+  }
+  return lines;
+}

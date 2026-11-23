@@ -86,10 +86,11 @@
       </div>
     </section>
     <section class="card" aria-labelledby="ai-title">
-      <h2 id="ai-title">AI news analysis</h2>
+      <h2 id="ai-title">News explanation</h2>
       <p id="news-analysis-status" role="status">Select an article to see its company references and available sentiment.</p>
       <div id="news-analysis-content" hidden>
-        <p id="news-analysis-summary"></p>
+        <ul id="news-analysis-summary" aria-label="Evidence-based explanation"></ul>
+        <blockquote id="news-source-excerpt" aria-label="Publisher summary" hidden></blockquote>
         <div class="table-scroll analysis-table">
           <table aria-label="News and observed market reaction by stock">
             <thead><tr><th scope="col">Stock</th><th scope="col">Article coverage</th><th scope="col">Massive sentiment and rationale</th><th scope="col">Observed move vs. SPY</th></tr></thead>
@@ -98,7 +99,7 @@
         </div>
         <p>Sentiment describes the news. Relative returns describe market moves during the selected window. Other events can affect those returns.</p>
       </div>
-      <details id="local-ai">
+      <details id="local-ai" hidden>
         <summary>Interpret the article with on-device AI</summary>
         <p>Where supported, your browser classifies the article summary and highlights supporting text.</p>
         <button id="ai-button" type="button" disabled>Analyze article</button>
