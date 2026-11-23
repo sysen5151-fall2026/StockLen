@@ -6,7 +6,7 @@ The dashboard uses the team’s submitted v0.1 system requirements (§5.4), the 
 | --- | --- | --- |
 | Select two distinct tickers and a common date | UC.1, SR-01, DR-01–02, IF.01 | Pair/date checks and incorrect-input cases in the functional and comparison tests |
 | Publish aligned prices and dated, bounded news evidence | SR-03, DR-03–04, IF.02 | F.2 evidence tests and dashboard check for missing unselected stock |
-| Rank all ten stocks and show the pair and factor contributions from one calculation | SR-01–02, DR-05–06, IF.03 | Dashboard check for consistent rankings across different pairs |
+| Rank all stocks in the fixed dataset and show the pair and factor contributions from one calculation | SR-01–02, DR-05–06, IF.03 | Dashboard check for consistent rankings across different pairs |
 | Explain the leading driver locally | SR-02, SR-08, DR-07–08, IF.04, TD-01 A | Local-model and guardrail tests, dashboard check for unavailable explanation |
 | Display date, scores, source IDs, price history and status | SR-01–03, DR-09–10, IO.02/06 | Dashboard data tests and Pages build |
 
@@ -20,11 +20,14 @@ Run `python scripts/verify.py` after installing the backend requirements. CI run
 
 ## Historical data import
 
-1. Obtain authorized daily USD historical exports for AAPL, MSFT, AMZN, GOOGL, META, NVDA, TSLA, JPM, JNJ and XOM. Use the same date range for all ten and include at least 21 consecutive trading sessions. Name each file after its ticker, such as `AAPL.csv`. Each export needs `Date` in YYYY-MM-DD and `Adj Close`.
-2. Select all ten files in the dashboard. Optionally add a JSON array of news objects with `symbol`, `publication_date` (YYYY-MM-DD), `title` and an HTTPS `url`. Include only evidence you can use and verify. The dashboard shows at most two qualifying items per selected ticker in the seven calendar dates ending on the analysis date.
+The Project Description sets the product capacity at up to 100 U.S. stocks. System Requirements Definition §5.4, P-01 and P-02 establish a ten-stock v0.1 verification configuration. The sample and engineering comparison retain that configuration. The product import fixes the research universe to the submitted ticker set before the first comparison, then normalizes scores with the same 50/50 method over that set. A different set requires a new import. Imported stock identities and exchange coverage come from the supplied files.
+
+
+1. Predefine a set of 2–100 U.S. stocks and obtain authorized daily USD historical exports for those tickers. Use the same date range for all tickers and include at least 21 consecutive trading sessions. Name each file after its ticker, such as `AAPL.csv`. Each export needs `Date` in YYYY-MM-DD and `Adj Close`.
+2. Select all files in the predefined universe in the dashboard. Optionally add a JSON array of news objects with `symbol`, `publication_date` (YYYY-MM-DD), `title` and an HTTPS `url`. Include only evidence you can use and verify. The dashboard shows at most two qualifying items per selected ticker in the seven calendar dates ending on the analysis date.
 3. Select **Load data**, then choose a pair and an eligible date. The browser computes the current ranking and comparison for that date and uses the same adjusted closes for the price chart and market evidence table. Reloading the page clears the import.
 
-The import checks ticker coverage, positive adjusted closes, duplicate dates, and aligned 21-observation windows. It derives observed sessions from the supplied files. A session absent in all ten files cannot be detected by alignment alone. Supply exports with complete exchange coverage. Historical adjusted prices are used as supplied, so these views do not establish point-in-time backtest validity.
+The import checks ticker coverage, positive adjusted closes, duplicate dates, and aligned 21-observation windows. It derives observed sessions from the supplied files. A session absent in all files cannot be detected by alignment alone. Supply exports with complete exchange coverage. Historical adjusted prices are used as supplied, so these views do not establish point-in-time backtest validity.
 
 ## Evidence and open verification
 

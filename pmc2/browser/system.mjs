@@ -12,9 +12,9 @@ export const CUTOFF='2026-09-21';
  * Output LF.01: {valid, reason, stock_pair}; mechanism P.1.1 in this module.
  * This signature exposes symbol inputs; its control is a frozen dependency.
  */
-export function validatePair(stockA,stockB) {
+export function validatePair(stockA,stockB,universe=UNIVERSE) {
   const pair=[stockA,stockB].map(s=>typeof s==='string'?s.trim().toUpperCase():'');
-  if(pair.some(s=>!UNIVERSE.includes(s))) return {valid:false,reason:'ineligible_symbol',stock_pair:pair};
+  if(pair.some(s=>!universe.includes(s))) return {valid:false,reason:'ineligible_symbol',stock_pair:pair};
   if(pair[0]===pair[1]) return {valid:false,reason:'duplicate_symbols',stock_pair:pair};
   return {valid:true,reason:null,stock_pair:pair};
 }
@@ -26,7 +26,7 @@ export function validatePair(stockA,stockB) {
  */
 export function preserveRequest(pairResult,analysisDate,requestId,configuration=syntheticConfiguration()) {
   if(!pairResult.valid) return {accepted:false,reason:pairResult.reason,request:null};
-  const checked=validatePair(...pairResult.stock_pair);
+  const checked=validatePair(...pairResult.stock_pair,configuration.universe);
   if(!checked.valid || checked.reason!==pairResult.reason || JSON.stringify(checked.stock_pair)!==JSON.stringify(pairResult.stock_pair)) return {accepted:false,reason:'invalid_pair_result',request:null};
   const configId = configuration.configuration_id;
   const cutoff = configId === IMPORT_CONFIG_ID ? configuration.observation_dates.at(-1) : CUTOFF;
@@ -47,9 +47,20 @@ export function computeScores(evidence, config = syntheticConfiguration()) {
     const prices=records.map(r=>r.adjusted_close),returns=prices.slice(1).map((p,i)=>p/prices[i]-1),mean=returns.reduce((a,b)=>a+b,0)/20;
     return {symbol,momentum:prices[20]/prices[0]-1,volatility:Math.sqrt(returns.reduce((s,r)=>s+(r-mean)**2,0)/19),market_source_ids:records.map(r=>r.source_id)};
   });
-  if(evidence.market_records.length!==210) throw new Error('Unexpected universe records');
-  const mr=averageRanks(rows.map(r=>r.momentum)),vr=averageRanks(rows.map(r=>r.volatility));
-  return rows.map((r,i)=>({...r,momentum_rank:mr[i],volatility_rank:vr[i],contributions:{momentum:50*(mr[i]-1)/9,volatility:50*(10-vr[i])/9},score:50*(mr[i]-1)/9+50*(10-vr[i])/9}));
+  const count = rows.length;
+  if(count < 2 || evidence.market_records.length !== count * 21) throw new Error('Unexpected universe records');
+  const momentumRanks = averageRanks(rows.map(row => row.momentum));
+  const volatilityRanks = averageRanks(rows.map(row => row.volatility));
+  return rows.map((row, index) => {
+    const momentumRank = momentumRanks[index];
+    const volatilityRank = volatilityRanks[index];
+    const momentum = 50 * (momentumRank - 1) / (count - 1);
+    const volatility = 50 * (count - volatilityRank) / (count - 1);
+    return {
+      ...row, momentum_rank: momentumRank, volatility_rank: volatilityRank,
+      contributions: { momentum, volatility }, score: momentum + volatility,
+    };
+  });
 }
 /** F.3.2 / P.3.2 / DR-06: retain exact values and references in IF.03. */
 export function identifyDrivers(scores,evidence) {
@@ -98,7 +109,7 @@ export function compareStocks({stockA='AAPL',stockB='MSFT',analysisDate=CUTOFF,s
   const mode = evidenceSource ? 'local-import-comparison' : 'controlled-synthetic-comparison';
   const status = (state, id, reason) => reportStatus(state, id, reason, config.configuration_id);
   const history=[status('ready',null),status('processing',requestId)];
-  const eligibility=validatePair(stockA,stockB),request=preserveRequest(eligibility,analysisDate,requestId,config);
+  const eligibility=validatePair(stockA,stockB,config.universe),request=preserveRequest(eligibility,analysisDate,requestId,config);
   const failure=(reason,evidence=null)=>({mode,eligibility,request,evidence,record:null,explanation:{available:false,reason:'comparison_failed',text:null},display:null,history:[...history,status('failed',requestId,reason)]});
   if(!request.accepted) return failure(request.reason);
   const evidenceRun = evidenceSource

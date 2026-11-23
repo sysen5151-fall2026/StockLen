@@ -1,4 +1,4 @@
-import { UNIVERSE } from '../js/evidence.mjs';
+import { MAX_IMPORT_STOCKS, UNIVERSE } from '../js/evidence.mjs';
 import { CUTOFF } from '../js/system.mjs';
 import { compareWithExplanationModel } from '../js/local-explanation.mjs';
 import { prepareImport, readNews } from './local-import.mjs';
@@ -37,12 +37,16 @@ let dataset;
 let comparisonSequence = 0;
 let selectedStock;
 let chartPrices = [];
-for (const name of ['stockA', 'stockB']) {
-  for (const symbol of UNIVERSE) {
-    form.elements[name].add(new Option(symbol + ' · ' + company[symbol], symbol));
+function setStocks(universe) {
+  for (const [index, name] of ['stockA', 'stockB'].entries()) {
+    const select = form.elements[name];
+    select.replaceChildren(...universe.map(symbol => new Option(
+      company[symbol] ? symbol + ' · ' + company[symbol] : symbol, symbol,
+    )));
+    select.value = universe[index];
   }
 }
-form.elements.stockB.value = 'MSFT';
+setStocks(UNIVERSE);
 form.elements.analysisDate.add(new Option(CUTOFF, CUTOFF));
 
 function drawChart() {
@@ -113,7 +117,7 @@ function showStock(symbol) {
   for (const button of byId('ranking-rows').querySelectorAll('button')) {
     button.setAttribute('aria-pressed', String(button.value === symbol));
   }
-  byId('detail-title').textContent = `${symbol} · ${company[symbol]}`;
+  byId('detail-title').textContent = company[symbol] ? `${symbol} · ${company[symbol]}` : symbol;
   byId('detail-summary').textContent =
     `Rank ${selectedStock.rank} of ${view.stocks.length} · Score ${selectedStock.score.toFixed(2)} · Momentum ${percent(selectedStock.momentum)} · Daily volatility ${percent(selectedStock.volatility)}`;
   renderPriceWindow();
@@ -123,6 +127,7 @@ function renderDashboard() {
   const comparison = view.comparison;
   const [first, second] = comparison.stock_pair;
   const [firstScore, secondScore] = comparison.stocks;
+  byId('ranking-scope').textContent = `Scores out of 100 across ${view.stocks.length} stocks. Select a ticker for details.`;
   const lastMarketDate = view.stocks[0].prices.at(-1).observation_date;
   byId('comparison-dates').textContent =
     `Analysis date ${comparison.analysis_date} · Market data through ${lastMarketDate}`;
@@ -130,7 +135,6 @@ function renderDashboard() {
     const card = element('div', null, 'score-card');
     card.append(
       element('h3', stock.symbol),
-      element('p', company[stock.symbol]),
       element('p', stock.display_score, 'score-number'),
     );
     return card;
@@ -169,7 +173,7 @@ function renderDashboard() {
     const button = element('button', stock.symbol);
     button.type = 'button';
     button.value = stock.symbol;
-    button.setAttribute('aria-label', `View ${company[stock.symbol]} (${stock.symbol}) details`);
+    button.setAttribute('aria-label', `View ${stock.symbol} details`);
     button.addEventListener('click', () => {
       showStock(stock.symbol);
       byId('detail-title').focus();
@@ -220,6 +224,7 @@ const sampleButton = byId('sample-data');
 
 function useDataset(nextDataset) {
   dataset = nextDataset;
+  setStocks(dataset?.universe ?? UNIVERSE);
   const dates = dataset?.dates ?? [CUTOFF];
   form.elements.analysisDate.replaceChildren(...dates.map(date => new Option(date, date)));
   byId('data-source').textContent = dataset
@@ -238,13 +243,13 @@ importForm.addEventListener('submit', async event => {
   try {
     const files = [...importForm.elements.prices.files];
     const newsFile = importForm.elements.news.files[0];
-    if (files.length !== UNIVERSE.length) throw new Error('Select one CSV per ticker (ten files).');
+    if (files.length < 2 || files.length > MAX_IMPORT_STOCKS) throw new Error(`Choose between 2 and ${MAX_IMPORT_STOCKS} ticker CSVs.`);
     const priceFiles = await Promise.all(files.map(async file => ({ name: file.name, text: await file.text() })));
     const news = newsFile ? readNews(await newsFile.text()) : [];
     const imported = prepareImport(priceFiles, news);
     importForm.reset();
     useDataset(imported);
-    importStatus.textContent = `Imported ten tickers and ${imported.dates.length} eligible analysis dates.`;
+    importStatus.textContent = `Imported ${imported.universe.length} tickers and ${imported.dates.length} eligible analysis dates.`;
   } catch (error) {
     importStatus.textContent = `Import failed. ${error.message}`;
   } finally {

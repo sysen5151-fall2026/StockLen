@@ -47,7 +47,7 @@ test('missing observations in unselected stocks prevent eligibility', () => {
     ? { ...file, text: file.text.split('\r\n').filter(line => !line.startsWith('2025-10-15')).join('\r\n') }
     : file);
   assert.throws(() => prepareImport(incomplete), /No complete/);
-  assert.throws(() => prepareImport(files.slice(1)), /Missing CSV files for AAPL/);
+  assert.throws(() => prepareImport(files.slice(0, 1)), /between 2 and 100/);
 });
 
 test('malformed price and unsafe article inputs are rejected', () => {
@@ -55,4 +55,21 @@ test('malformed price and unsafe article inputs are rejected', () => {
   assert.throws(() => readYahooPrices('AAPL.csv', 'Date,Adj Close\n2025-10-15,100\n2025-10-15,110'), /duplicate/);
   assert.throws(() => readNews(JSON.stringify([{ symbol: 'AAPL', title: 'Bad',
     publication_date: '2025-10-15', url: 'javascript:alert(1)' }])), /HTTPS/);
+});
+
+test('original product scope: a predefined 100-stock set can be scored without altering sample scope', async () => {
+  const largeUniverse = Array.from({ length: 100 }, (_, index) => ({
+    ...files[index % files.length], name: 'US' + index + '.csv',
+  }));
+  assert.throws(() => prepareImport([...largeUniverse, { ...files[0], name: 'EXTRA.csv' }]), /100/);
+  const dataset = prepareImport(largeUniverse);
+  const analysisDate = dataset.dates[0];
+  const run = await compareWithExplanationModel({
+    stockA: 'US0', stockB: 'US99', analysisDate, evidenceSource: dataset.sourceFor(analysisDate),
+  });
+  assert.equal(researchView(run).stocks.length, 100);
+  assert.ok(run.scores.every(row => row.score >= 0 && row.score <= 100));
+  assert.equal(run.evidence.evidence.market_records.length, 2100);
+  const fixture = await compareWithExplanationModel();
+  assert.equal(researchView(fixture).stocks.length, 10);
 });

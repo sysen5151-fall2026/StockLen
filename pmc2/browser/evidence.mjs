@@ -4,10 +4,13 @@
  */
 export const UNIVERSE = Object.freeze(['AAPL','MSFT','AMZN','GOOGL','META','NVDA','TSLA','JPM','JNJ','XOM']);
 export const IMPORT_CONFIG_ID = 'v0.1-local-import-1';
-export function importConfiguration(observationDates) {
+export const MAX_IMPORT_STOCKS = 100;
+export const isImportSymbol = symbol => typeof symbol === 'string' && /^[A-Z][A-Z0-9]{0,9}(?:[-.][A-Z0-9]{1,4})?$/.test(symbol);
+
+export function importConfiguration(observationDates, universe = UNIVERSE) {
   return {
     configuration_id: IMPORT_CONFIG_ID,
-    universe: [...UNIVERSE],
+    universe: [...universe],
     observation_dates: [...observationDates],
     news_days: 7,
     max_news_per_stock: 2,
@@ -42,16 +45,22 @@ export function syntheticConfiguration() {
 export function requestDatedRecords(request, configuration) {
   const config=clone(configuration), pair=request.stock_pair, dates=config.observation_dates;
   isoDate(request.analysis_date);
-  if (!request.request_id || !Array.isArray(pair) || pair.length!==2 || new Set(pair).size!==2 || !pair.every(s=>UNIVERSE.includes(s))) throw new Error('IF.01 must contain an identified eligible distinct pair');
-  if (!equal(config.universe,UNIVERSE) || !config.configuration_id || !Array.isArray(dates) || dates.length!==21 || new Set(dates).size!==21 || !equal(dates,[...dates].sort()) || dates.some(d=>{isoDate(d);return d>request.analysis_date;})) throw new Error('IO.10 requires a version and 21 explicit aligned dates for the frozen ten-stock universe');
+  const universe = config.universe;
+  const validUniverse = config.configuration_id === IMPORT_CONFIG_ID
+    ? Array.isArray(universe) && universe.length >= 2 && universe.length <= MAX_IMPORT_STOCKS
+      && new Set(universe).size === universe.length && universe.every(isImportSymbol)
+    : equal(universe, UNIVERSE);
+  if (!validUniverse) throw new Error('Invalid configured universe');
+  if (!request.request_id || !Array.isArray(pair) || pair.length!==2 || new Set(pair).size!==2 || !pair.every(s=>universe.includes(s))) throw new Error('IF.01 must contain an identified eligible distinct pair');
+  if (!config.configuration_id || !Array.isArray(dates) || dates.length!==21 || new Set(dates).size!==21 || !equal(dates,[...dates].sort()) || dates.some(d=>{isoDate(d);return d>request.analysis_date;})) throw new Error('IO.10 requires a version and 21 explicit aligned dates for the configured universe');
   if (config.news_days!==7 || config.max_news_per_stock!==2) throw new Error('IO.10 differs from the v0.1 news bounds');
-  const profiles = [syntheticConfiguration(), importConfiguration(dates)];
+  const profiles = [syntheticConfiguration(), importConfiguration(dates, universe)];
   const profile = profiles.find(candidate => candidate.configuration_id === config.configuration_id);
   if (!profile || !equal(config.providers, profile.providers)) {
     throw new Error('Unsupported local evidence adapter');
   }
   const context={...clone(request),configuration_id:config.configuration_id};
-  const market={...context,query_id:request.request_id+':market',symbols:[...UNIVERSE],observation_dates:dates,field:'adjusted_close',currency:'USD',...config.providers.market};
+  const market={...context,query_id:request.request_id+':market',symbols:[...universe],observation_dates:dates,field:'adjusted_close',currency:'USD',...config.providers.market};
   const news={...context,query_id:request.request_id+':news',symbols:[...pair],start_date:shifted(request.analysis_date,-6),end_date:request.analysis_date,max_per_stock:2,...config.providers.news};
   return clone({market_query:market,news_query:news,context:{...context,market_query:market,news_query:news,configuration:config}});
 }

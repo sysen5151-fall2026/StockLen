@@ -2,18 +2,18 @@
 
 **[Open the StockLens dashboard](https://sysen5151-fall2026.github.io/StockLen/)**
 
-StockLens is a stock research and ranking website for students and beginner investors. Explore the ten-stock rankings, compare two eligible stocks on a common date, and inspect adjusted-price history, score drivers and dated source records. Select a ticker in the ranking table to open its price chart and underlying records.
+StockLens is a stock research and ranking website for students and beginner investors. Explore rankings for a predefined universe of up to 100 U.S. stocks, compare two eligible stocks on a common date, and inspect adjusted-price history, score drivers and dated source records. Select a ticker in the ranking table to open its price chart and underlying records.
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
 ## Research workflow
 
 1. Import daily Yahoo Finance CSVs you are authorized to use, or choose the sample dataset. Select two distinct stocks and an eligible analysis date.
-2. StockLens validates the request and the aligned 21-observation market window across all ten stocks.
+2. StockLens validates the request and the aligned 21-observation market window across the full selected universe.
 3. It scores momentum and lower volatility at equal weights. News provides dated evidence for the pair.
 4. The same-host model identifies the leading score driver. StockLens checks the response against the computed factors and retains the scored comparison if the model response is unavailable or inconsistent.
 
-Historical imports run in browser memory. Select one CSV per eligible ticker and optionally import a dated news JSON file. The public build includes only the fictional sample snapshot for 2026-09-21. See the [import instructions and data requirements](docs/research-dashboard.md#historical-data-import).
+Historical imports run in browser memory. Select one CSV per ticker in a predefined universe of 2–100 U.S. stocks and optionally import a dated news JSON file. The public build includes only the fictional sample snapshot for 2026-09-21. See the [import instructions and data requirements](docs/research-dashboard.md#historical-data-import).
 
 **[Engineering comparison](https://sysen5151-fall2026.github.io/StockLen/compare.html)** exposes the same F.1–F.5 workflow with additional scenarios and the engineering trace. See [the dashboard, model and verification map](docs/research-dashboard.md).
 

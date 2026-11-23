@@ -25,7 +25,7 @@
     </section>
     <section class="card" aria-labelledby="import-title">
       <h2 id="import-title">Import historical data</h2>
-      <p>Choose Yahoo Finance daily CSVs you have permission to use. Name the files AAPL.csv, MSFT.csv, AMZN.csv, GOOGL.csv, META.csv, NVDA.csv, TSLA.csv, JPM.csv, JNJ.csv and XOM.csv. Each file needs Date and Adj Close columns. Your files stay in this browser session.</p>
+      <p>Choose Yahoo Finance daily CSVs you have permission to use. Choose your set of 2–100 U.S. stocks and name each file after its ticker, such as AAPL.csv. Import the full set together to fix the ranking universe. Each file needs Date and Adj Close columns. Your files stay in this browser session.</p>
       <form id="import-form">
         <label>Yahoo historical price files <input type="file" name="prices" accept=".csv,text/csv" multiple required></label>
         <label>News evidence (optional JSON) <input type="file" name="news" accept=".json,application/json"></label>
@@ -56,7 +56,7 @@
       <div class="workspace">
         <section class="card" id="ranking">
           <h2>Universe rankings</h2>
-          <p class="muted">Scores out of 100 across ten eligible stocks. Select a ticker to inspect its details.</p>
+          <p class="muted" id="ranking-scope"></p>
           <div class="table-scroll">
             <table aria-label="Universe rankings">
               <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Score</th></tr></thead>
@@ -105,7 +105,7 @@
     <section class="card" id="method">
       <h2>How scores are calculated</h2>
       <p>StockLens uses 21 aligned adjusted closes to calculate momentum over 20 periods and the sample standard deviation of 20 simple returns. Stronger momentum and lower volatility earn more points.</p>
-      <p>Each factor contributes up to 50 points using average-tie ranks across the fixed ten-stock universe. News provides context for the selected pair. Scoring uses prices only. The local model identifies the leading factor after scoring.</p>
+      <p>Each factor contributes up to 50 points using average-tie ranks across the fixed universe for the current dataset. News provides context for the selected pair. Scoring uses prices only. The local model identifies the leading factor after scoring.</p>
       <p>Imported analysis dates come from the supplied market records. A date is available when every ticker has an adjusted close for each of the 21 supplied dates ending on that date. The sample snapshot has one synthetic date.</p>
     </section>
   </main>
