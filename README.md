@@ -51,7 +51,7 @@ Open http://127.0.0.1:8765 and select **Compare fixture**. One request traverses
 
 ## Website
 
-`website/index.html` is the StockLens website. GitHub Pages publishes the research dashboard and its assets. The engineering build and local FastAPI fixture support course verification.
+`website/index.html` is the StockLens website. The GitHub Pages entry opens the deployed dashboard, which runs the data API on the same host as the interface. The engineering build and local FastAPI fixture support course verification.
 
 Preview: `python3 scripts/build_site.py` then `python3 -m http.server 8080 --directory .site --bind 127.0.0.1`.
 
