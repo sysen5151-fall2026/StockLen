@@ -1,6 +1,6 @@
 # Public news reaction workflow
 
-Select a publication date and optional ticker and keyword to search the historical news feed. Select 2–100 stocks from the OEF universe and choose a return window. A single button generates the comparison and refreshes the news analysis. An already-available browser model can also generate its interpretation from that action. The website backend loads news, prices and volumes through a licensed Massive account. Visitors do not upload data.
+Search the historical news feed by company, ticker or topic. The default window covers the most recent seven New York calendar dates. Optional filters narrow the query to one publication date or related company. Results continue loading as the user scrolls. Select 2–100 stocks from the OEF universe and choose a return window. A single button generates the comparison and refreshes the news analysis. An already-available browser model can also generate its interpretation from that action. The website backend loads news, prices and volumes through a licensed Massive account. Visitors do not upload data.
 
 The fixed universe is a snapshot of the November 20, 2026 iShares S&P 100 ETF equity holdings. Alphabet Class A is retained and Class C is omitted. Berkshire Class B uses display symbol BRK-B and provider symbol BRK.B. This research universe is fixed for every analysis date. [Holdings source](https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv)
 

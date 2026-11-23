@@ -4,7 +4,8 @@ import { analyzeNews, compareNewsEvidence } from './news-ai.mjs';
 
 const get = id => document.getElementById(id);
 const form = get('news-search');
-const picker = get('article-picker');
+const list = get('news-list');
+const sentinel = get('news-sentinel');
 const status = get('rank-status');
 const percent = value => `${(100 * value).toFixed(2)}%`;
 const points = value => `${(100 * value).toFixed(2)} pp`;
@@ -14,6 +15,9 @@ let currentRanking = null;
 let newsSequence = 0;
 let rankingSequence = 0;
 let articles = [];
+let selectedArticle = null;
+let newsLoading = false;
+let emptyBatches = 0;
 let search = null;
 let cursor = null;
 const selection = new Set(['AAPL', 'MSFT', 'NVDA']);
@@ -44,15 +48,14 @@ function clearArticleOutputs() {
 }
 
 function article() {
-  const selected = picker.value === '' ? null : articles[Number(picker.value)];
-  if (!selected) throw new Error('Find and choose a historical article.');
-  return selected;
+  if (!selectedArticle) throw new Error('Find and choose a historical article.');
+  return selectedArticle;
 }
 
 function renderNewsAnalysis() {
   const content = get('news-analysis-content');
   const message = get('news-analysis-status');
-  const source = picker.value === '' ? null : articles[Number(picker.value)];
+  const source = selectedArticle;
   get('ai-button').disabled = !source || localAiRunning;
   content.hidden = !source;
   if (!source) {
@@ -95,19 +98,44 @@ async function queryApi(path, params) {
 function showSource() {
   const source = get('article-source');
   source.replaceChildren();
-  if (picker.value === '') return;
-  const selected = article();
-  const link = element('a', selected.publisher || 'Read original story');
-  link.href = selected.url;
+  get('analysis-workspace').hidden = !selectedArticle;
+  if (!selectedArticle) return;
+  const link = element('a', selectedArticle.publisher ? 'Read at ' + selectedArticle.publisher : 'Read original story');
+  link.href = selectedArticle.url;
   link.referrerPolicy = 'no-referrer';
-  source.append(link);
-  if (selected.description) source.append(element('p', selected.description));
+  source.append(element('h3', selectedArticle.title), element('p', selectedArticle.date), link);
+  if (selectedArticle.description) source.append(element('p', selectedArticle.description));
 }
+
+function addStory(item) {
+  const entry = element('li');
+  const button = element('button');
+  button.type = 'button';
+  button.className = 'story';
+  button.setAttribute('aria-pressed', 'false');
+  const meta = [item.publisher, item.date, item.tickers.slice(0, 3).join(' · ')].filter(Boolean).join(' · ');
+  button.append(element('span', meta), element('strong', item.title));
+  if (item.description) button.append(element('p', item.description));
+  button.addEventListener('click', () => {
+    selectedArticle = item;
+    for (const story of list.querySelectorAll('[aria-pressed="true"]')) story.setAttribute('aria-pressed', 'false');
+    button.setAttribute('aria-pressed', 'true');
+    showSource();
+    clearArticleOutputs();
+  });
+  entry.append(button);
+  list.append(entry);
+}
+
+const observer = new IntersectionObserver(entries => {
+  if (entries.some(entry => entry.isIntersecting) && !newsLoading && cursor) void loadNews(true);
+}, { root: get('news-scroll') });
 
 async function loadNews(append = false) {
   const sequence = ++newsSequence;
   const newsStatus = get('news-status');
-  const more = get('more-news');
+  observer.unobserve(sentinel);
+  sentinel.hidden = true;
   if (!append) {
     search = {
       date: get('news-date').value,
@@ -115,37 +143,45 @@ async function loadNews(append = false) {
       keyword: get('news-keyword').value.trim(),
     };
     articles = [];
+    selectedArticle = null;
     cursor = null;
-    picker.replaceChildren(new Option('Choose an article', ''));
-    picker.disabled = true;
+    emptyBatches = 0;
+    list.replaceChildren();
     showSource();
     clearArticleOutputs();
+    get('news-results').hidden = false;
   }
-  newsStatus.textContent = 'Searching the historical news archive…';
-  more.disabled = true;
+  newsLoading = true;
+  if (!append) newsStatus.textContent = 'Searching market news…';
   try {
-    const response = await queryApi('/api/news', { ...search, ...(append && cursor && { cursor }) });
+    const page = append ? cursor : null;
+    const response = await queryApi('/api/news', { ...search, ...(page && { cursor: page }) });
     if (sequence !== newsSequence) return;
     const seen = new Set(articles.map(item => item.id));
+    const previousCount = articles.length;
     for (const item of response.articles) {
       if (seen.has(item.id)) continue;
       seen.add(item.id);
-      picker.add(new Option(item.title, String(articles.length)));
+      addStory(item);
       articles.push(item);
     }
-    cursor = response.cursor;
-    picker.disabled = !articles.length;
+    emptyBatches = previousCount === articles.length ? emptyBatches + 1 : 0;
+    cursor = response.cursor !== page && emptyBatches < 3 ? response.cursor : null;
+    const scope = search.date ? ' · ' + search.date : ' · Past 7 days';
     newsStatus.textContent = articles.length
-      ? `${articles.length} matching articles loaded.`
-      : cursor ? 'No matches in this batch. Load more articles to continue the search.'
-        : 'No stories matched this date and search.';
+      ? `${articles.length} matching articles loaded${scope}`
+      : cursor ? 'Looking for matches…' : emptyBatches >= 3 && response.cursor
+        ? 'No matches in the pages searched. Try a more specific date or company.'
+        : 'No stories matched this search.';
   } catch (error) {
     if (sequence !== newsSequence) return;
+    cursor = null;
     newsStatus.textContent = error.message;
   } finally {
     if (sequence === newsSequence) {
-      more.hidden = !cursor;
-      more.disabled = false;
+      newsLoading = false;
+      sentinel.hidden = !cursor;
+      if (cursor) observer.observe(sentinel);
     }
   }
 }
@@ -168,16 +204,13 @@ function renderStocks() {
 }
 
 for (const stock of universe) get('news-ticker').add(new Option(stock.ticker, stock.ticker));
-const initialDate = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-get('news-date').value = initialDate;
 form.addEventListener('submit', event => {
   event.preventDefault();
+  if (!get('news-keyword').value.trim() && !get('news-date').value && !get('news-ticker').value) {
+    get('news-keyword').focus();
+    return;
+  }
   void loadNews();
-});
-get('more-news').addEventListener('click', () => void loadNews(true));
-picker.addEventListener('change', () => {
-  showSource();
-  clearArticleOutputs();
 });
 get('horizon').addEventListener('change', clearRanking);
 get('stock-filter').addEventListener('input', renderStocks);
@@ -198,7 +231,6 @@ for (const [id, all] of [['select-all', true], ['clear-stocks', false]]) {
 }
 get('universe-list').textContent = universe.map(stock => stock.ticker).join(' · ');
 renderStocks();
-void loadNews();
 
 function showDetail(stock, result) {
   const history = market.get(stock.ticker).prices;
@@ -302,7 +334,7 @@ async function runLocalAi() {
     if (sequence === analysisSequence) aiStatus.textContent = error.message;
   } finally {
     localAiRunning = false;
-    button.disabled = picker.value === '';
+    button.disabled = !selectedArticle;
   }
 }
 

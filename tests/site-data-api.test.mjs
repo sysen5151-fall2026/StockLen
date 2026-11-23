@@ -91,3 +91,21 @@ test('article evidence is joined to selected tickers and never fills missing sen
   assert.equal(rows[1].insight.sentiment, 'positive');
   assert.equal(rows[2].reaction, null);
 });
+
+test('keyword-first search defaults to seven Eastern dates and recognizes company ticker aliases', async () => {
+  let params;
+  const api = createMarketApi(universe, async url => {
+    params = url.searchParams;
+    return Response.json({ results: [
+      { id: 'tagged', title: 'Chip earnings preview', tickers: ['NVDA'],
+        published_utc: '2026-11-20T15:00:00Z', article_url: 'https://example.com/tagged' },
+      { id: 'title', title: 'Nvidia earnings', tickers: ['NVDA'],
+        published_utc: '2026-11-19T15:00:00Z', article_url: 'https://example.com/title' },
+    ] });
+  });
+  const result = await api(browserRequest('news', { keyword: 'Nvidia' }), env, new Date('2026-11-23T15:00:00Z'));
+  assert.equal(params.get('published_utc.gte'), '2026-11-17T05:00:00.000Z');
+  assert.equal(params.get('published_utc.lt'), '2026-11-24T05:00:00.000Z');
+  assert.equal(params.get('ticker'), 'NVDA');
+  assert.deepEqual((await result.json()).articles.map(item => item.id), ['title', 'tagged']);
+});

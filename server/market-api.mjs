@@ -44,10 +44,10 @@ function httpsLink(value) {
   return url?.protocol === 'https:' && !url.username && !url.password ? url.href : null;
 }
 
-function articleRecord(article, date) {
+function articleRecord(article, start, end) {
   const url = httpsLink(article.article_url);
   const time = new Date(article.published_utc);
-  if (!url || !Number.isFinite(+time) || easternDate(time) !== date || !article.id || !article.title) return null;
+  if (!url || !Number.isFinite(+time) || time < start || time >= end || !article.id || !article.title) return null;
   const insights = Object.create(null);
   if (Array.isArray(article.insights)) {
     for (const item of article.insights) {
@@ -64,7 +64,7 @@ function articleRecord(article, date) {
     id: article.id,
     title: article.title,
     description: typeof article.description === 'string' ? article.description.slice(0, 3500) : '',
-    date,
+    date: easternDate(time),
     publishedAt: time.toISOString(),
     publisher: article.publisher?.name || '',
     tickers: Array.isArray(article.tickers) ? article.tickers.filter(ticker => typeof ticker === 'string') : [],
@@ -98,30 +98,45 @@ export function createMarketApi(universe, requestProvider = (url, options) => gl
     return result;
   }
 
-  async function news(query, key) {
-    const date = parseDay(query.get('date'));
+  async function news(query, key, now) {
+    const day = query.get('date');
+    const lastDay = parseDay(day || easternDate(now));
+    const firstDay = day ? lastDay : new Date(+lastDay - 6 * dayMs);
+    const start = easternMidnight(firstDay);
+    const end = easternMidnight(new Date(+lastDay + dayMs));
     const ticker = query.get('ticker');
     const cursor = query.get('cursor');
     const keyword = (query.get('keyword') ?? '').trim();
     if (keyword.length > 120) throw new ApiError(400, 'The news search must be 120 characters or fewer.');
-    const terms = keyword.toLowerCase().split(/\s+/).filter(Boolean);
+    const normalize = value => value.toLowerCase().normalize('NFKD')
+      .replace(/\p{M}/gu, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    const phrase = normalize(keyword);
+    const terms = phrase.split(' ').filter(Boolean);
     if (ticker && !eligible.has(ticker)) throw new ApiError(400, 'The ticker is outside the research universe.');
     if (cursor && !/^[A-Za-z0-9_+=/.-]{1,1024}$/.test(cursor)) throw new ApiError(400, 'Invalid news page.');
+    const shortName = name => normalize(name).replace(/ (inc|corp|corporation|class [a-z]|plc)$/, '');
+    const company = phrase ? universe.find(stock => shortName(stock.name) === phrase || normalize(stock.ticker) === phrase) : null;
     const result = await get('/v2/reference/news', {
-      'published_utc.gte': easternMidnight(date),
-      'published_utc.lt': easternMidnight(new Date(+date + dayMs)),
-      limit: terms.length ? 200 : 50, sort: 'published_utc', order: 'desc', ...(ticker && { ticker: ticker.replace('-', '.') }),
+      'published_utc.gte': start,
+      'published_utc.lt': end,
+      limit: terms.length ? 200 : 50, sort: 'published_utc', order: 'desc',
+      ...((ticker || company) && { ticker: (ticker || company.ticker).replace('-', '.') }),
       ...(cursor && { cursor }),
     }, key);
     const next = httpsLink(result.next_url);
-    return {
-      articles: (result.results ?? []).map(item => articleRecord(item, dateKey(date))).filter(article => {
-        if (!article) return false;
-        const searchable = [article.title, article.description, article.publisher, ...article.tickers].join(' ').toLowerCase();
-        return terms.every(term => searchable.includes(term));
-      }),
-      cursor: next ? new URL(next).searchParams.get('cursor') : null,
-    };
+    const articles = (result.results ?? []).flatMap(item => {
+      const article = articleRecord(item, new Date(start), new Date(end));
+      if (!article) return [];
+      const title = normalize(article.title);
+      const tagged = company && article.tickers.some(symbol => symbol.replace('.', '-') === company.ticker);
+      const searchable = normalize([article.title, article.description, article.publisher, ...article.tickers].join(' '));
+      if (!tagged && !terms.every(term => searchable.includes(term))) return [];
+      const score = Number(Boolean(phrase && title.includes(phrase))) * 3
+        + terms.filter(term => title.includes(term)).length + Number(Boolean(tagged));
+      return [{ article, score }];
+    });
+    articles.sort((a, b) => b.score - a.score);
+    return { articles: articles.map(entry => entry.article), cursor: next ? new URL(next).searchParams.get('cursor') : null };
   }
 
   async function window(query, key, now) {
@@ -176,7 +191,7 @@ export function createMarketApi(universe, requestProvider = (url, options) => gl
     }
     try {
       const data = url.pathname === '/api/news'
-        ? await news(url.searchParams, env.MASSIVE_API_KEY)
+        ? await news(url.searchParams, env.MASSIVE_API_KEY, now)
         : await window(url.searchParams, env.MASSIVE_API_KEY, now);
       return Response.json(data, { headers: { 'Cache-Control': 'no-store' } });
     } catch (error) {
