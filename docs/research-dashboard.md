@@ -18,8 +18,16 @@ Run `python3 scripts/build_site.py` and `python3 -m http.server 8080 --bind 127.
 
 Run `python scripts/verify.py` after installing the backend requirements. CI runs Python and Node checks before packaging the static site.
 
+## Historical data import
+
+1. Obtain authorized daily USD historical exports for AAPL, MSFT, AMZN, GOOGL, META, NVDA, TSLA, JPM, JNJ and XOM. Use the same date range for all ten and include at least 21 consecutive trading sessions. Name each file after its ticker, such as `AAPL.csv`. Each export needs `Date` in YYYY-MM-DD and `Adj Close`.
+2. Select all ten files in the dashboard. Optionally add a JSON array of news objects with `symbol`, `publication_date` (YYYY-MM-DD), `title` and an HTTPS `url`. Include only evidence you can use and verify. The dashboard shows at most two qualifying items per selected ticker in the seven calendar dates ending on the analysis date.
+3. Select **Load data**, then choose a pair and an eligible date. The browser computes the current ranking and comparison for that date and uses the same adjusted closes for the price chart and market evidence table. Reloading the page clears the import.
+
+The import checks ticker coverage, positive adjusted closes, duplicate dates, and aligned 21-observation windows. It derives observed sessions from the supplied files. A session absent in all ten files cannot be detected by alignment alone. Supply exports with complete exchange coverage. Historical adjusted prices are used as supplied, so these views do not establish point-in-time backtest validity.
+
 ## Evidence and open verification
 
-The project description specifies external data acquisition and financial news. The controlled website implements that workflow with synthetic provider adapters and has one supported snapshot. Real provider integration needs dated terms and approved acquire/retain/display permissions, verified adjustment and exchange-calendar rules, and provenance across all ten symbols. Use the [service-use record](service-use.md) for this boundary.
+Files are read in browser memory. StockLens does not automatically acquire Yahoo data, bundle downloaded files, or send imported evidence to a remote model. The optional news file supplies a dated source trail; it does not verify what the original article says. Automatic acquisition and public redistribution still require a provider arrangement that permits the intended uses. See the [service-use record](service-use.md).
 
 The dashboard implements the submitted v0.1 scoring rules. The original sentiment and event scoring concepts require separate factor definitions and assessment. The earlier historical lab is available at `research-lab.html` and uses its own illustrative method. The model topology follows [ADR-01](architecture-decision-explanation.md). Human MOEs, real-data service use and broader operating acceptance still require their respective assessment evidence.

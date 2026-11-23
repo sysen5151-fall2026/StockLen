@@ -1,6 +1,7 @@
 import { UNIVERSE } from '../js/evidence.mjs';
 import { CUTOFF } from '../js/system.mjs';
 import { compareWithExplanationModel } from '../js/local-explanation.mjs';
+import { prepareImport, readNews } from './local-import.mjs';
 import { researchView } from './research-data.mjs';
 
 const company = {
@@ -32,6 +33,8 @@ const row = (...values) => {
 };
 
 let view;
+let dataset;
+let comparisonSequence = 0;
 let selectedStock;
 let chartPrices = [];
 for (const name of ['stockA', 'stockB']) {
@@ -146,7 +149,16 @@ function renderDashboard() {
     const evidence = comparison.news.filter(item => item.symbol === symbol);
     const list = element('ul');
     for (const item of evidence) {
-      list.append(element('li', `${item.title} · Published ${item.publication_date} · Source ${item.source_id}`));
+      const line = element('li');
+      if (item.url) {
+        const link = element('a', item.title);
+        link.href = item.url;
+        link.referrerPolicy = 'no-referrer';
+        line.append(link, ' · Published ' + item.publication_date);
+      } else {
+        line.append(`${item.title} · Published ${item.publication_date} · Source ${item.source_id}`);
+      }
+      list.append(line);
     }
     const section = element('div');
     section.append(element('strong', symbol), evidence.length ? list : element('p', 'No qualifying news is available.'));
@@ -169,6 +181,7 @@ function renderDashboard() {
 }
 
 async function compare() {
+  const sequence = ++comparisonSequence;
   const status = byId('research-status');
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true;
@@ -176,7 +189,10 @@ async function compare() {
   status.textContent = 'Checking snapshot evidence…';
   try {
     const options = Object.fromEntries(new FormData(form));
-    const run = await compareWithExplanationModel(options);
+    const run = await compareWithExplanationModel({
+      ...options, evidenceSource: dataset?.sourceFor(options.analysisDate),
+    });
+    if (sequence !== comparisonSequence) return;
     view = researchView(run);
     if (!view) {
       status.textContent = run.request.reason === 'duplicate_symbols'
@@ -189,13 +205,59 @@ async function compare() {
       ? 'Comparison ready with evidence or explanation limitations.'
       : 'Comparison ready.';
   } catch (error) {
+    if (sequence !== comparisonSequence) return;
     results.hidden = true;
     status.textContent = 'The snapshot could not be loaded. Try comparing again.';
     console.error(error);
   } finally {
-    button.disabled = false;
+    if (sequence === comparisonSequence) button.disabled = false;
   }
 }
+
+const importForm = byId('import-form');
+const importStatus = byId('import-status');
+const sampleButton = byId('sample-data');
+
+function useDataset(nextDataset) {
+  dataset = nextDataset;
+  const dates = dataset?.dates ?? [CUTOFF];
+  form.elements.analysisDate.replaceChildren(...dates.map(date => new Option(date, date)));
+  byId('data-source').textContent = dataset
+    ? 'Imported historical data · Yahoo Finance CSV'
+    : 'Sample data · Fictional prices and news';
+  sampleButton.disabled = !dataset;
+  void compare();
+}
+
+importForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const loadButton = importForm.querySelector('button[type="submit"]');
+  loadButton.disabled = true;
+  sampleButton.disabled = true;
+  importStatus.textContent = 'Checking imported files…';
+  try {
+    const files = [...importForm.elements.prices.files];
+    const newsFile = importForm.elements.news.files[0];
+    if (files.length !== UNIVERSE.length) throw new Error('Select one CSV per ticker (ten files).');
+    const priceFiles = await Promise.all(files.map(async file => ({ name: file.name, text: await file.text() })));
+    const news = newsFile ? readNews(await newsFile.text()) : [];
+    const imported = prepareImport(priceFiles, news);
+    importForm.reset();
+    useDataset(imported);
+    importStatus.textContent = `Imported ten tickers and ${imported.dates.length} eligible analysis dates.`;
+  } catch (error) {
+    importStatus.textContent = `Import failed. ${error.message}`;
+  } finally {
+    loadButton.disabled = false;
+    sampleButton.disabled = !dataset;
+  }
+});
+
+sampleButton.addEventListener('click', () => {
+  importForm.reset();
+  importStatus.textContent = '';
+  useDataset(undefined);
+});
 
 form.addEventListener('submit', event => {
   event.preventDefault();

@@ -8,12 +8,12 @@ Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa S
 
 ## Research workflow
 
-1. Select two distinct eligible stocks and the available analysis date.
+1. Import daily Yahoo Finance CSVs you are authorized to use, or choose the sample dataset. Select two distinct stocks and an eligible analysis date.
 2. StockLens validates the request and the aligned 21-observation market window across all ten stocks.
 3. It scores momentum and lower volatility at equal weights. News provides dated evidence for the pair.
 4. The same-host model identifies the leading score driver. StockLens checks the response against the computed factors and retains the scored comparison if the model response is unavailable or inconsistent.
 
-The public site runs on one controlled snapshot with generated prices and fictional news. The available date is 2026-09-21. The observation dates belong to the synthetic dataset. Real provider access, publication rights, an exchange-calendar and cutoff policy, and real-content validation require separate evidence under SR-07. The site supports research and comparison.
+Historical imports run in browser memory. Select one CSV per eligible ticker and optionally import a dated news JSON file. The public build includes only the fictional sample snapshot for 2026-09-21. See the [import instructions and data requirements](docs/research-dashboard.md#historical-data-import).
 
 **[Engineering comparison](https://sysen5151-fall2026.github.io/StockLen/compare.html)** exposes the same F.1–F.5 workflow with additional scenarios and the engineering trace. See [the dashboard, model and verification map](docs/research-dashboard.md).
 

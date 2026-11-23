@@ -64,6 +64,6 @@ export async function compareWithExplanationModel(options, infer = inferLocalExp
     mode: 'controlled-local-inference',
     explanation,
     display: renderComparison(run.record, explanation),
-    history: [...run.history.slice(0, -1), reportStatus(state, run.record.request_id)],
+    history: [...run.history.slice(0, -1), reportStatus(state, run.record.request_id, null, run.record.configuration_id)],
   };
 }

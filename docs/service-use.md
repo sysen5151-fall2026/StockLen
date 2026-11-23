@@ -2,9 +2,9 @@
 
 | Boundary | Current implementation | Acceptance status |
 |---|---|---|
-| X.02 market data | Local fictional stub | No selected-provider actual-use assessment |
-| X.03 news | Local fictional stub | No selected-provider actual-use assessment |
-| X.04 AI | Local fixed text stub | No real AI access or approved schema assessment |
+| X.02 market data | Synthetic sample or user-imported Yahoo Finance daily CSV in browser memory | User supplies authorized files. Public redistribution and automated service use are unassessed. |
+| X.03 news | Synthetic sample or user-imported dated titles and links | User supplies permitted evidence. Provider access and article support are unassessed. |
+| X.04 AI | Same-host checked model for dashboard; fixed stub for the transport demo | Dashboard makes no external model request. Hosted access is unassessed. |
 
 SR-07 requires actual use to conform to dated access, retention and display conditions. Before integrating a real provider, the team records the provider, dated conditions, intended use, applicable access arrangement and actual-use evidence. No selected service means not assessed, not 100% success.
 

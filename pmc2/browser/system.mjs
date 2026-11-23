@@ -1,7 +1,7 @@
 /** StockLens v0.1 controlled browser system, F.1–F.5 / DR-01–DR-10.
- * No live market/news/AI calls. Existing F.2 supplies checked synthetic evidence.
+ * No live market/news/AI calls. F.2 supplies checked local evidence.
  */
-import {UNIVERSE,runEvidence,syntheticConfiguration} from './evidence.mjs';
+import {IMPORT_CONFIG_ID,UNIVERSE,runEvidence,syntheticConfiguration} from './evidence.mjs';
 const copy=v=>structuredClone(v);
 export const CONFIG_ID='v0.1-pmc2-synthetic-1';
 export const CUTOFF='2026-09-21';
@@ -28,19 +28,19 @@ export function preserveRequest(pairResult,analysisDate,requestId,configuration=
   if(!pairResult.valid) return {accepted:false,reason:pairResult.reason,request:null};
   const checked=validatePair(...pairResult.stock_pair);
   if(!checked.valid || checked.reason!==pairResult.reason || JSON.stringify(checked.stock_pair)!==JSON.stringify(pairResult.stock_pair)) return {accepted:false,reason:'invalid_pair_result',request:null};
-  // The controlled data package supplies one snapshot; other dates have no coverage.
-  if(analysisDate!==CUTOFF) return {accepted:false,reason:'unsupported_snapshot_date',request:null};
-  if(!requestId || configuration.configuration_id!==CONFIG_ID) return {accepted:false,reason:'invalid_request_or_configuration',request:null};
+  const configId = configuration.configuration_id;
+  const cutoff = configId === IMPORT_CONFIG_ID ? configuration.observation_dates.at(-1) : CUTOFF;
+  if(analysisDate!==cutoff) return {accepted:false,reason:'unsupported_snapshot_date',request:null};
+  if(!requestId || ![CONFIG_ID, IMPORT_CONFIG_ID].includes(configId)) return {accepted:false,reason:'invalid_request_or_configuration',request:null};
   return {accepted:true,reason:null,request:{request_id:requestId,stock_pair:[...pairResult.stock_pair],analysis_date:analysisDate,configuration_id:configuration.configuration_id}};
 }
 function averageRanks(values) {
   return values.map(value=>1+values.filter(x=>x<value).length+(values.filter(x=>x===value).length-1)/2);
 }
 /** F.3.1 / P.3.1 / DR-05: IF.02 + IO.10 -> unrounded authoritative scores. */
-export function computeScores(evidence) {
+export function computeScores(evidence, config = syntheticConfiguration()) {
   if(!evidence.score_ready) return null;
-  const config=syntheticConfiguration();
-  if(evidence.configuration_id!==config.configuration_id || evidence.analysis_date!==CUTOFF) throw new Error('Evidence/configuration mismatch');
+  if(evidence.configuration_id!==config.configuration_id || evidence.analysis_date!==config.observation_dates.at(-1)) throw new Error('Evidence/configuration mismatch');
   const rows=config.universe.map(symbol=>{
     const records=evidence.market_records.filter(r=>r.symbol===symbol).sort((a,b)=>a.observation_date.localeCompare(b.observation_date));
     if(records.length!==21 || records.some((r,i)=>r.observation_date!==config.observation_dates[i] || !Number.isFinite(r.adjusted_close) || r.adjusted_close<=0)) throw new Error('Incomplete aligned price window');
@@ -88,22 +88,28 @@ export function renderComparison(record,explanation) {
   return {...copy(record),stocks:record.stocks.map(s=>({...copy(s),display_score:s.score.toFixed(2)})),explanation:copy(explanation)};
 }
 /** F.5.2 / P.5.2 / DR-10: workflow state -> observed IO.06. */
-export function reportStatus(state,requestId,reason=null) {
+export function reportStatus(state,requestId,reason=null,configurationId=CONFIG_ID) {
   if(!['ready','processing','completed','completed_with_limitations','failed'].includes(state)) throw new Error('Unknown service state');
-  return {state,request_id:requestId,configuration_id:CONFIG_ID,reason};
+  return {state,request_id:requestId,configuration_id:configurationId,reason};
 }
 /** F.0: controlled F.1 -> F.2 -> F.3 -> F.4 -> F.5 orchestration. */
-export function compareStocks({stockA='AAPL',stockB='MSFT',analysisDate=CUTOFF,scenario='valid',explanationMode='synthetic',requestId=crypto.randomUUID()}={}) {
-  const history=[reportStatus('ready',null),reportStatus('processing',requestId)];
-  const eligibility=validatePair(stockA,stockB),request=preserveRequest(eligibility,analysisDate,requestId);
-  const failure=(reason,evidence=null)=>({mode:'controlled-synthetic-comparison',eligibility,request,evidence,record:null,explanation:{available:false,reason:'comparison_failed',text:null},display:null,history:[...history,reportStatus('failed',requestId,reason)]});
+export function compareStocks({stockA='AAPL',stockB='MSFT',analysisDate=CUTOFF,scenario='valid',explanationMode='synthetic',requestId=crypto.randomUUID(),evidenceSource=null}={}) {
+  const config = evidenceSource?.configuration ?? syntheticConfiguration();
+  const mode = evidenceSource ? 'local-import-comparison' : 'controlled-synthetic-comparison';
+  const status = (state, id, reason) => reportStatus(state, id, reason, config.configuration_id);
+  const history=[status('ready',null),status('processing',requestId)];
+  const eligibility=validatePair(stockA,stockB),request=preserveRequest(eligibility,analysisDate,requestId,config);
+  const failure=(reason,evidence=null)=>({mode,eligibility,request,evidence,record:null,explanation:{available:false,reason:'comparison_failed',text:null},display:null,history:[...history,status('failed',requestId,reason)]});
   if(!request.accepted) return failure(request.reason);
-  const evidenceRun=runEvidence(scenario,...request.request.stock_pair,requestId),evidence=evidenceRun.evidence;
+  const evidenceRun = evidenceSource
+    ? evidenceSource.acquire(request.request, config)
+    : runEvidence(scenario, ...request.request.stock_pair, requestId);
+  const evidence = evidenceRun.evidence;
   if(!evidence.score_ready) return failure(evidence.reason,evidenceRun);
-  const scores=computeScores(evidence),record=identifyDrivers(scores,evidence),payload=packageExplanation(record);
+  const scores=computeScores(evidence,config),record=identifyDrivers(scores,evidence),payload=packageExplanation(record);
   let candidate=explanationMode==='unavailable'?null:syntheticExplanation(payload);
   if(explanationMode==='invalid') candidate.scores[0].score+=1;
   const explanation=checkExplanation(candidate,payload),display=renderComparison(record,explanation);
   const limited=evidence.limitations.length>0||!explanation.available;
-  return {mode:'controlled-synthetic-comparison',eligibility,request,evidence:evidenceRun,scores,record,payload,explanation,display,history:[...history,reportStatus(limited?'completed_with_limitations':'completed',requestId)]};
+  return {mode,eligibility,request,evidence:evidenceRun,scores,record,payload,explanation,display,history:[...history,status(limited?'completed_with_limitations':'completed',requestId)]};
 }
