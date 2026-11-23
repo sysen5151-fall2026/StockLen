@@ -2,6 +2,10 @@
 
 This procedure supports SR-06. A second member must execute it and record the outcome before claiming acceptance.
 
+## Research dashboard
+
+Build with `python scripts/build_site.py` and serve with `python -m http.server 8080 --bind 127.0.0.1 --directory .site`. Visit `http://127.0.0.1:8080/` and compare two tickers. Inspect a ranked stock, change its chart window, and open the market source records. Stop the preview with Ctrl+C.
+
 ## Windows PowerShell
 
 From the repository root, with Python 3.12 installed:
@@ -31,10 +35,10 @@ Use the same demonstration and shutdown steps. No real data/AI account or creden
 ./walking_skeleton/backend/.venv/Scripts/python.exe scripts/check_http.py
 ./walking_skeleton/backend/.venv/Scripts/python.exe scripts/check_baseline.py
 $env:PYTHON=(Resolve-Path ./walking_skeleton/backend/.venv/Scripts/python.exe).Path
-node --test tests/site.test.mjs
+node --test tests/*.test.mjs
 ```
 
-On macOS/Linux use `walking_skeleton/backend/.venv/bin/python` and `PYTHON=walking_skeleton/backend/.venv/bin/python node --test tests/site.test.mjs`. Separate stakeholder acceptance checks are intentionally unmet: `python -m unittest discover -s acceptance -v`.
+On macOS/Linux use `walking_skeleton/backend/.venv/bin/python` and `PYTHON=walking_skeleton/backend/.venv/bin/python node --test tests/*.test.mjs`. Separate stakeholder acceptance checks are intentionally unmet: `python -m unittest discover -s acceptance -v`.
 
 ## Handover or retirement
 

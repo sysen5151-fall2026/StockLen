@@ -1,15 +1,33 @@
-/** F.2 browser implementation. Synthetic adapters only; no provider or AI calls.
+/** F.2 browser implementation. Local adapters; no network provider or AI calls.
  * F.2.1: IF.01 + IO.10 -> IO.03, IO.04, LF.02; mechanism P.2.1.
  * F.2.2: LF.02 + IO.07 + IO.08 + IO.10 -> IF.02; mechanism P.2.2.
  */
 export const UNIVERSE = Object.freeze(['AAPL','MSFT','AMZN','GOOGL','META','NVDA','TSLA','JPM','JNJ','XOM']);
+export const IMPORT_CONFIG_ID = 'v0.1-local-import-1';
+export const MAX_IMPORT_STOCKS = 100;
+export const isImportSymbol = symbol => typeof symbol === 'string' && /^[A-Z][A-Z0-9]{0,9}(?:[-.][A-Z0-9]{1,4})?$/.test(symbol);
+
+export function importConfiguration(observationDates, universe = UNIVERSE) {
+  return {
+    configuration_id: IMPORT_CONFIG_ID,
+    universe: [...universe],
+    observation_dates: [...observationDates],
+    news_days: 7,
+    max_news_per_stock: 2,
+    providers: Object.fromEntries(['market', 'news'].map(kind => [kind, {
+      provider_id: 'local-import-' + kind,
+      conditions_id: 'user-authorized-session-v1',
+      allowed_operations: ['acquire', 'display'],
+    }])),
+  };
+}
 export const SCENARIOS = Object.freeze(['valid','missing_unselected_stock','missing_observation','post_cutoff','missing_source','mixed_request','no_news','bad_news']);
 const clone = value => structuredClone(value);
 const fields = ['request_id','configuration_id','query_id','provider_id','conditions_id'];
 const identity = query => Object.fromEntries(fields.map(k => [k,query[k]]));
 const canonical = value => JSON.stringify(value && typeof value === 'object' ? (Array.isArray(value) ? value.map(v=>JSON.parse(canonical(v))) : Object.fromEntries(Object.keys(value).sort().map(k=>[k,JSON.parse(canonical(value[k]))]))) : value);
 const equal = (a,b) => canonical(a) === canonical(b);
-function isoDate(value) {
+export function isoDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('Expected an ISO date');
   const date = new Date(value+'T00:00:00Z');
   if (!Number.isFinite(date.valueOf()) || date.toISOString().slice(0,10) !== value) throw new Error('Invalid ISO date');
@@ -27,15 +45,22 @@ export function syntheticConfiguration() {
 export function requestDatedRecords(request, configuration) {
   const config=clone(configuration), pair=request.stock_pair, dates=config.observation_dates;
   isoDate(request.analysis_date);
-  if (!request.request_id || !Array.isArray(pair) || pair.length!==2 || new Set(pair).size!==2 || !pair.every(s=>UNIVERSE.includes(s))) throw new Error('IF.01 must contain an identified eligible distinct pair');
-  if (!equal(config.universe,UNIVERSE) || !config.configuration_id || !Array.isArray(dates) || dates.length!==21 || new Set(dates).size!==21 || !equal(dates,[...dates].sort()) || dates.some(d=>{isoDate(d);return d>request.analysis_date;})) throw new Error('IO.10 requires a version and 21 explicit aligned dates for the frozen ten-stock universe');
+  const universe = config.universe;
+  const validUniverse = config.configuration_id === IMPORT_CONFIG_ID
+    ? Array.isArray(universe) && universe.length >= 2 && universe.length <= MAX_IMPORT_STOCKS
+      && new Set(universe).size === universe.length && universe.every(isImportSymbol)
+    : equal(universe, UNIVERSE);
+  if (!validUniverse) throw new Error('Invalid configured universe');
+  if (!request.request_id || !Array.isArray(pair) || pair.length!==2 || new Set(pair).size!==2 || !pair.every(s=>universe.includes(s))) throw new Error('IF.01 must contain an identified eligible distinct pair');
+  if (!config.configuration_id || !Array.isArray(dates) || dates.length!==21 || new Set(dates).size!==21 || !equal(dates,[...dates].sort()) || dates.some(d=>{isoDate(d);return d>request.analysis_date;})) throw new Error('IO.10 requires a version and 21 explicit aligned dates for the configured universe');
   if (config.news_days!==7 || config.max_news_per_stock!==2) throw new Error('IO.10 differs from the v0.1 news bounds');
-  for (const kind of ['market','news']) {
-    const policy=config.providers[kind];
-    if (policy.provider_id!=='synthetic-'+kind || policy.conditions_id!=='local-synthetic-v1' || !equal(policy.allowed_operations,['acquire','retain','display'])) throw new Error('Only the reviewed local synthetic adapters are enabled');
+  const profiles = [syntheticConfiguration(), importConfiguration(dates, universe)];
+  const profile = profiles.find(candidate => candidate.configuration_id === config.configuration_id);
+  if (!profile || !equal(config.providers, profile.providers)) {
+    throw new Error('Unsupported local evidence adapter');
   }
   const context={...clone(request),configuration_id:config.configuration_id};
-  const market={...context,query_id:request.request_id+':market',symbols:[...UNIVERSE],observation_dates:dates,field:'adjusted_close',currency:'USD',...config.providers.market};
+  const market={...context,query_id:request.request_id+':market',symbols:[...universe],observation_dates:dates,field:'adjusted_close',currency:'USD',...config.providers.market};
   const news={...context,query_id:request.request_id+':news',symbols:[...pair],start_date:shifted(request.analysis_date,-6),end_date:request.analysis_date,max_per_stock:2,...config.providers.news};
   return clone({market_query:market,news_query:news,context:{...context,market_query:market,news_query:news,configuration:config}});
 }

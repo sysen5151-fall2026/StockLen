@@ -15,9 +15,10 @@ def main():
     env = dict(os.environ, PYTHON=sys.executable)
     commands = [
         [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
-        [node, "--test", "tests/site.test.mjs"],
+        [node, "--test", *(str(path.relative_to(root)) for path in sorted((root / "tests").glob("*.test.mjs")))],
         [sys.executable, "scripts/check_baseline.py"],
         [sys.executable, "scripts/check_http.py"],
+        [sys.executable, "scripts/build_site.py"],
     ]
     for command in commands:
         print("Running " + " ".join(command), flush=True)

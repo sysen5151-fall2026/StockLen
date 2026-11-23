@@ -1,28 +1,22 @@
 # StockLens — SYSEN 5151
 
-## Operational Concept
+**[Open the StockLens dashboard](https://sysen5151-fall2026.github.io/StockLen/)**
 
-A normal session begins when a Research User chooses eligible stocks and an analysis date in the Dashboard/User Interface. StockLens then requests market and company records through the Market Data Interface and dated news evidence through the News Interface. The Scoring & Ranking Model applies the same documented factors, observation periods, and weights to both stocks, so the comparison is created before any explanation is written. Only after the score breakdown is complete does the AI Explanation Module send the relevant results and evidence to the external AI Model Service. The returned text explains the calculation; it cannot change the scoring rules or independently decide the ranking. A sentiment factor would enter this flow only after its derivation has been separately specified and checked.
-
-The Dashboard/User Interface brings the result back to the user as a connected story: what was compared, which factors mattered, what evidence supports the explanation, and when that evidence was dated. The user can inspect the sources or begin another comparison. The Maintenance Interface supports approved configuration, updates, and future service-status exchanges, but it does not participate in the normal research path. The session ends with information for the user to review; no trade is placed and no personalized portfolio is created.
-
-Transcribed from BMA section 3.2.4; see [source register](model-artifacts/source-register.md). This describes the intended system; the runnable increment below still uses fixed stubs.
+StockLens lets researchers select 2–100 companies from a fixed U.S. large-cap list, browse dated financial news, and rank the selected stocks by their market-adjusted price reaction. Open a ranked stock for its company, sector, price chart and reported volume.
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
-## Stock comparison
+The fixed universe uses the November 20, 2026 iShares OEF equity holdings, with one share class per company. The website queries history using the Massive news and grouped daily data APIs. The absolute difference between a stock’s price return and SPY’s price return determines the rank; the signed difference shows direction. Upstream closes are split-adjusted, with dividends excluded. On-device AI can classify the selected article's licensed summary when the browser’s language model is available.
 
-**[Open StockLens online](https://sysen5151-fall2026.github.io/StockLen/compare.html)** — compare two stocks directly in your browser.
+### Deployment
 
-The controlled workflow validates a distinct eligible pair (F.1), acquires and validates synthetic evidence (F.2), calculates the v0.1 scores and driver differences (F.3), runs and checks the same-host explanation model or marks its result unavailable (F.4), and displays the authoritative comparison with service status (F.5). Expand **Engineering trace** to inspect request context, evidence, scores, explanation boundaries and state history.
-
-The snapshot uses generated prices and fictional news. The default comparison uses the local model from ADR-01. The controlled options retain the checked template and response failure cases. Real provider terms/calendar suitability, external AI integration, end-to-end performance and user-task acceptance remain separate work. The optional Python modules and internal HTTP interfaces implement F.1 and F.2; the integrated F.1–F.5 workflow runs in the browser.
+`python scripts/build_site.py` builds the UI. `python scripts/build_worker.py .site dist/server/index.js` bundles that UI and the data API for a Worker deployment. Configure `MASSIVE_API_KEY` as a server secret with a plan authorized for the intended website audience. The deployed API returns a service status when the secret is missing. Static GitHub Pages alone cannot run this server. Visitors search and analyze on the site and do not supply files or keys.
 
 ## Evidence acquisition and validation
 
 F.2 Acquire and Validate Dated Evidence is implemented by two software modules: F.2.1/P.2.1 builds provider queries and F.2.2/P.2.2 checks returned evidence. The Evidence Lab uses synthetic records and fictional sources. It does not call live providers or calculate stock rankings.
 
-**[Open the Evidence Lab online](https://sysen5151-fall2026.github.io/StockLen/evidence.html)** — runs in your browser without installation or a terminal. Select the stock pair and evidence case, then click **Run F.2**. The browser uses the same synthetic contract and is checked against the Python implementation for every supported scenario.
+For the course verification views, run `python scripts/build_site.py --engineering` and `python -m http.server 8081 --bind 127.0.0.1 --directory .engineering-site`. Open `http://127.0.0.1:8081/evidence.html` for the F.2 lab or `http://127.0.0.1:8081/compare.html` for the engineering comparison.
 
 The Python implementation is also available for local development:
 
@@ -57,9 +51,17 @@ Open http://127.0.0.1:8765 and select **Compare fixture**. One request traverses
 
 ## Website
 
-`website/` contains the migrated research interface. `walking_skeleton/browser/` contains the browser-only mirror of UC.1; the site build publishes it as `skeleton.html`. The research lab's numerical data is illustrative and awaits source verification. Its scoring is deterministic; its explanation is a template. This exploratory view is separate from the fixed-stub Chapter 2 deliverable. GitHub Pages hosts static files, not the Python API.
+`website/index.html` is the StockLens website. GitHub Pages publishes the research dashboard and its assets. The engineering build and local FastAPI fixture support course verification.
 
 Preview: `python3 scripts/build_site.py` then `python3 -m http.server 8080 --directory .site --bind 127.0.0.1`.
+
+## Submitted operational concept
+
+# Operational Concept Narrative
+
+A normal session begins when a Research User chooses eligible stocks and an analysis date in the Dashboard/User Interface. StockLens then requests market and company records through the Market Data Interface and dated news evidence through the News Interface. The Scoring & Ranking Model applies the same documented factors, observation periods, and weights to both stocks, so the comparison is created before any explanation is written. Only after the score breakdown is complete does the AI Explanation Module send the relevant results and evidence to the external AI Model Service. The returned text explains the calculation; it cannot change the scoring rules or independently decide the ranking. A sentiment factor would enter this flow only after its derivation has been separately specified and checked.
+
+The Dashboard/User Interface brings the result back to the user as a connected story: what was compared, which factors mattered, what evidence supports the explanation, and when that evidence was dated. The user can inspect the sources or begin another comparison. The Maintenance Interface supports approved configuration, updates, and future service-status exchanges, but it does not participate in the normal research path. The session ends with information for the user to review; no trade is placed and no personalized portfolio is created.
 
 ## Engineering records
 
@@ -79,7 +81,7 @@ Windows setup and shutdown: [operating guide](docs/operations.md). With the back
 
 ```sh
 python3 -m unittest discover -s tests -v
-node --test tests/site.test.mjs
+node --test tests/*.test.mjs
 ```
 SPEC.md retains all eight submitted stakeholder requirements and proposed acceptance criteria. The [earlier five system-function candidates](requirements/FUNCTIONAL-CANDIDATES.md) are a historical M1 record. For the later submitted SYS-F/DR/CR/SWR baseline and current native-model observations, use [the design source register](docs/design-baseline.md). Proposed user MOEs are not completed test results. The stakeholder-readiness workflow reports all eight as **not assessed**; a green report job only means the report was generated. The strict acceptance scaffold remains available through the manual workflow option or `python -m unittest discover -s acceptance -v`, and still fails while evidence is missing.
 
