@@ -1,3 +1,4 @@
+import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -89,6 +90,16 @@ test('Pages package contains only the StockLens product and connects its researc
     'market-csv.mjs', 'news-ai.mjs', 'universe.mjs',
   ]);
   assert.doesNotMatch(html, /(?:compare|evidence|research-lab|skeleton)\.html|type="file"/);
+});
+
+test('the GitHub Pages entry hands off to the running site without redirecting other hosts', () => {
+  const html = readFileSync('.site/index.html', 'utf8');
+  const script = html.match(/<script id="pages-entry">([\s\S]*?)<\/script>/)[1];
+  const redirects = [];
+  for (const hostname of ['sysen5151-fall2026.github.io', 'stocklens-research-preview.shuxuanwang-624.chatgpt.site', 'localhost']) {
+    runInNewContext(script, { location: { hostname, replace: target => redirects.push(target) } });
+  }
+  assert.deepEqual(redirects, ['https://stocklens-research-preview.shuxuanwang-624.chatgpt.site/?v=43131b9']);
 });
 
 test('selected historical events evaluate all selected stocks with common dates and no future data', async () => {
