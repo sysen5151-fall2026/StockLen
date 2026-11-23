@@ -48,6 +48,18 @@ function articleRecord(article, date) {
   const url = httpsLink(article.article_url);
   const time = new Date(article.published_utc);
   if (!url || !Number.isFinite(+time) || easternDate(time) !== date || !article.id || !article.title) return null;
+  const insights = Object.create(null);
+  if (Array.isArray(article.insights)) {
+    for (const item of article.insights) {
+      if (typeof item?.ticker !== 'string' || !['positive', 'neutral', 'negative'].includes(item.sentiment)) continue;
+      const ticker = item.ticker.replace('.', '-');
+      if (!/^[A-Z][A-Z0-9-]{0,14}$/.test(ticker) || insights[ticker]) continue;
+      insights[ticker] = {
+        sentiment: item.sentiment,
+        reasoning: typeof item.sentiment_reasoning === 'string' ? item.sentiment_reasoning.trim().slice(0, 1000) : '',
+      };
+    }
+  }
   return {
     id: article.id,
     title: article.title,
@@ -55,8 +67,9 @@ function articleRecord(article, date) {
     date,
     publishedAt: time.toISOString(),
     publisher: article.publisher?.name || '',
-    tickers: Array.isArray(article.tickers) ? article.tickers : [],
+    tickers: Array.isArray(article.tickers) ? article.tickers.filter(ticker => typeof ticker === 'string') : [],
     url,
+    insights,
   };
 }
 
@@ -89,17 +102,24 @@ export function createMarketApi(universe, requestProvider = (url, options) => gl
     const date = parseDay(query.get('date'));
     const ticker = query.get('ticker');
     const cursor = query.get('cursor');
+    const keyword = (query.get('keyword') ?? '').trim();
+    if (keyword.length > 120) throw new ApiError(400, 'The news search must be 120 characters or fewer.');
+    const terms = keyword.toLowerCase().split(/\s+/).filter(Boolean);
     if (ticker && !eligible.has(ticker)) throw new ApiError(400, 'The ticker is outside the research universe.');
     if (cursor && !/^[A-Za-z0-9_+=/.-]{1,1024}$/.test(cursor)) throw new ApiError(400, 'Invalid news page.');
     const result = await get('/v2/reference/news', {
       'published_utc.gte': easternMidnight(date),
       'published_utc.lt': easternMidnight(new Date(+date + dayMs)),
-      limit: 50, sort: 'published_utc', order: 'desc', ...(ticker && { ticker: ticker.replace('-', '.') }),
+      limit: terms.length ? 200 : 50, sort: 'published_utc', order: 'desc', ...(ticker && { ticker: ticker.replace('-', '.') }),
       ...(cursor && { cursor }),
     }, key);
     const next = httpsLink(result.next_url);
     return {
-      articles: (result.results ?? []).map(item => articleRecord(item, dateKey(date))).filter(Boolean),
+      articles: (result.results ?? []).map(item => articleRecord(item, dateKey(date))).filter(article => {
+        if (!article) return false;
+        const searchable = [article.title, article.description, article.publisher, ...article.tickers].join(' ').toLowerCase();
+        return terms.every(term => searchable.includes(term));
+      }),
       cursor: next ? new URL(next).searchParams.get('cursor') : null,
     };
   }

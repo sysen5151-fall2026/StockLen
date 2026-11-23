@@ -82,3 +82,7 @@ blockquote { border-left: 3px solid var(--accent); padding-left: 14px; margin-le
 .stock-picker input { width: auto; margin: 0; accent-color: var(--accent); }
 #news-search { align-items: flex-end; margin-bottom: 9px; }
 #more-news { margin-top: 8px; }
+
+.analysis-table { max-height: 25rem; overflow: auto; }
+.analysis-table td:nth-child(3) { min-width: 16rem; }
+#local-ai { margin-top: 1rem; }

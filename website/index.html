@@ -21,6 +21,7 @@
         <form id="news-search">
           <label>Publication date (New York) <input id="news-date" type="date" required></label>
           <label>Filter by ticker <select id="news-ticker"><option value="">All news</option></select></label>
+          <label>Search news <input id="news-keyword" type="search" maxlength="120" placeholder="Company, topic, or headline"></label>
           <button type="submit">Find news</button>
         </form>
         <p id="news-status" role="status"></p>
@@ -40,7 +41,7 @@
         <label>Window after publication day
           <select id="horizon"><option value="1">1 trading session</option><option value="3">3 trading sessions</option><option value="5">5 trading sessions</option></select>
         </label>
-        <button type="button" id="rank-button">Rank selected stocks</button>
+        <button type="button" id="rank-button">Compare stocks and analyze news</button>
       </section>
     </div>
     <section id="rankings" class="card" aria-labelledby="rank-title">
@@ -64,13 +65,27 @@
     </section>
     <section class="card" aria-labelledby="ai-title">
       <h2 id="ai-title">AI news analysis</h2>
-      <p>On-device AI analyzes the selected article summary and shows the text behind its interpretation.</p>
-      <button id="ai-button" type="button">Analyze article</button>
+      <p id="news-analysis-status" role="status">Select an article to see its company references and available sentiment.</p>
+      <div id="news-analysis-content" hidden>
+        <p id="news-analysis-summary"></p>
+        <div class="table-scroll analysis-table">
+          <table aria-label="News and observed market reaction by stock">
+            <thead><tr><th scope="col">Stock</th><th scope="col">Article coverage</th><th scope="col">Massive sentiment and rationale</th><th scope="col">Observed move vs. SPY</th></tr></thead>
+            <tbody id="news-analysis-rows"></tbody>
+          </table>
+        </div>
+        <p>Sentiment describes the news. Relative returns describe market moves during the selected window. Other events can affect those returns.</p>
+      </div>
+      <details id="local-ai">
+        <summary>Interpret the article with on-device AI</summary>
+        <p>Where supported, your browser classifies the article summary and highlights supporting text.</p>
+        <button id="ai-button" type="button" disabled>Analyze article</button>
       <p id="ai-status" role="status"></p>
       <div id="ai-result" hidden>
         <p id="ai-classification"></p>
         <blockquote id="ai-evidence"></blockquote>
       </div>
+      </details>
     </section>
     <details class="method">
       <summary>Stock universe and ranking method</summary>

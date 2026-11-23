@@ -1,6 +1,6 @@
 import { universe } from './universe.mjs';
 import { hydrateSessions, rankReaction } from './event-ranking.mjs';
-import { analyzeNews } from './news-ai.mjs';
+import { analyzeNews, compareNewsEvidence } from './news-ai.mjs';
 
 const get = id => document.getElementById(id);
 const form = get('news-search');
@@ -10,6 +10,7 @@ const percent = value => `${(100 * value).toFixed(2)}%`;
 const points = value => `${(100 * value).toFixed(2)} pp`;
 const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 let market = new Map();
+let currentRanking = null;
 let newsSequence = 0;
 let rankingSequence = 0;
 let articles = [];
@@ -17,6 +18,7 @@ let search = null;
 let cursor = null;
 const selection = new Set(['AAPL', 'MSFT', 'NVDA']);
 let analysisSequence = 0;
+let localAiRunning = false;
 
 function element(tag, value) {
   const node = document.createElement(tag);
@@ -30,6 +32,8 @@ function clearRanking() {
   get('rank-content').hidden = true;
   get('stock-details').hidden = true;
   status.textContent = 'Run the ranking for the current inputs.';
+  currentRanking = null;
+  renderNewsAnalysis();
 }
 
 function clearArticleOutputs() {
@@ -43,6 +47,39 @@ function article() {
   const selected = picker.value === '' ? null : articles[Number(picker.value)];
   if (!selected) throw new Error('Find and choose a historical article.');
   return selected;
+}
+
+function renderNewsAnalysis() {
+  const content = get('news-analysis-content');
+  const message = get('news-analysis-status');
+  const source = picker.value === '' ? null : articles[Number(picker.value)];
+  get('ai-button').disabled = !source || localAiRunning;
+  content.hidden = !source;
+  if (!source) {
+    message.textContent = 'Select an article to see its company references and available sentiment.';
+    return;
+  }
+  const rows = compareNewsEvidence(source, selection, currentRanking);
+  const count = rows.filter(row => row.insight).length;
+  message.textContent = count
+    ? `Massive supplied stock-specific sentiment for ${count} of ${rows.length} selected stocks.`
+    : 'Massive did not supply stock-specific sentiment for the selected stocks in this article.';
+  const top = currentRanking?.covered[0];
+  get('news-analysis-summary').textContent = top
+    ? `${top.ticker} had the largest absolute difference from SPY (${points(top.relative)} signed). Rank uses the observed price difference.`
+    : 'Run the ranking to compare the article evidence with observed price moves.';
+  get('news-analysis-rows').replaceChildren(...rows.map(({ticker, mentioned, insight, reaction}) => {
+    const row = element('tr');
+    const coverage = mentioned || insight ? 'Linked by provider' : 'No provider association';
+    const sentiment = insight
+      ? insight.sentiment + (insight.reasoning ? ' · ' + insight.reasoning : '')
+      : 'Not available';
+    const movement = reaction
+      ? `#${reaction.rank} · ${points(reaction.relative)}`
+      : currentRanking ? 'Missing price coverage' : 'Ranking pending';
+    for (const value of [ticker, coverage, sentiment, movement]) row.append(element('td', value));
+    return row;
+  }));
 }
 
 async function queryApi(path, params) {
@@ -72,7 +109,11 @@ async function loadNews(append = false) {
   const newsStatus = get('news-status');
   const more = get('more-news');
   if (!append) {
-    search = { date: get('news-date').value, ticker: get('news-ticker').value };
+    search = {
+      date: get('news-date').value,
+      ticker: get('news-ticker').value,
+      keyword: get('news-keyword').value.trim(),
+    };
     articles = [];
     cursor = null;
     picker.replaceChildren(new Option('Choose an article', ''));
@@ -94,7 +135,10 @@ async function loadNews(append = false) {
     }
     cursor = response.cursor;
     picker.disabled = !articles.length;
-    newsStatus.textContent = articles.length ? `${articles.length} articles loaded.` : 'No stories found for this date and filter.';
+    newsStatus.textContent = articles.length
+      ? `${articles.length} matching articles loaded.`
+      : cursor ? 'No matches in this batch. Load more articles to continue the search.'
+        : 'No stories matched this date and search.';
   } catch (error) {
     if (sequence !== newsSequence) return;
     newsStatus.textContent = error.message;
@@ -220,6 +264,13 @@ get('rank-button').addEventListener('click', async () => {
     get('missing-data').hidden = !result.missing.length;
     get('missing-stocks').textContent = result.missing.map(stock => stock.ticker).join(', ');
     get('rank-content').hidden = false;
+    currentRanking = result;
+    renderNewsAnalysis();
+    const browserModel = globalThis.LanguageModel;
+    if (source.description.length >= 30 && browserModel) {
+      const state = await browserModel.availability().catch(() => 'unavailable');
+      if (sequence === rankingSequence && state === 'available') void runLocalAi();
+    }
   } catch (error) {
     if (sequence === rankingSequence) status.textContent = error.message;
   } finally {
@@ -227,11 +278,13 @@ get('rank-button').addEventListener('click', async () => {
   }
 });
 
-get('ai-button').addEventListener('click', async () => {
+async function runLocalAi() {
+  if (localAiRunning) return;
   const sequence = ++analysisSequence;
   const aiStatus = get('ai-status');
   const button = get('ai-button');
   get('ai-result').hidden = true;
+  localAiRunning = true;
   button.disabled = true;
   aiStatus.textContent = 'Checking on-device AI…';
   try {
@@ -248,6 +301,9 @@ get('ai-button').addEventListener('click', async () => {
   } catch (error) {
     if (sequence === analysisSequence) aiStatus.textContent = error.message;
   } finally {
-    button.disabled = false;
+    localAiRunning = false;
+    button.disabled = picker.value === '';
   }
-});
+}
+
+get('ai-button').addEventListener('click', () => void runLocalAi());
