@@ -60,7 +60,7 @@ function articleRecord(article, date) {
   };
 }
 
-export function createMarketApi(universe, requestProvider = fetch) {
+export function createMarketApi(universe, requestProvider = (url, options) => globalThis.fetch(url.href, options)) {
   const eligible = new Set(universe.map(stock => stock.ticker));
 
   async function get(path, params, key) {
@@ -70,10 +70,11 @@ export function createMarketApi(universe, requestProvider = fetch) {
     try {
       response = await requestProvider(url, {
         headers: { Authorization: 'Bearer ' + key },
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(15000),
         redirect: 'error',
       });
-    } catch {
+    } catch (error) {
+      console.error('Market data connection failed:', error?.name, error?.message);
       throw new ApiError(502, 'The market data service could not be reached.');
     }
     if (response.status === 429) throw new ApiError(429, 'The data provider rate limit was reached. Try again shortly.');
