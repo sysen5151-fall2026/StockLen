@@ -71,7 +71,7 @@ export function createMarketApi(universe, requestProvider = (url, options) => gl
       response = await requestProvider(url, {
         headers: { Authorization: 'Bearer ' + key },
         signal: AbortSignal.timeout(15000),
-        redirect: 'error',
+        redirect: 'manual',
       });
     } catch (error) {
       console.error('Market data connection failed:', error?.name, error?.message);

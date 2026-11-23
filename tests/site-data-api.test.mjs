@@ -12,6 +12,7 @@ test('historical news search supports ticker filters, Eastern dates, safe source
     calls.push(url);
     assert.equal(url.hostname, 'api.massive.com');
     assert.equal(options.headers.Authorization, 'Bearer test-only');
+    assert.equal(options.redirect, 'manual');
     const result = {
       id: 'id', article_url: 'https://example.com/report', title: 'Issuer results',
       publisher: { name: 'Publisher' }, published_utc: '2025-03-09T05:00:00Z',
