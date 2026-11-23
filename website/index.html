@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Rank the market-adjusted reactions of 100 U.S. stocks to a Yahoo Finance event.">
+  <meta name="description" content="Compare selected U.S. stocks around a historical financial news event.">
   <title>StockLens | News reaction ranking</title>
   <link rel="stylesheet" href="./research/dashboard.css">
   <script type="module" src="./research/event-dashboard.mjs"></script>
@@ -13,33 +13,39 @@
   <main class="shell">
     <section class="intro">
       <h1>News reaction ranking</h1>
-      <p>Compare how 100 representative U.S. stocks moved around a Yahoo Finance story.</p>
+      <p>Select 2–100 stocks and compare how they moved around a historical news story.</p>
     </section>
     <div class="event-layout">
       <section class="card" aria-labelledby="article-heading">
-        <h2 id="article-heading">Yahoo Finance news</h2>
-        <label>Choose an article <select id="article-picker"><option value="">Enter a Yahoo Finance article</option></select></label>
-        <form id="article-form">
-          <label>Article title <input name="title" required maxlength="300"></label>
-          <label>Publication date <input name="date" type="date" required></label>
-          <label>Yahoo Finance article URL <input name="url" type="url" required></label>
+        <h2 id="article-heading">Find historical news</h2>
+        <form id="news-search">
+          <label>Publication date (New York) <input id="news-date" type="date" required></label>
+          <label>Filter by ticker <select id="news-ticker"><option value="">All news</option></select></label>
+          <button type="submit">Find news</button>
         </form>
+        <p id="news-status" role="status"></p>
+        <label>Article <select id="article-picker" disabled><option value="">Search for news first</option></select></label>
+        <button id="more-news" type="button" hidden>Load more articles</button>
         <p id="article-source"></p>
       </section>
       <section class="card" aria-labelledby="market-heading">
-        <h2 id="market-heading">Historical prices</h2>
-        <p>Import daily CSVs named by ticker, including SPY.csv. Each file needs Date and Adj Close. Volume is optional.</p>
-        <label>Historical CSV files <input id="market-files" type="file" accept=".csv,text/csv" multiple></label>
-        <p id="market-status" role="status">No price files loaded.</p>
+        <h2 id="market-heading">Stocks to compare</h2>
+        <label>Find a stock <input id="stock-filter" type="search" placeholder="Ticker or company name"></label>
+        <div class="selection-actions">
+          <button id="select-all" type="button">Select all 100</button>
+          <button id="clear-stocks" type="button">Clear</button>
+          <output id="selection-count"></output>
+        </div>
+        <div id="stock-picker" class="stock-picker" role="group" aria-label="Eligible stocks"></div>
         <label>Window after publication day
           <select id="horizon"><option value="1">1 trading session</option><option value="3">3 trading sessions</option><option value="5">5 trading sessions</option></select>
         </label>
-        <button type="button" id="rank-button">Rank stock reactions</button>
+        <button type="button" id="rank-button">Rank selected stocks</button>
       </section>
     </div>
     <section id="rankings" class="card" aria-labelledby="rank-title">
       <h2 id="rank-title">Stock reactions</h2>
-      <p id="rank-status" role="status">Choose news and load historical prices to see results.</p>
+      <p id="rank-status" role="status">Select news and at least two stocks to see results.</p>
       <div id="rank-content" hidden>
         <p id="rank-summary"></p>
         <div class="table-scroll">
@@ -58,8 +64,7 @@
     </section>
     <section class="card" aria-labelledby="ai-title">
       <h2 id="ai-title">AI news analysis</h2>
-      <p>Paste a permitted excerpt from the selected article. On-device AI identifies the topic and tone and highlights supporting text.</p>
-      <label>Article excerpt <textarea id="article-excerpt" rows="4" minlength="30" maxlength="3500"></textarea></label>
+      <p>On-device AI analyzes the selected article summary and shows the text behind its interpretation.</p>
       <button id="ai-button" type="button">Analyze article</button>
       <p id="ai-status" role="status"></p>
       <div id="ai-result" hidden>
@@ -69,8 +74,8 @@
     </section>
     <details class="method">
       <summary>Stock universe and ranking method</summary>
-      <p>The fixed list uses 100 companies from the November 20, 2026 OEF holdings snapshot, with one share class per company. <a id="universe-source" href="https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv">Holdings source</a>.</p>
-      <p>Rank is based on the absolute difference between a stock’s return and SPY’s return over the same window. The window starts at the last SPY trading close strictly before the publication date and ends at the selected close strictly after it. The publication date uses New York time. The signed difference shows whether a stock outperformed or underperformed the market. Other news and market factors can contribute to the observed moves.</p>
+      <p>Select any subset of the fixed list, which uses 100 companies from the November 20, 2026 OEF holdings snapshot, with one share class per company. <a id="universe-source" href="https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv">Holdings source</a>.</p>
+      <p>Rank is based on the absolute difference between a stock’s split-adjusted price return and SPY’s price return over the same window. These prices do not include dividends. The window starts at the last SPY trading close strictly before the publication date and ends at the selected close strictly after it. The publication date uses New York time. The signed difference shows whether a stock outperformed or underperformed the market. Other news and market factors can contribute to the observed moves.</p>
       <div id="universe-list"></div>
     </details>
   </main>

@@ -81,14 +81,14 @@ test('original product scope: a predefined 100-stock set can be scored without a
 test('Pages package contains only the StockLens product and connects its research views', () => {
   assert.deepEqual(readdirSync('.site').sort(), ['.nojekyll', 'index.html', 'research']);
   const html = readFileSync('.site/index.html', 'utf8');
-  for (const element of ['article-form', 'market-files', 'reaction-rows', 'event-chart', 'ai-evidence']) {
+  for (const element of ['news-search', 'stock-picker', 'reaction-rows', 'event-chart', 'ai-evidence']) {
     assert.ok(html.includes(`id="${element}"`), element);
   }
   assert.deepEqual(readdirSync('.site/research').sort(), [
     'dashboard.css', 'event-dashboard.mjs', 'event-ranking.mjs',
     'market-csv.mjs', 'news-ai.mjs', 'universe.mjs',
   ]);
-  assert.doesNotMatch(html, /(?:compare|evidence|research-lab|skeleton)\.html/);
+  assert.doesNotMatch(html, /(?:compare|evidence|research-lab|skeleton)\.html|type="file"/);
 });
 
 test('selected historical events evaluate all selected stocks with common dates and no future data', async () => {
@@ -111,12 +111,10 @@ test('selected historical events evaluate all selected stocks with common dates 
 
 test('Yahoo event ranking fixes the universe and ranks real-input windows by absolute SPY-relative move', async () => {
   const { universe } = await import('../.site/research/universe.mjs');
-  const { rankReaction, validateYahooArticle, yahooArticles } = await import('../.site/research/event-ranking.mjs');
+  const { rankReaction } = await import('../.site/research/event-ranking.mjs');
   assert.equal(universe.length, 100);
   assert.equal(new Set(universe.map(stock => stock.ticker)).size, 100);
   assert.ok(universe.some(stock => stock.ticker === 'BRK-B'));
-  for (const article of yahooArticles) assert.deepEqual(validateYahooArticle(article), article);
-  assert.throws(() => validateYahooArticle({ ...yahooArticles[0], url: 'https://finance.yahoo.com.example.com/news/story.html' }), /original/);
 
   const history = (before, after) => ({ prices: new Map([
     ['2025-02-25', before], ['2025-02-26', before], ['2025-02-27', after],
@@ -128,7 +126,7 @@ test('Yahoo event ranking fixes the universe and ranks real-input windows by abs
   assert.equal(result.missing.length, 98);
   assert.equal(result.before, '2025-02-25');
   assert.equal(result.after, '2025-02-27');
-  assert.throws(() => rankReaction(universe, market, '2025-02-26', 3), /does not cover/);
+  assert.throws(() => rankReaction(universe, market, '2025-02-26', 3), /do not cover/);
   for (const stock of universe) market.set(stock.ticker, history(100, 102));
   assert.equal(rankReaction(universe, market, '2025-02-26', 1).covered.length, 100);
 });

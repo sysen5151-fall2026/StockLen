@@ -2,13 +2,15 @@
 
 **[Open the StockLens dashboard](https://sysen5151-fall2026.github.io/StockLen/)**
 
-StockLens ranks the observed market reaction of 100 U.S. large-cap companies to a selected Yahoo Finance article. Pick a dated story or enter a Yahoo Finance link, import authorized adjusted closing prices, and compare stocks against SPY over the chosen event window. Open a ranked stock for its company, sector, price chart and reported volume when provided.
+StockLens lets researchers select 2–100 companies from a fixed U.S. large-cap list, browse dated financial news, and rank the selected stocks by their market-adjusted price reaction. Open a ranked stock for its company, sector, price chart and reported volume.
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
-The fixed universe uses the November 20, 2026 iShares OEF equity holdings, with one share class per company. Import one daily CSV per stock and a separate SPY.csv. The dashboard shows incomplete coverage when files for some companies are missing. The size of the return difference versus SPY determines the rank, and the signed value shows relative direction.
+The fixed universe uses the November 20, 2026 iShares OEF equity holdings, with one share class per company. The website queries history using the Massive news and grouped daily data APIs. The absolute difference between a stock’s price return and SPY’s price return determines the rank; the signed difference shows direction. Upstream closes are split-adjusted, with dividends excluded. On-device AI can classify the selected article's licensed summary when the browser’s language model is available.
 
-The **AI news analysis** panel uses the browser’s on-device language model on supported devices. It classifies a permitted excerpt's topic and tone, verifies a supporting quote against the excerpt and displays that quote. The ranked price reaction is calculated independently from actual prices. Current data entry is via real Yahoo Finance links and user-authorized CSVs. Automated Yahoo collection and redistribution are pending provider authorization.
+### Deployment
+
+`python scripts/build_site.py` builds the UI. `python scripts/build_worker.py .site dist/server/index.js` bundles that UI and the data API for a Worker deployment. Configure `MASSIVE_API_KEY` as a server secret with a plan authorized for the intended website audience. The deployed API returns a service status when the secret is missing. Static GitHub Pages alone cannot run this server. Visitors search and analyze on the site and do not supply files or keys.
 
 ## Evidence acquisition and validation
 

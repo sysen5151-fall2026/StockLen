@@ -1,19 +1,21 @@
 import { universe } from './universe.mjs';
-import { readYahooPrices } from './market-csv.mjs';
-import { rankReaction, validateYahooArticle, yahooArticles } from './event-ranking.mjs';
+import { hydrateSessions, rankReaction } from './event-ranking.mjs';
 import { analyzeNews } from './news-ai.mjs';
 
 const get = id => document.getElementById(id);
-const form = get('article-form');
+const form = get('news-search');
 const picker = get('article-picker');
 const status = get('rank-status');
-const marketInput = get('market-files');
 const percent = value => `${(100 * value).toFixed(2)}%`;
 const points = value => `${(100 * value).toFixed(2)} pp`;
 const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-const eligible = new Set(['SPY', ...universe.map(stock => stock.ticker)]);
 let market = new Map();
-let importSequence = 0;
+let newsSequence = 0;
+let rankingSequence = 0;
+let articles = [];
+let search = null;
+let cursor = null;
+const selection = new Set(['AAPL', 'MSFT', 'NVDA']);
 let analysisSequence = 0;
 
 function element(tag, value) {
@@ -23,6 +25,8 @@ function element(tag, value) {
 }
 
 function clearRanking() {
+  rankingSequence += 1;
+  get('rank-button').disabled = false;
   get('rank-content').hidden = true;
   get('stock-details').hidden = true;
   status.textContent = 'Run the ranking for the current inputs.';
@@ -36,74 +40,121 @@ function clearArticleOutputs() {
 }
 
 function article() {
-  return validateYahooArticle(Object.fromEntries(new FormData(form)));
+  const selected = picker.value === '' ? null : articles[Number(picker.value)];
+  if (!selected) throw new Error('Find and choose a historical article.');
+  return selected;
+}
+
+async function queryApi(path, params) {
+  const response = await fetch(path + '?' + new URLSearchParams(params));
+  if (!response.headers.get('content-type')?.includes('application/json')) {
+    throw new Error('The historical data service is unavailable on this deployment.');
+  }
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error ?? 'The data request failed.');
+  return data;
 }
 
 function showSource() {
   const source = get('article-source');
   source.replaceChildren();
+  if (picker.value === '') return;
+  const selected = article();
+  const link = element('a', selected.publisher || 'Read original story');
+  link.href = selected.url;
+  link.referrerPolicy = 'no-referrer';
+  source.append(link);
+  if (selected.description) source.append(element('p', selected.description));
+}
+
+async function loadNews(append = false) {
+  const sequence = ++newsSequence;
+  const newsStatus = get('news-status');
+  const more = get('more-news');
+  if (!append) {
+    search = { date: get('news-date').value, ticker: get('news-ticker').value };
+    articles = [];
+    cursor = null;
+    picker.replaceChildren(new Option('Choose an article', ''));
+    picker.disabled = true;
+    showSource();
+    clearArticleOutputs();
+  }
+  newsStatus.textContent = 'Searching the historical news archive…';
+  more.disabled = true;
   try {
-    const link = element('a', 'Read on Yahoo Finance');
-    link.href = article().url;
-    link.referrerPolicy = 'no-referrer';
-    source.append(link);
-  } catch {
-    // The link appears once all article inputs are valid.
+    const response = await queryApi('/api/news', { ...search, ...(append && cursor && { cursor }) });
+    if (sequence !== newsSequence) return;
+    const seen = new Set(articles.map(item => item.id));
+    for (const item of response.articles) {
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+      picker.add(new Option(item.title, String(articles.length)));
+      articles.push(item);
+    }
+    cursor = response.cursor;
+    picker.disabled = !articles.length;
+    newsStatus.textContent = articles.length ? `${articles.length} articles loaded.` : 'No stories found for this date and filter.';
+  } catch (error) {
+    if (sequence !== newsSequence) return;
+    newsStatus.textContent = error.message;
+  } finally {
+    if (sequence === newsSequence) {
+      more.hidden = !cursor;
+      more.disabled = false;
+    }
   }
 }
 
-for (const [index, entry] of yahooArticles.entries()) {
-  picker.add(new Option(entry.title, String(index)));
+function renderStocks() {
+  const term = get('stock-filter').value.trim().toLowerCase();
+  get('selection-count').textContent = `${selection.size} of 100 selected`;
+  get('stock-picker').replaceChildren(...universe
+    .filter(stock => `${stock.ticker} ${stock.name}`.toLowerCase().includes(term))
+    .map(stock => {
+      const label = element('label');
+      const input = element('input');
+      input.type = 'checkbox';
+      input.value = stock.ticker;
+      input.checked = selection.has(stock.ticker);
+      input.setAttribute('aria-label', `${stock.ticker} ${stock.name}`);
+      label.append(input, stock.ticker);
+      return label;
+    }));
 }
+
+for (const stock of universe) get('news-ticker').add(new Option(stock.ticker, stock.ticker));
+const initialDate = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+get('news-date').value = initialDate;
+form.addEventListener('submit', event => {
+  event.preventDefault();
+  void loadNews();
+});
+get('more-news').addEventListener('click', () => void loadNews(true));
 picker.addEventListener('change', () => {
-  const entry = picker.value === '' ? {} : yahooArticles[Number(picker.value)];
-  for (const key of ['title', 'date', 'url']) form.elements[key].value = entry[key] ?? '';
-  get('article-excerpt').value = '';
   showSource();
   clearArticleOutputs();
-});
-form.addEventListener('input', () => {
-  picker.value = '';
-  showSource();
-  clearArticleOutputs();
-});
-form.addEventListener('submit', event => event.preventDefault());
-get('article-excerpt').addEventListener('input', () => {
-  analysisSequence += 1;
-  get('ai-result').hidden = true;
-  get('ai-status').textContent = '';
 });
 get('horizon').addEventListener('change', clearRanking);
-get('universe-list').textContent = universe.map(stock => stock.ticker).join(' · ');
-
-marketInput.addEventListener('change', async () => {
-  const sequence = ++importSequence;
-  const files = [...marketInput.files];
-  marketInput.value = '';
+get('stock-filter').addEventListener('input', renderStocks);
+get('stock-picker').addEventListener('change', event => {
+  const { value, checked } = event.target;
+  if (checked) selection.add(value);
+  else selection.delete(value);
+  get('selection-count').textContent = `${selection.size} of 100 selected`;
   clearRanking();
-  get('market-status').textContent = 'Reading price files…';
-  get('rank-button').disabled = true;
-  try {
-    if (!files.length || files.length > eligible.size) throw new Error('Choose up to 101 distinct ticker CSV files.');
-    const next = new Map(market);
-    const seen = new Set();
-    for (const file of files) {
-      const record = readYahooPrices(file.name.replace(/^(BRK)[ .]B\.csv$/i, '$1-B.csv'), await file.text());
-      if (!eligible.has(record.symbol)) throw new Error(record.symbol + ' is outside the fixed universe.');
-      if (seen.has(record.symbol)) throw new Error('Duplicate file for ' + record.symbol + '.');
-      seen.add(record.symbol);
-      next.set(record.symbol, record);
-    }
-    if (sequence !== importSequence) return;
-    market = next;
-    const benchmark = market.has('SPY') ? 1 : 0;
-    get('market-status').textContent = `${market.size - benchmark} of 100 stocks loaded. SPY ${benchmark ? 'loaded' : 'missing'}.`;
-  } catch (error) {
-    if (sequence === importSequence) get('market-status').textContent = error.message + ' Previously loaded files are unchanged.';
-  } finally {
-    if (sequence === importSequence) get('rank-button').disabled = false;
-  }
 });
+for (const [id, all] of [['select-all', true], ['clear-stocks', false]]) {
+  get(id).addEventListener('click', () => {
+    selection.clear();
+    if (all) for (const stock of universe) selection.add(stock.ticker);
+    renderStocks();
+    clearRanking();
+  });
+}
+get('universe-list').textContent = universe.map(stock => stock.ticker).join(' · ');
+renderStocks();
+void loadNews();
 
 function showDetail(stock, result) {
   const history = market.get(stock.ticker).prices;
@@ -133,14 +184,25 @@ function showDetail(stock, result) {
   get('stock-title').focus();
 }
 
-get('rank-button').addEventListener('click', () => {
+get('rank-button').addEventListener('click', async () => {
   clearRanking();
-  if (!form.reportValidity()) return;
+  const sequence = rankingSequence;
+  const button = get('rank-button');
+  button.disabled = true;
   try {
     const source = article();
-    const result = rankReaction(universe, market, source.date, Number(get('horizon').value));
+    if (selection.size < 2) throw new Error('Select at least two stocks.');
+    const group = universe.filter(stock => selection.has(stock.ticker));
+    const horizon = Number(get('horizon').value);
+    status.textContent = 'Loading historical prices and calculating reactions…';
+    const response = await queryApi('/api/market-window', {
+      date: source.date, symbols: group.map(stock => stock.ticker).join(','), horizon,
+    });
+    if (sequence !== rankingSequence) return;
+    market = hydrateSessions(response.sessions);
+    const result = rankReaction(group, market, source.date, horizon);
     if (!result.covered.length) throw new Error('No stock has prices for both window endpoints.');
-    status.textContent = `${result.covered.length} of 100 stocks ranked · ${result.before} to ${result.after} · SPY ${percent(result.benchmarkReturn)}`;
+    status.textContent = `${result.covered.length} of ${group.length} selected stocks ranked · ${result.before} to ${result.after} · SPY ${percent(result.benchmarkReturn)}`;
     const most = result.covered[0];
     get('rank-summary').textContent = `${most.ticker} moved furthest from SPY in this window (${points(most.relative)} relative return).`;
     get('reaction-rows').replaceChildren(...result.covered.map((stock, index) => {
@@ -159,7 +221,9 @@ get('rank-button').addEventListener('click', () => {
     get('missing-stocks').textContent = result.missing.map(stock => stock.ticker).join(', ');
     get('rank-content').hidden = false;
   } catch (error) {
-    status.textContent = error.message;
+    if (sequence === rankingSequence) status.textContent = error.message;
+  } finally {
+    if (sequence === rankingSequence) button.disabled = false;
   }
 });
 
@@ -168,18 +232,19 @@ get('ai-button').addEventListener('click', async () => {
   const aiStatus = get('ai-status');
   const button = get('ai-button');
   get('ai-result').hidden = true;
-  if (!form.reportValidity()) return;
   button.disabled = true;
   aiStatus.textContent = 'Checking on-device AI…';
   try {
-    const result = await analyzeNews(globalThis.LanguageModel, article(), get('article-excerpt').value, fraction => {
+    const source = article();
+    if (!source.description) throw new Error('The provider has no summary for this article.');
+    const result = await analyzeNews(globalThis.LanguageModel, source, source.description, fraction => {
       if (sequence === analysisSequence) aiStatus.textContent = `Downloading the browser model… ${Math.round(fraction * 100)}%`;
     });
     if (sequence !== analysisSequence) return;
     get('ai-classification').textContent = `Topic: ${result.topic}. Article tone: ${result.tone}.`;
     get('ai-evidence').textContent = result.evidence;
     get('ai-result').hidden = false;
-    aiStatus.textContent = 'On-device interpretation of the supplied excerpt.';
+    aiStatus.textContent = 'On-device interpretation of the provider summary.';
   } catch (error) {
     if (sequence === analysisSequence) aiStatus.textContent = error.message;
   } finally {

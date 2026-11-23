@@ -75,3 +75,10 @@ input, textarea { font: inherit; color: var(--ink); width: 100%; padding: 8px; b
 #universe-list { line-height: 1.8; }
 blockquote { border-left: 3px solid var(--accent); padding-left: 14px; margin-left: 0; }
 @media (max-width: 760px) { .event-layout { grid-template-columns: 1fr; gap: 0; } }
+.selection-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+.selection-actions button { min-height: 34px; background: #e4efeb; color: var(--ink); }
+.stock-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(78px, 1fr)); gap: 6px; max-height: 180px; overflow: auto; margin: 10px 0 15px; }
+.stock-picker label { display: flex; align-items: center; gap: 5px; border-radius: 6px; background: #edf5f1; padding: 7px; }
+.stock-picker input { width: auto; margin: 0; accent-color: var(--accent); }
+#news-search { align-items: flex-end; margin-bottom: 9px; }
+#more-news { margin-top: 8px; }

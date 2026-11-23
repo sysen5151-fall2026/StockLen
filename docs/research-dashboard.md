@@ -1,12 +1,14 @@
 # Public news reaction workflow
 
-Select an indexed Yahoo Finance article or paste a Yahoo Finance article URL, its title and the publication date in New York time. Import authorized daily adjusted-close CSVs for the fixed list and for SPY. All files stay in browser memory. There is no sample-data option in the public build.
+Select a publication date and optional ticker to search the historical news feed. Select 2–100 stocks from the OEF universe and choose a return window. The website backend loads news, prices and volumes through a licensed Massive account. Visitors do not upload data.
 
-The representative universe is a fixed snapshot of the November 20, 2026 iShares S&P 100 ETF equity holdings. Alphabet Class A is retained and Class C is omitted. Berkshire Class B uses the Yahoo symbol BRK-B. This is a fixed research universe applied to the selected dates, including older dates, and is not a historical membership series. [Holdings source](https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv)
+The fixed universe is a snapshot of the November 20, 2026 iShares S&P 100 ETF equity holdings. Alphabet Class A is retained and Class C is omitted. Berkshire Class B uses display symbol BRK-B and provider symbol BRK.B. This research universe is fixed for every analysis date. [Holdings source](https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv)
 
-SPY supplies the window calendar. The start is the last recorded SPY close strictly before publication day. The end is the first, third, or fifth recorded SPY close strictly after that day. Each stock needs a valid close on both shared dates. Compute the simple stock return less the SPY return and rank the absolute value. Show the signed difference in percentage points and list missing coverage. This measure is an observed market-adjusted price reaction. It does not isolate causation.
+SPY defines the window. Use the last trading close strictly before publication day and the first, third, or fifth trading close strictly after that day. The data are split-adjusted prices, excluding dividends. Every ranked stock has prices on both dates. Rank the absolute size of the return difference against SPY and show the signed difference in percentage points. Mark missing coverage. Observed reactions do not establish causation.
 
-The browser Prompt API analyzes a user-provided excerpt using a local model where available. The topic and tone are model classifications and the evidence quotation must match the supplied excerpt exactly. This result never supplies or changes a market price or a rank. [Browser support](https://developer.chrome.com/docs/ai/prompt-api)
+An available browser language model analyzes the provider summary. It labels the topic and tone and supports its interpretation with a quotation checked against the summary. The interpretation does not change the rank or supply prices. [Browser support](https://developer.chrome.com/docs/ai/prompt-api)
+
+The data routes are same-origin and the provider key is a Worker secret. Provision a Massive account approved for the intended site audience before enabling it. [Massive market data redistribution terms](https://massive.com/knowledge-base/article/how-can-i-redistribute-massives-market-data)
 
 The engineering workflow below records the submitted F.1–F.5 and v0.1 baseline. Its two-stock verification rules are distinct from this public event study.
 

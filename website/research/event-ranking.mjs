@@ -1,42 +1,29 @@
 import { isoDate } from './market-csv.mjs';
 
-export const yahooArticles = [
-  {
-    title: 'Nvidia beats quarterly revenue and earnings estimates',
-    date: '2025-02-26',
-    url: 'https://finance.yahoo.com/video/nvidia-tops-q4-revenue-earnings-213116219.html',
-  },
-  {
-    title: 'Apple reports record quarterly revenue amid lower China sales',
-    date: '2025-01-30',
-    url: 'https://finance.yahoo.com/news/apple-reports-record-124-3-214435443.html',
-  },
-];
-
-export function validateYahooArticle({ title, date, url }) {
-  const link = URL.parse(url.trim());
-  if (!link || link.protocol !== 'https:' || link.hostname !== 'finance.yahoo.com'
-    || link.username || link.password || link.port || !/^\/(news|video)\/[^/]+\.html$/.test(link.pathname)) {
-    throw new Error('Enter the original finance.yahoo.com news or video article URL.');
+export function hydrateSessions(sessions) {
+  const market = new Map();
+  for (const { day, stocks } of sessions) {
+    for (const { ticker, close, volume } of stocks) {
+      if (!market.has(ticker)) market.set(ticker, { prices: new Map(), volumes: new Map() });
+      const history = market.get(ticker);
+      history.prices.set(day, close);
+      if (volume != null) history.volumes.set(day, volume);
+    }
   }
-  if (!title.trim()) throw new Error('Enter the article title.');
-  isoDate(date);
-  link.search = '';
-  link.hash = '';
-  return { title: title.trim(), date, url: link.href };
+  return market;
 }
 
 export function rankReaction(universe, market, eventDate, sessions) {
   const event = isoDate(eventDate);
   if (![1, 3, 5].includes(sessions)) throw new Error('Choose a supported reaction window.');
   const benchmark = market.get('SPY')?.prices;
-  if (!benchmark) throw new Error('Import SPY.csv to adjust returns for the broad market.');
+  if (!benchmark) throw new Error('SPY data are required to adjust returns for the broad market.');
   const dates = [...benchmark.keys()].sort();
   const before = dates.findLast(date => date < eventDate);
   const after = dates.filter(date => date > eventDate)[sessions - 1];
   const days = date => Math.abs(isoDate(date) - event) / 86400000;
   if (!before || !after || days(before) > 7 || days(after) > 14) {
-    throw new Error('The SPY file does not cover the selected event window.');
+    throw new Error('SPY data do not cover the selected event window.');
   }
 
   const benchmarkReturn = benchmark.get(after) / benchmark.get(before) - 1;
