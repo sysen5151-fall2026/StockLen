@@ -1,6 +1,6 @@
 import { universe } from './universe.mjs';
 import { hydrateSessions, rankReaction } from './event-ranking.mjs';
-import { analyzeNews, compareNewsEvidence, explainAvailableEvidence } from './news-ai.mjs';
+import { analyzeNews, compareNewsEvidence, explainAvailableEvidence, predictNewsOutlook, compareOutlookWithActual, refineNewsOutlook } from './news-ai.mjs';
 
 const get = id => document.getElementById(id);
 const form = get('news-search');
@@ -12,6 +12,13 @@ const points = value => `${(100 * value).toFixed(2)} pp`;
 const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 let market = new Map();
 let currentRanking = null;
+let currentForecast = null;
+const outlookLabels = {
+  outperformance: 'Likely outperform',
+  underperformance: 'Likely underperform',
+  neutral: 'Neutral signal',
+  insufficient: 'Insufficient evidence',
+};
 let newsSequence = 0;
 let rankingSequence = 0;
 let articles = [];
@@ -36,6 +43,11 @@ function clearRanking() {
   rankingSequence += 1;
   get('rank-button').disabled = false;
   get('rank-content').hidden = true;
+  get('rankings').hidden = true;
+  get('forecast').hidden = true;
+  get('actual-button').disabled = false;
+  currentForecast = null;
+  get('forecast-status').textContent = '';
   get('stock-details').hidden = true;
   status.textContent = 'Run the ranking for the current inputs.';
   currentRanking = null;
@@ -97,7 +109,11 @@ async function queryApi(path, params) {
     throw new Error('The historical data service is unavailable on this deployment.');
   }
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error ?? 'The data request failed.');
+  if (!response.ok) {
+    const error = new Error(data.error ?? 'The data request failed.');
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -266,17 +282,60 @@ function showDetail(stock, result) {
   get('stock-title').focus();
 }
 
+function renderForecast({ group, horizon, predictions }) {
+  const directional = predictions.filter(row => ['outperformance', 'underperformance'].includes(row.outlook)).length;
+  get('forecast-status').textContent = `${directional} of ${group.length} selected stocks have a directional forecast for ${horizon} trading session${horizon === 1 ? '' : 's'}. This view uses the selected story’s signals only.`;
+  get('forecast-rows').replaceChildren(...predictions.map(prediction => {
+    const row = element('tr');
+    for (const text of [prediction.ticker, outlookLabels[prediction.outlook], prediction.explanation]) {
+      row.append(element('td', text));
+    }
+    return row;
+  }));
+  get('forecast').hidden = false;
+}
+
 get('rank-button').addEventListener('click', async () => {
   clearRanking();
   const sequence = rankingSequence;
-  const button = get('rank-button');
-  button.disabled = true;
   try {
     const source = article();
     if (selection.size < 2) throw new Error('Select at least two stocks.');
     const group = universe.filter(stock => selection.has(stock.ticker));
     const horizon = Number(get('horizon').value);
-    status.textContent = 'Loading historical prices and calculating reactions…';
+    const forecast = { source, group, horizon, predictions: predictNewsOutlook(source, group) };
+    currentForecast = forecast;
+    renderForecast(forecast);
+    if (localModelState === 'available' && source.description?.trim().length >= 30) {
+      get('actual-button').disabled = true;
+      get('forecast-status').textContent += ' Checking the article with on-device AI…';
+      const refined = await refineNewsOutlook(browserModel, source, forecast.predictions, horizon)
+        .catch(() => forecast.predictions);
+      if (sequence !== rankingSequence) return;
+      currentForecast = { ...forecast, predictions: refined };
+      renderForecast(currentForecast);
+      get('actual-button').disabled = false;
+    }
+  } catch (error) {
+    if (sequence !== rankingSequence) return;
+    get('forecast').hidden = false;
+    get('actual-button').disabled = true;
+    get('forecast-rows').replaceChildren();
+    get('forecast-status').textContent = error.message;
+  }
+});
+
+get('actual-button').addEventListener('click', async () => {
+  const forecast = currentForecast;
+  if (!forecast) return;
+  const { source, group, horizon, predictions } = forecast;
+  const sequence = rankingSequence;
+  const button = get('actual-button');
+  button.disabled = true;
+  get('rankings').hidden = false;
+  get('rank-content').hidden = true;
+  status.textContent = 'Checking whether the observation window is complete…';
+  try {
     const response = await queryApi('/api/market-window', {
       date: source.date, symbols: group.map(stock => stock.ticker).join(','), horizon,
     });
@@ -284,6 +343,7 @@ get('rank-button').addEventListener('click', async () => {
     market = hydrateSessions(response.sessions);
     const result = rankReaction(group, market, source.date, horizon);
     if (!result.covered.length) throw new Error('No stock has prices for both window endpoints.');
+    const checks = new Map(compareOutlookWithActual(predictions, result).map(row => [row.ticker, row]));
     status.textContent = `${result.covered.length} of ${group.length} selected stocks ranked · ${result.before} to ${result.after} · SPY ${percent(result.benchmarkReturn)}`;
     const most = result.covered[0];
     get('rank-summary').textContent = `${most.ticker} moved furthest from SPY in this window (${points(most.relative)} relative return).`;
@@ -292,7 +352,8 @@ get('rank-button').addEventListener('click', async () => {
       button.type = 'button';
       button.addEventListener('click', () => showDetail(stock, result));
       const row = element('tr');
-      for (const value of [String(index + 1), button, stock.sector, percent(stock.priceReturn), points(stock.relative), points(stock.magnitude)]) {
+      const check = checks.get(stock.ticker);
+      for (const value of [String(index + 1), button, stock.sector, percent(stock.priceReturn), points(stock.relative), points(stock.magnitude), check.assessment + '. ' + check.explanation]) {
         const cell = element('td');
         cell.append(value);
         row.append(cell);
@@ -304,9 +365,12 @@ get('rank-button').addEventListener('click', async () => {
     get('rank-content').hidden = false;
     currentRanking = result;
     renderNewsAnalysis();
-    if (source.description?.trim().length >= 30 && localModelState === 'available') void runLocalAi();
   } catch (error) {
-    if (sequence === rankingSequence) status.textContent = error.message;
+    if (sequence === rankingSequence) {
+      status.textContent = error.status === 422
+        ? 'Actual returns are not available for the full window yet. The forecast above remains available.'
+        : error.message;
+    }
   } finally {
     if (sequence === rankingSequence) button.disabled = false;
   }

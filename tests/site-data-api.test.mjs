@@ -125,3 +125,34 @@ test('evidence explanation stays useful when sentiment or market data is missing
   assert.match(completed, /missing for 1/);
   assert.match(completed, /do not establish/);
 });
+
+test('news forecast abstains without sentiment and evaluates later relative returns separately', async () => {
+  const { predictNewsOutlook, compareOutlookWithActual } = await import('../website/research/news-ai.mjs');
+  const forecasts = predictNewsOutlook({ tickers: ['NVDA'], insights: { NVDA: { sentiment: 'positive' } } },
+    [{ ticker: 'NVDA' }, { ticker: 'AAPL' }]);
+  assert.equal(forecasts.find(row => row.ticker === 'NVDA').outlook, 'outperformance');
+  assert.equal(forecasts.find(row => row.ticker === 'AAPL').outlook, 'insufficient');
+  const checked = compareOutlookWithActual(forecasts, { covered: [
+    { ticker: 'NVDA', relative: -.04, priceReturn: .01 },
+    { ticker: 'AAPL', relative: .02, priceReturn: .07 },
+  ] });
+  assert.match(checked[0].explanation, /different directions/);
+  assert.equal(checked[0].assessment, 'Different direction');
+  assert.equal(checked[1].assessment, 'No directional call');
+});
+
+test('on-device outlook accepts only selected linked tickers and exact source quotes', async () => {
+  const { refineNewsOutlook } = await import('../website/research/news-ai.mjs');
+  const source = { description: 'Nvidia postponed a planned accelerator release.', tickers: ['NVDA'] };
+  const inputs = [{ ticker: 'NVDA', name: 'Nvidia', outlook: 'insufficient' }, { ticker: 'AAPL', name: 'Apple', outlook: 'insufficient' }];
+  const model = { create: async () => ({
+    destroy() {},
+    prompt: async () => JSON.stringify([
+      { ticker: 'NVDA', outlook: 'underperformance', quote: 'postponed a planned accelerator release' },
+      { ticker: 'AAPL', outlook: 'outperformance', quote: 'postponed a planned accelerator release' },
+    ]),
+  }) };
+  const result = await refineNewsOutlook(model, source, inputs, 1);
+  assert.equal(result[0].outlook, 'underperformance');
+  assert.equal(result[1].outlook, 'insufficient');
+});
