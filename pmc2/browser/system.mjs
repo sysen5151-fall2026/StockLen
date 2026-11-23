@@ -105,5 +105,5 @@ export function compareStocks({stockA='AAPL',stockB='MSFT',analysisDate=CUTOFF,s
   if(explanationMode==='invalid') candidate.scores[0].score+=1;
   const explanation=checkExplanation(candidate,payload),display=renderComparison(record,explanation);
   const limited=evidence.limitations.length>0||!explanation.available;
-  return {mode:'controlled-synthetic-comparison',eligibility,request,evidence:evidenceRun,record,payload,explanation,display,history:[...history,reportStatus(limited?'completed_with_limitations':'completed',requestId)]};
+  return {mode:'controlled-synthetic-comparison',eligibility,request,evidence:evidenceRun,scores,record,payload,explanation,display,history:[...history,reportStatus(limited?'completed_with_limitations':'completed',requestId)]};
 }

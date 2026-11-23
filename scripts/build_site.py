@@ -1,4 +1,4 @@
-"""Assemble the research site and the browser-only skeleton for Pages."""
+"""Assemble the dashboard and engineering views for Pages."""
 from pathlib import Path
 import shutil
 

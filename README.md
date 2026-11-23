@@ -1,22 +1,21 @@
 # StockLens — SYSEN 5151
 
-## Operational Concept
+**[Open the StockLens dashboard](https://sysen5151-fall2026.github.io/StockLen/)**
 
-A normal session begins when a Research User chooses eligible stocks and an analysis date in the Dashboard/User Interface. StockLens then requests market and company records through the Market Data Interface and dated news evidence through the News Interface. The Scoring & Ranking Model applies the same documented factors, observation periods, and weights to both stocks, so the comparison is created before any explanation is written. Only after the score breakdown is complete does the AI Explanation Module send the relevant results and evidence to the external AI Model Service. The returned text explains the calculation; it cannot change the scoring rules or independently decide the ranking. A sentiment factor would enter this flow only after its derivation has been separately specified and checked.
-
-The Dashboard/User Interface brings the result back to the user as a connected story: what was compared, which factors mattered, what evidence supports the explanation, and when that evidence was dated. The user can inspect the sources or begin another comparison. The Maintenance Interface supports approved configuration, updates, and future service-status exchanges, but it does not participate in the normal research path. The session ends with information for the user to review; no trade is placed and no personalized portfolio is created.
-
-Transcribed from BMA section 3.2.4; see [source register](model-artifacts/source-register.md). This describes the intended system; the runnable increment below still uses fixed stubs.
+StockLens is a stock research and ranking website for students and beginner investors. Explore the ten-stock rankings, compare two eligible stocks on a common date, and inspect adjusted-price history, score drivers and dated source records. Select a ticker in the ranking table to open its price chart and underlying records.
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
-## Stock comparison
+## Research workflow
 
-**[Open StockLens online](https://sysen5151-fall2026.github.io/StockLen/compare.html)** — compare two stocks directly in your browser.
+1. Select two distinct eligible stocks and the available analysis date.
+2. StockLens validates the request and the aligned 21-observation market window across all ten stocks.
+3. It scores momentum and lower volatility at equal weights. News provides dated evidence for the pair.
+4. The same-host model identifies the leading score driver. StockLens checks the response against the computed factors and retains the scored comparison if the model response is unavailable or inconsistent.
 
-The controlled workflow validates a distinct eligible pair (F.1), acquires and validates synthetic evidence (F.2), calculates the v0.1 scores and driver differences (F.3), runs and checks the same-host explanation model or marks its result unavailable (F.4), and displays the authoritative comparison with service status (F.5). Expand **Engineering trace** to inspect request context, evidence, scores, explanation boundaries and state history.
+The public site runs on one controlled snapshot with generated prices and fictional news. The available date is 2026-09-21. The observation dates belong to the synthetic dataset. Real provider access, publication rights, an exchange-calendar and cutoff policy, and real-content validation require separate evidence under SR-07. The site supports research and comparison.
 
-The snapshot uses generated prices and fictional news. The default comparison uses the local model from ADR-01. The controlled options retain the checked template and response failure cases. Real provider terms/calendar suitability, external AI integration, end-to-end performance and user-task acceptance remain separate work. The optional Python modules and internal HTTP interfaces implement F.1 and F.2; the integrated F.1–F.5 workflow runs in the browser.
+**[Engineering comparison](https://sysen5151-fall2026.github.io/StockLen/compare.html)** exposes the same F.1–F.5 workflow with additional scenarios and the engineering trace. See [the dashboard, model and verification map](docs/research-dashboard.md).
 
 ## Evidence acquisition and validation
 
@@ -57,9 +56,17 @@ Open http://127.0.0.1:8765 and select **Compare fixture**. One request traverses
 
 ## Website
 
-`website/` contains the migrated research interface. `walking_skeleton/browser/` contains the browser-only mirror of UC.1; the site build publishes it as `skeleton.html`. The research lab's numerical data is illustrative and awaits source verification. Its scoring is deterministic; its explanation is a template. This exploratory view is separate from the fixed-stub Chapter 2 deliverable. GitHub Pages hosts static files, not the Python API.
+`website/index.html` is the research dashboard. `research-lab.html` retains the earlier illustrative lab and its separate scoring method. The GitHub Pages build also publishes the engineering comparison, evidence lab and browser-only transport fixture. The local FastAPI fixture runs separately.
 
 Preview: `python3 scripts/build_site.py` then `python3 -m http.server 8080 --directory .site --bind 127.0.0.1`.
+
+## Submitted operational concept
+
+# Operational Concept Narrative
+
+A normal session begins when a Research User chooses eligible stocks and an analysis date in the Dashboard/User Interface. StockLens then requests market and company records through the Market Data Interface and dated news evidence through the News Interface. The Scoring & Ranking Model applies the same documented factors, observation periods, and weights to both stocks, so the comparison is created before any explanation is written. Only after the score breakdown is complete does the AI Explanation Module send the relevant results and evidence to the external AI Model Service. The returned text explains the calculation; it cannot change the scoring rules or independently decide the ranking. A sentiment factor would enter this flow only after its derivation has been separately specified and checked.
+
+The Dashboard/User Interface brings the result back to the user as a connected story: what was compared, which factors mattered, what evidence supports the explanation, and when that evidence was dated. The user can inspect the sources or begin another comparison. The Maintenance Interface supports approved configuration, updates, and future service-status exchanges, but it does not participate in the normal research path. The session ends with information for the user to review; no trade is placed and no personalized portfolio is created.
 
 ## Engineering records
 
@@ -79,7 +86,7 @@ Windows setup and shutdown: [operating guide](docs/operations.md). With the back
 
 ```sh
 python3 -m unittest discover -s tests -v
-node --test tests/site.test.mjs
+node --test tests/*.test.mjs
 ```
 SPEC.md retains all eight submitted stakeholder requirements and proposed acceptance criteria. The [earlier five system-function candidates](requirements/FUNCTIONAL-CANDIDATES.md) are a historical M1 record. For the later submitted SYS-F/DR/CR/SWR baseline and current native-model observations, use [the design source register](docs/design-baseline.md). Proposed user MOEs are not completed test results. The stakeholder-readiness workflow reports all eight as **not assessed**; a green report job only means the report was generated. The strict acceptance scaffold remains available through the manual workflow option or `python -m unittest discover -s acceptance -v`, and still fails while evidence is missing.
 

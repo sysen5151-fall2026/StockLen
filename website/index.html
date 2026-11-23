@@ -1,46 +1,98 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>StockLens — Historical Research Lab</title>
-  <meta name="description" content="Compare stocks using a frozen historical dataset, transparent scoring, news evidence, and subsequent returns.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070b14'/%3E%3Cpath d='M13 43l12-12 9 7 17-20' fill='none' stroke='%236ee7c7' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='51' cy='18' r='4' fill='%23f5b544'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./app.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore the StockLens ranking, compare two stocks, and inspect the dated evidence behind their scores.">
+  <title>StockLens | Stock research</title>
+  <link rel="stylesheet" href="./research/dashboard.css">
+  <script type="module" src="./research/dashboard.mjs"></script>
 </head>
 <body>
-  <header><div class="brand"><span class="brand-mark">⌁</span><div>StockLens<small>Historical Research Lab</small></div></div><nav><a class="nav-btn" href="./compare.html">Compare stocks</a><button class="nav-btn active" data-view="lab">Research Lab</button><button class="nav-btn" data-view="method">Methodology</button><a class="nav-btn" href="./evidence.html">Evidence Lab</a><a class="nav-btn" href="./skeleton.html">UC.1 demo</a><a class="nav-btn" href="https://github.com/sysen5151-fall2026/StockLen">Project repository</a></nav><div class="data-state"><span></span> Illustrative dataset</div></header>
-  <main>
-    <p style="padding:14px;border:1px solid #f5b544;color:#f5b544">Earlier exploratory lab. Its sentiment factor, selected-set normalization and later-return reveal differ from the v0.1 design. <a href="./evidence.html">Open the Evidence Lab</a> for evidence acquisition and validation.</p>
-    <section id="labView" class="view active">
-      <aside class="controls">
-        <div class="control-head"><span class="step">01</span><div><h2>Set the research date</h2><p>Dated illustrative snapshots; source values await verification.</p></div></div>
-        <label for="dateSelect">Historical snapshot</label><select id="dateSelect"></select>
-        <div id="eventCard" class="event-card"></div>
-        <div class="divider"></div>
-        <div class="control-head"><span class="step">02</span><div><h2>Choose stocks</h2><p>Select 2–5 companies.</p></div></div>
-        <div id="tickerGrid" class="ticker-grid"></div>
-        <div class="divider"></div>
-        <div class="control-head"><span class="step">03</span><div><h2>Set factor weights</h2><p>Weights automatically total 100%.</p></div></div>
-        <div id="weightControls"></div>
-        <button id="runBtn" class="run-btn">Run historical ranking <span>→</span></button>
-        <p class="control-note">Research and education only. Rankings do not predict future performance.</p>
-      </aside>
-      <section class="workspace">
-        <div class="workspace-head"><div><p class="eyebrow">Point-in-time comparison</p><h1 id="analysisTitle">Historical ranking</h1><p id="analysisMeta" class="muted"></p></div><div class="legend"><span><i class="dot data"></i>Illustrative data</span><span><i class="dot model"></i>Model output</span><span><i class="dot future"></i>Future outcome</span></div></div>
-        <div id="statusBanner" class="status-banner"><span>Ready</span><p>Select a date and stocks, then run the ranking.</p></div>
-        <div class="kpi-grid"><article><small>Stocks analyzed</small><strong id="kpiStocks">—</strong></article><article><small>Top-ranked stock</small><strong id="kpiWinner">—</strong></article><article><small>Best later return</small><strong id="kpiReturn">Hidden</strong></article><article><small>Data mode</small><strong>Frozen</strong></article></div>
-        <section class="panel"><div class="panel-head"><div><h2>Ranking results</h2><p>Score components are normalized within the selected group.</p></div><button id="toggleReturns" class="ghost-btn" disabled>Reveal later returns</button></div><div id="rankingTable" class="empty"><div class="empty-icon">↗</div><h3>No ranking yet</h3><p>Configure the analysis on the left and run the model.</p></div></section>
-        <div class="two-col"><section class="panel"><div class="panel-head"><div><h2>Why this ranking?</h2><p>Rule-generated explanation from visible score drivers.</p></div><span class="badge model-badge">Model output</span></div><div id="explanation" class="empty small"><p>The explanation will appear after a ranking is calculated.</p></div></section><section class="panel"><div class="panel-head"><div><h2>Price path</h2><p>Illustrative later paths; revealed together with later returns.</p></div><span class="badge data-badge">Illustrative data</span></div><div id="chart" class="empty small"><p>Select stocks to draw their historical path.</p></div></section></div>
-        <section class="panel"><div class="panel-head"><div><h2>Evidence available on the date</h2><p>News context is kept separate from later outcomes.</p></div><span class="badge data-badge">Illustrative data</span></div><div id="evidence" class="empty small"><p>Source cards will appear here.</p></div></section>
-      </section>
+  <header class="topbar">
+    <nav class="shell" aria-label="Main">
+      <a class="brand" href="./">StockLens<span>.</span></a>
+      <a href="#ranking">Rankings</a>
+      <a href="#comparison">Comparison</a>
+      <a href="#method">Methodology</a>
+    </nav>
+  </header>
+  <main class="shell">
+    <section class="intro">
+      <h1>Stock research dashboard</h1>
+      <p>Compare two stocks and see the prices, indicators and evidence behind their scores.</p>
+      <p class="data-note">Synthetic snapshot · Prices and news are fictional.</p>
     </section>
-    <section id="methodView" class="view method-view">
-      <div class="method-shell"><p class="eyebrow">Business / Mission Analysis</p><h1>How this comparison works.</h1><p class="method-lead">StockLens combines a deterministic score with evidence-linked explanation. It does not execute trades, manage portfolios, or claim predictive accuracy.</p>
-        <div class="method-grid"><article><span>01</span><h2>Inputs</h2><p>Historical prices, volatility estimates, dated news records, and a user-selected comparison universe.</p></article><article><span>02</span><h2>Calculation</h2><p>Momentum and sentiment add to the score. Volatility reduces it. Factors are normalized only against selected stocks.</p></article><article><span>03</span><h2>Explanation</h2><p>A plain-language summary references the completed score and visible evidence; it never changes the numerical order.</p></article><article><span>04</span><h2>Validation</h2><p>Compare task completion, driver comprehension, and evidence-location success against proposed 80% thresholds.</p></article></div>
-        <section class="formula"><div><small>DEMONSTRATION FORMULA</small><strong>Score = 100 × (w₁·M + w₂·N + w₃·V⁻)</strong></div><p>M and N are min–max normalized momentum and sentiment. V⁻ is inverse-normalized volatility, so lower volatility receives more points. Weights total one. These migrated numerical values have no per-value provenance or documented observation windows. Treat them as illustrative inputs until verified. Explanations are deterministic templates, not AI-service responses.</p></section>
-        <section class="pipeline"><div><b>User query</b><small>Date + tickers</small></div><i>→</i><div><b>Data adapter</b><small>Embedded now / API later</small></div><i>→</i><div><b>Scoring engine</b><small>Deterministic</small></div><i>→</i><div><b>Evidence view</b><small>Drivers + sources</small></div></section>
+    <form id="research-form" class="card">
+      <label>First stock <select name="stockA" required></select></label>
+      <label>Second stock <select name="stockB" required></select></label>
+      <label>Analysis date <select name="analysisDate" required></select></label>
+      <button type="submit">Compare stocks</button>
+    </form>
+    <p id="research-status" role="status"></p>
+    <noscript>Enable JavaScript to use the StockLens dashboard.</noscript>
+    <div id="research-results" hidden>
+      <div class="workspace">
+        <section class="card" id="ranking">
+          <h2>Universe rankings</h2>
+          <p class="muted">Scores out of 100 across ten eligible stocks. Select a ticker to inspect its details.</p>
+          <div class="table-scroll">
+            <table aria-label="Universe rankings">
+              <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Score</th></tr></thead>
+              <tbody id="ranking-rows"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card" id="comparison">
+          <h2>Stock comparison</h2>
+          <p class="muted" id="comparison-dates"></p>
+          <div class="score-grid" id="comparison-scores"></div>
+          <h3>What drives the difference?</h3>
+          <p id="model-explanation"></p>
+          <div class="table-scroll">
+            <table aria-label="Calculated score drivers">
+              <thead><tr><th scope="col">Factor</th><th scope="col" id="driver-first"></th><th scope="col" id="driver-second"></th><th scope="col">Point gap</th></tr></thead>
+              <tbody id="driver-rows"></tbody>
+            </table>
+          </div>
+          <h3>Dated news evidence</h3>
+          <div id="news-evidence"></div>
+        </section>
       </div>
+      <section class="card" id="stock-detail" aria-labelledby="detail-title">
+        <h2 id="detail-title" tabindex="-1">Stock details</h2>
+        <p id="detail-summary"></p>
+        <div class="chart-header">
+          <h3 id="chart-title">Adjusted closing price (USD)</h3>
+          <label>Chart window
+            <select id="chart-window"><option value="21">21 observations</option><option value="10">10 observations</option><option value="5">5 observations</option></select>
+          </label>
+        </div>
+        <canvas id="price-chart" role="img" aria-labelledby="chart-title" aria-describedby="chart-summary"></canvas>
+        <p class="muted" id="chart-summary"></p>
+        <details>
+          <summary>View dated market records</summary>
+          <div class="table-scroll">
+            <table aria-label="Market source records">
+              <thead><tr><th scope="col">Observation date</th><th scope="col">Adjusted close</th><th scope="col">Source ID</th></tr></thead>
+              <tbody id="market-rows"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </div>
+    <section class="card" id="method">
+      <h2>How scores are calculated</h2>
+      <p>StockLens uses 21 aligned adjusted closes to calculate momentum over 20 periods and the sample standard deviation of 20 simple returns. Stronger momentum and lower volatility earn more points.</p>
+      <p>Each factor contributes up to 50 points using average-tie ranks across the fixed ten-stock universe. News provides context for the selected pair. Scoring uses prices only. The local model identifies the leading factor after scoring.</p>
+      <p>The published snapshot supports one analysis date. The synthetic observation dates are part of the dataset and do not represent an exchange calendar.</p>
     </section>
   </main>
-  <script type="module" src="./js/app.js"></script>
-</body></html>
+  <footer class="shell">
+    <a href="./compare.html">Engineering comparison</a>
+    <a href="./evidence.html">Evidence lab</a>
+    <a href="./research-lab.html">Original research lab</a>
+    <a href="https://github.com/sysen5151-fall2026/StockLen">Project repository</a>
+  </footer>
+</body>
+</html>

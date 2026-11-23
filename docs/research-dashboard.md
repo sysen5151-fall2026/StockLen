@@ -1,0 +1,25 @@
+# Research dashboard implementation
+
+The dashboard uses the team’s submitted v0.1 system requirements (§5.4), the F.1–F.5 functional architecture and the same-host decision documented in the Systems Analysis and Risk Assessment. [Innoslate TD-01](https://cloud.innoslate.com/cornell/p/659/database/entity/319237)
+
+| Dashboard behavior | Model and software trace | Verification |
+| --- | --- | --- |
+| Select two distinct tickers and a common date | UC.1, SR-01, DR-01–02, IF.01 | Pair/date checks and incorrect-input cases in the functional and comparison tests |
+| Publish aligned prices and dated, bounded news evidence | SR-03, DR-03–04, IF.02 | F.2 evidence tests and dashboard check for missing unselected stock |
+| Rank all ten stocks and show the pair and factor contributions from one calculation | SR-01–02, DR-05–06, IF.03 | Dashboard check for consistent rankings across different pairs |
+| Explain the leading driver locally | SR-02, SR-08, DR-07–08, IF.04, TD-01 A | Local-model and guardrail tests, dashboard check for unavailable explanation |
+| Display date, scores, source IDs, price history and status | SR-01–03, DR-09–10, IO.02/06 | Dashboard data tests and Pages build |
+
+The ranking view uses unrounded scores. The dashboard applies the comparison’s 0.000001-point tolerance to rank groups, measured from the highest score in each group. Within a group the order follows unrounded score, then ticker for exactly equal scores. The chosen chart range only changes display. Scoring still uses all 21 observations.
+
+## Operation
+
+Run `python3 scripts/build_site.py` and `python3 -m http.server 8080 --bind 127.0.0.1 --directory .site`. Open `http://127.0.0.1:8080/`. Choose two different stocks and compare them. Select any ticker in the ranking table, change the chart window, and expand the dated market records. Stop the server with Ctrl+C. For handover and the FastAPI engineering workflow, see the [operating guide](operations.md).
+
+Run `python scripts/verify.py` after installing the backend requirements. CI runs Python and Node checks before packaging the static site.
+
+## Evidence and open verification
+
+The project description specifies external data acquisition and financial news. The controlled website implements that workflow with synthetic provider adapters and has one supported snapshot. Real provider integration needs dated terms and approved acquire/retain/display permissions, verified adjustment and exchange-calendar rules, and provenance across all ten symbols. Use the [service-use record](service-use.md) for this boundary.
+
+The dashboard implements the submitted v0.1 scoring rules. The original sentiment and event scoring concepts require separate factor definitions and assessment. The earlier historical lab is available at `research-lab.html` and uses its own illustrative method. The model topology follows [ADR-01](architecture-decision-explanation.md). Human MOEs, real-data service use and broader operating acceptance still require their respective assessment evidence.
