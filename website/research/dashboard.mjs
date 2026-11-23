@@ -2,7 +2,8 @@ import { MAX_IMPORT_STOCKS, UNIVERSE } from '../js/evidence.mjs';
 import { CUTOFF } from '../js/system.mjs';
 import { compareWithExplanationModel } from '../js/local-explanation.mjs';
 import { prepareImport, readNews } from './local-import.mjs';
-import { researchView } from './research-data.mjs';
+import { eventResponse, historicalEvents, sampleEvents } from './news-events.mjs';
+import { researchView, selectedResearchStocks } from './research-data.mjs';
 
 const company = {
   AAPL: 'Apple', MSFT: 'Microsoft', AMZN: 'Amazon', GOOGL: 'Alphabet',
@@ -37,14 +38,35 @@ let dataset;
 let comparisonSequence = 0;
 let selectedStock;
 let chartPrices = [];
+const picker = byId('stock-picker');
+function selection() {
+  return [...picker.querySelectorAll('input:checked')].map(input => input.value);
+}
+
+function showSelectionCount() {
+  byId('selection-count').textContent = `${selection().length} selected`;
+}
+
 function setStocks(universe) {
-  for (const [index, name] of ['stockA', 'stockB'].entries()) {
-    const select = form.elements[name];
-    select.replaceChildren(...universe.map(symbol => new Option(
-      company[symbol] ? symbol + ' · ' + company[symbol] : symbol, symbol,
-    )));
-    select.value = universe[index];
-  }
+  const defaults = new Set(universe === UNIVERSE ? ['AAPL', 'MSFT', 'NVDA'] : universe);
+  picker.replaceChildren(...universe.map(symbol => {
+    const label = element('label', null, 'stock-choice');
+    const box = element('input');
+    box.type = 'checkbox';
+    box.value = symbol;
+    box.checked = defaults.has(symbol);
+    label.append(box, symbol);
+    return label;
+  }));
+  showSelectionCount();
+}
+
+picker.addEventListener('change', showSelectionCount);
+for (const [id, checked] of [['select-all', true], ['clear-all', false]]) {
+  byId(id).addEventListener('click', () => {
+    for (const box of picker.querySelectorAll('input')) box.checked = checked;
+    showSelectionCount();
+  });
 }
 setStocks(UNIVERSE);
 form.elements.analysisDate.add(new Option(CUTOFF, CUTOFF));
@@ -136,77 +158,138 @@ function detailButton(symbol) {
   return button;
 }
 
-function renderDashboard(detailSymbol) {
-  const comparison = view.comparison;
-  const [first, second] = comparison.stock_pair;
-  const [firstScore, secondScore] = comparison.stocks;
-  byId('ranking-scope').textContent = `Scores out of 100 across ${view.stocks.length} stocks. Select a ticker for its chart.`;
-  const lastMarketDate = view.stocks[0].prices.at(-1).observation_date;
-  byId('comparison-dates').textContent =
-    `Analysis date ${comparison.analysis_date} · Market data through ${lastMarketDate}`;
-  byId('comparison-scores').replaceChildren(...comparison.stocks.map(stock => {
-    const card = element('div', null, 'score-card');
-    const ticker = detailButton(stock.symbol);
-    card.append(ticker, element('p', stock.display_score, 'score-number'));
-    return card;
-  }));
-  byId('model-explanation').textContent =
-    comparison.explanation.text || 'Local model explanation unavailable. The calculated factors are shown below.';
-  byId('driver-first').textContent = first;
-  byId('driver-second').textContent = second;
-  byId('driver-rows').replaceChildren(...comparison.drivers.map(driver => row(
-    driver.factor === 'momentum' ? 'Momentum' : 'Volatility',
-    `${percent(driver.first_value)} · ${firstScore.contributions[driver.factor].toFixed(2)} pts`,
-    `${percent(driver.second_value)} · ${secondScore.contributions[driver.factor].toFixed(2)} pts`,
-    driver.contribution_difference.toFixed(2),
-  )));
-  byId('news-evidence').replaceChildren(...comparison.stock_pair.map(symbol => {
-    const evidence = comparison.news.filter(item => item.symbol === symbol);
-    const list = element('ul');
-    for (const item of evidence) {
-      const line = element('li');
-      if (item.url) {
-        const link = element('a', item.title);
-        link.href = item.url;
-        link.referrerPolicy = 'no-referrer';
-        line.append(link, ' · Published ' + item.publication_date);
-      } else {
-        line.append(`${item.title} · Published ${item.publication_date} · Source ${item.source_id}`);
-      }
-      list.append(line);
-    }
-    const section = element('div');
-    section.append(element('strong', symbol), evidence.length ? list : element('p', 'No qualifying news is available.'));
-    return section;
-  }));
+let analyzed = [];
+let events = [];
+let activeDataset;
+const eventPicker = byId('event-picker');
 
-  byId('ranking-rows').replaceChildren(...view.stocks.map(stock => {
-    const compareButton = element('button', stock.symbol === first || stock.symbol === second ? 'Selected' : 'Compare');
-    compareButton.type = 'button';
-    compareButton.disabled = stock.symbol === first || stock.symbol === second;
-    compareButton.setAttribute('aria-label', `Compare ${first} with ${stock.symbol}`);
-    compareButton.addEventListener('click', () => {
-      form.elements.stockB.value = stock.symbol;
-      void compare(stock.symbol);
-    });
-    return row(String(stock.rank), detailButton(stock.symbol), stock.score.toFixed(2), compareButton);
-  }));
-  results.hidden = false;
-  showStock(detailSymbol ?? first);
-  if (detailSymbol) byId('detail-title').focus();
+function renderEventResults() {
+  const checked = [...eventPicker.querySelectorAll('input:checked')];
+  const cutoff = view.comparison.analysis_date;
+  const history = activeDataset?.priceHistory ?? new Map(view.stocks.map(stock => [
+    stock.symbol, new Map(stock.prices.map(price => [price.observation_date, price.adjusted_close])),
+  ]));
+  const horizon = Number(byId('event-horizon').value);
+  const sections = checked.map(input => {
+    const event = events[Number(input.value)];
+    const section = element('section', null, 'event-result');
+    section.append(element('h3', event.title));
+    if (event.context) section.append(element('p', event.context));
+    const scroll = element('div', null, 'table-scroll');
+    const table = element('table');
+    table.setAttribute('aria-label', event.title + ' stock moves');
+    const header = element('tr');
+    for (const label of ['Stock', 'Relationship', 'Before close', 'After close', 'Observed return']) {
+      const cell = element('th', label);
+      cell.scope = 'col';
+      header.append(cell);
+    }
+    const head = element('thead');
+    head.append(header);
+    const body = element('tbody');
+    if (event.url && !activeDataset) {
+      section.append(element('p', 'Import historical prices covering this announcement to calculate observed returns.'));
+      return section;
+    }
+    const changes = eventResponse(event, analyzed.map(stock => stock.symbol), history, cutoff, horizon);
+    const covered = changes.filter(change => change.change !== null);
+    const summary = covered.length
+      ? `${covered.filter(change => change.change > 0).length} rose, ${covered.filter(change => change.change < 0).length} fell, and ${covered.filter(change => change.change === 0).length} were flat across ${covered.length} stocks with coverage.`
+      : 'No selected stocks have both closing observations in the current price history and cutoff.';
+    section.append(element('p', summary));
+    body.append(...changes.map(change => row(
+      change.symbol, change.direct ? 'Named company' : 'Comparison stock',
+      change.before ?? '—', change.after ?? '—',
+      change.change === null ? 'Insufficient prices' : percent(change.change),
+    )));
+    table.append(head, body);
+    scroll.append(table);
+    section.append(scroll);
+    return section;
+  });
+  byId('event-results').replaceChildren(...(sections.length ? sections : [element('p', 'Select news above to see price moves.')]));
 }
 
-async function compare(detailSymbol) {
+function renderEventPicker() {
+  const candidates = activeDataset
+    ? [...historicalEvents, ...activeDataset.news]
+    : [...sampleEvents, ...historicalEvents];
+  const seen = new Set();
+  events = candidates.filter(event => {
+    const key = event.symbol + '|' + (event.url ?? event.title);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort((first, second) => second.publication_date.localeCompare(first.publication_date));
+  eventPicker.replaceChildren(...events.map((event, index) => {
+    const container = element('div', null, 'event-option');
+    const label = element('label', null, 'stock-choice');
+    const box = element('input');
+    box.type = 'checkbox';
+    box.value = index;
+    box.checked = index === 0;
+    label.append(box, `${event.publication_date} · ${event.symbol} · ${event.title}${event.url ? '' : ' (fictional)'}`);
+    container.append(label);
+    if (event.url) {
+      const source = element('a', 'Original source');
+      source.href = event.url;
+      source.referrerPolicy = 'no-referrer';
+      container.append(source);
+    }
+    return container;
+  }));
+  renderEventResults();
+}
+
+eventPicker.addEventListener('change', renderEventResults);
+byId('event-horizon').addEventListener('change', renderEventResults);
+
+function renderDashboard(symbols) {
+  const comparison = view.comparison;
+  analyzed = selectedResearchStocks(view, symbols);
+  const [first, second] = analyzed;
+  const lastMarketDate = view.stocks[0].prices.at(-1).observation_date;
+  byId('ranking-scope').textContent = `${view.stocks.length} ranked · ${analyzed.length} selected for analysis`;
+  byId('comparison-dates').textContent =
+    `Analysis date ${comparison.analysis_date} · Market data through ${lastMarketDate}`;
+  byId('comparison-scores').replaceChildren(...analyzed.map(stock => row(
+    detailButton(stock.symbol), stock.score.toFixed(2), percent(stock.momentum), percent(stock.volatility),
+    `${stock.contributions.momentum.toFixed(2)} / ${stock.contributions.volatility.toFixed(2)}`,
+  )));
+  const gap = first.score - second.score;
+  const leaders = analyzed.filter(stock => first.score - stock.score <= 1e-6);
+  const momentumGap = first.contributions.momentum - second.contributions.momentum;
+  const volatilityGap = first.contributions.volatility - second.contributions.volatility;
+  byId('model-explanation').textContent = leaders.length > 1
+    ? `${leaders.map(stock => stock.symbol).join(', ')} share the highest score of ${first.score.toFixed(2)}.`
+    : `${first.symbol} leads ${second.symbol} by ${gap.toFixed(2)} points. Their contributions differ by ${momentumGap.toFixed(2)} momentum points and ${volatilityGap.toFixed(2)} low-volatility points.`;
+  byId('ranking-rows').replaceChildren(...view.stocks.map(stock =>
+    row(String(stock.rank), detailButton(stock.symbol), stock.score.toFixed(2))));
+  results.hidden = false;
+  showStock(first.symbol);
+  renderEventPicker();
+}
+
+async function compare() {
   const sequence = ++comparisonSequence;
   const status = byId('research-status');
+  const symbols = selection();
+  if (symbols.length < 2) {
+    results.hidden = true;
+    status.textContent = 'Select at least two stocks.';
+    form.querySelector('button[type="submit"]').disabled = false;
+    return;
+  }
+  const workingDataset = dataset;
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true;
   results.hidden = true;
   status.textContent = 'Checking snapshot evidence…';
   try {
-    const options = Object.fromEntries(new FormData(form));
+    const analysisDate = form.elements.analysisDate.value;
     const run = await compareWithExplanationModel({
-      ...options, evidenceSource: dataset?.sourceFor(options.analysisDate),
+      stockA: symbols[0], stockB: symbols[1], analysisDate,
+      evidenceSource: workingDataset?.sourceFor(analysisDate),
     });
     if (sequence !== comparisonSequence) return;
     view = researchView(run);
@@ -216,10 +299,9 @@ async function compare(detailSymbol) {
         : 'A comparison is unavailable for this pair and date.';
       return;
     }
-    renderDashboard(detailSymbol);
-    status.textContent = run.history.at(-1).state === 'completed_with_limitations'
-      ? 'Comparison ready with evidence or explanation limitations.'
-      : 'Comparison ready.';
+    activeDataset = workingDataset;
+    renderDashboard(symbols);
+    status.textContent = `Analysis ready for ${symbols.length} stocks.`;
   } catch (error) {
     if (sequence !== comparisonSequence) return;
     results.hidden = true;

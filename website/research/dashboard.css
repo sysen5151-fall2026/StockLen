@@ -66,3 +66,15 @@ main { padding-bottom: 32px; }
 #import-form input { width: 100%; max-width: 100%; }
 #import-status:empty { display: none; }
 pre { overflow: auto; padding: 12px; background: #eef4f2; border-radius: 6px; }
+
+.stock-selection { flex-basis: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 8px; margin: 0; }
+.selection-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+.selection-actions button { min-height: 34px; background: #e4efeb; color: var(--ink); }
+.stock-picker { display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow: auto; }
+.stock-choice { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: #edf5f1; border-radius: 6px; }
+.stock-choice input { accent-color: var(--accent); }
+.group-scores { max-height: 390px; }
+.event-picker { display: grid; gap: 7px; margin-block: 14px; }
+.event-option { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.event-result { border-top: 1px solid var(--line); margin-top: 16px; }
+#event-horizon { max-width: 220px; }

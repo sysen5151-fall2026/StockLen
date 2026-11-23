@@ -2,20 +2,24 @@
 
 **[Open the StockLens dashboard](https://sysen5151-fall2026.github.io/StockLen/)**
 
-StockLens is a stock research and ranking website for students and beginner investors. Explore rankings for a predefined universe of up to 100 U.S. stocks, compare two eligible stocks on a common date, and inspect adjusted-price history, score drivers and dated source records. Select a ticker in the ranking table to open its price chart and underlying records.
+StockLens is a stock research and ranking website for students and beginner investors. Explore rankings for a predefined universe of up to 100 U.S. stocks, compare a selected group of up to 100 stocks on a common date, and inspect adjusted-price history, score drivers and dated source records. Select a ticker in the ranking table to open its price chart and underlying records.
 
 Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa Szurgot.
 
 ## Research workflow
 
-1. Import daily Yahoo Finance CSVs you are authorized to use, or choose the sample dataset. Select two distinct stocks and an eligible analysis date.
+1. Import daily Yahoo Finance CSVs you are authorized to use, or choose the sample dataset. Select the stocks to analyze and an eligible analysis date.
 2. StockLens validates the request and the aligned 21-observation market window across the full selected universe.
 3. It scores momentum and lower volatility at equal weights. News provides dated evidence for the pair.
-4. The same-host model identifies the leading score driver. StockLens checks the response against the computed factors and retains the scored comparison if the model response is unavailable or inconsistent.
+4. In the two-stock verification workflow, the same-host model identifies the leading score driver. StockLens checks the response against the computed factors and retains the scored comparison if the model response is unavailable or inconsistent.
 
 Historical imports run in browser memory. Select one CSV per ticker in a predefined universe of 2–100 U.S. stocks and optionally import a dated news JSON file. The public build includes only the fictional sample snapshot for 2026-09-21. See the [import instructions and data requirements](docs/research-dashboard.md#historical-data-import).
 
 The local engineering comparison exposes the F.1–F.5 verification scenarios and trace. See [the dashboard, model and verification map](docs/research-dashboard.md).
+
+## News and stock moves
+
+Select any combination of linked historical issuer announcements or imported news. For each event, StockLens displays the observed return for every selected ticker from the last available market close strictly before publication day to the first, third, or fifth close strictly after publication day, within the selected cutoff. Import authorized price history covering those windows. Sample event returns use clearly labeled fictional prices.
 
 ## Evidence acquisition and validation
 

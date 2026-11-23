@@ -7,7 +7,7 @@ execFileSync(process.env.PYTHON || 'python', ['scripts/build_site.py']);
 const { UNIVERSE, IMPORT_CONFIG_ID } = await import('../.site/js/evidence.mjs');
 const { compareWithExplanationModel } = await import('../.site/js/local-explanation.mjs');
 const { prepareImport, readNews, readYahooPrices } = await import('../.site/research/local-import.mjs');
-const { researchView } = await import('../.site/research/research-data.mjs');
+const { researchView, selectedResearchStocks } = await import('../.site/research/research-data.mjs');
 const dates = Array.from({ length: 31 }, (_, index) => new Date(Date.UTC(2025, 9, index + 1)))
   .filter(date => date.getUTCDay() > 0 && date.getUTCDay() < 6)
   .map(date => date.toISOString().slice(0, 10));
@@ -68,7 +68,9 @@ test('original product scope: a predefined 100-stock set can be scored without a
   const run = await compareWithExplanationModel({
     stockA: 'US0', stockB: 'US99', analysisDate, evidenceSource: dataset.sourceFor(analysisDate),
   });
-  assert.equal(researchView(run).stocks.length, 100);
+  const group = selectedResearchStocks(researchView(run), dataset.universe);
+  assert.equal(group.length, 100);
+  assert.ok(group.some(row => row.symbol === 'US50'));
   assert.ok(run.scores.every(row => row.score >= 0 && row.score <= 100));
   assert.equal(run.evidence.evidence.market_records.length, 2100);
   const fixture = await compareWithExplanationModel();
@@ -78,8 +80,26 @@ test('original product scope: a predefined 100-stock set can be scored without a
 test('Pages package contains only the StockLens product and connects its research views', () => {
   assert.deepEqual(readdirSync('.site').sort(), ['.nojekyll', 'index.html', 'js', 'research']);
   const html = readFileSync('.site/index.html', 'utf8');
-  for (const element of ['research-form', 'ranking-rows', 'comparison-scores', 'price-chart', 'model-explanation', 'news-evidence']) {
+  for (const element of ['research-form', 'ranking-rows', 'comparison-scores', 'price-chart', 'model-explanation', 'event-results']) {
     assert.ok(html.includes(`id="${element}"`), element);
   }
   assert.doesNotMatch(html, /(?:compare|evidence|research-lab|skeleton)\.html/);
+});
+
+test('selected historical events evaluate all selected stocks with common dates and no future data', async () => {
+  const { eventResponse, historicalEvents } = await import('../.site/research/news-events.mjs');
+  const event = historicalEvents.find(entry => entry.symbol === 'AAPL');
+  const symbols = ['AAPL', 'MSFT', 'NVDA'];
+  const prices = new Map([
+    ['AAPL', new Map([['2025-01-29', 100], ['2025-01-30', 150], ['2025-01-31', 110], ['2025-02-03', 200]])],
+    ['MSFT', new Map([['2025-01-29', 100], ['2025-01-31', 90]])],
+    ['NVDA', new Map([['2025-01-29', 100], ['2025-02-03', 140]])],
+  ]);
+  const moves = eventResponse(event, symbols, prices, '2025-01-31', 1);
+  assert.equal(moves.length, 3);
+  assert.equal(moves[0].direct, true);
+  assert.ok(Math.abs(moves[0].change - .1) < 1e-9);
+  assert.ok(Math.abs(moves[1].change + .1) < 1e-9);
+  assert.equal(moves[2].change, null);
+  assert.ok(eventResponse(event, symbols, prices, '2025-01-31', 3).every(row => row.change === null));
 });

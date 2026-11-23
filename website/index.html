@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore the StockLens ranking, compare two stocks, and inspect the dated evidence behind their scores.">
+  <meta name="description" content="Explore the StockLens ranking, compare selected stocks, and inspect the dated evidence behind their scores.">
   <title>StockLens | Stock research</title>
   <link rel="stylesheet" href="./research/dashboard.css">
   <script type="module" src="./research/dashboard.mjs"></script>
@@ -18,7 +18,7 @@
   <main class="shell">
     <section class="intro">
       <h1>Stock research</h1>
-      <p>Rank your stocks, compare two companies and see what drives their scores.</p>
+      <p>Rank your stocks, compare selected companies and see what drives their scores.</p>
     </section>
     <section class="card research-controls" aria-label="Research settings">
       <details id="data-settings">
@@ -43,10 +43,17 @@
         </details>
       </details>
       <form id="research-form">
-        <label>First stock <select name="stockA" required></select></label>
-        <label>Second stock <select name="stockB" required></select></label>
         <label>Analysis date <select name="analysisDate" required></select></label>
-        <button type="submit">Compare stocks</button>
+        <button type="submit">Analyze selected stocks</button>
+        <fieldset class="stock-selection">
+          <legend>Stocks to analyze</legend>
+          <div class="selection-actions">
+            <button type="button" id="select-all">Select all</button>
+            <button type="button" id="clear-all">Clear selection</button>
+            <output id="selection-count"></output>
+          </div>
+          <div id="stock-picker" class="stock-picker"></div>
+        </fieldset>
       </form>
       <p id="research-status" role="status"></p>
     </section>
@@ -58,7 +65,7 @@
           <p class="muted" id="ranking-scope"></p>
           <div class="table-scroll">
             <table aria-label="Universe rankings">
-              <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Score</th><th scope="col">Compare</th></tr></thead>
+              <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Score</th></tr></thead>
               <tbody id="ranking-rows"></tbody>
             </table>
           </div>
@@ -66,7 +73,13 @@
         <section class="card" id="comparison">
           <h2>Stock comparison</h2>
           <p class="muted" id="comparison-dates"></p>
-          <div class="score-grid" id="comparison-scores"></div>
+          <p id="model-explanation"></p>
+          <div class="table-scroll group-scores">
+            <table aria-label="Selected stock scores">
+              <thead><tr><th scope="col">Stock</th><th scope="col">Score</th><th scope="col">Momentum</th><th scope="col">Volatility</th><th scope="col">Factor points (M / V)</th></tr></thead>
+              <tbody id="comparison-scores"></tbody>
+            </table>
+          </div>
           <section id="stock-detail" aria-labelledby="detail-title">
             <h3 id="detail-title" tabindex="-1">Stock details</h3>
             <p id="detail-summary"></p>
@@ -88,23 +101,22 @@
               </div>
             </details>
           </section>
-          <h3>What drives the difference?</h3>
-          <p id="model-explanation"></p>
-          <div class="table-scroll">
-            <table aria-label="Calculated score drivers">
-              <thead><tr><th scope="col">Factor</th><th scope="col" id="driver-first"></th><th scope="col" id="driver-second"></th><th scope="col">Point gap</th></tr></thead>
-              <tbody id="driver-rows"></tbody>
-            </table>
-          </div>
-          <h3>Dated news evidence</h3>
-          <div id="news-evidence"></div>
         </section>
       </div>
+      <section class="card" aria-labelledby="news-impact">
+        <h2 id="news-impact">News and stock moves</h2>
+        <p>Select news to see how each analyzed stock moved around its publication. Observed returns alone cannot establish what caused a price move.</p>
+        <label>Closing observations after publication
+          <select id="event-horizon"><option value="1">1 observation</option><option value="3">3 observations</option><option value="5">5 observations</option></select>
+        </label>
+        <div id="event-picker" class="event-picker"></div>
+        <div id="event-results" aria-live="polite"></div>
+      </section>
     </div>
     <details class="method" id="method">
       <summary>How scores are calculated</summary>
       <p>StockLens uses 21 aligned adjusted closes to calculate momentum over 20 periods and the sample standard deviation of 20 simple returns. Stronger momentum and lower volatility earn more points.</p>
-      <p>Each factor contributes up to 50 points using average-tie ranks across the fixed universe for the current dataset. News provides context for the selected pair. Scoring uses prices only. The local model identifies the leading factor after scoring.</p>
+      <p>Each factor contributes up to 50 points using average-tie ranks across the fixed universe for the current dataset. Scoring uses prices only. News analysis reports returns from the last close strictly before publication day to the chosen close strictly after it, within the selected analysis cutoff. The method brackets the date when only the publication day is known.</p>
       <p>Imported analysis dates come from the supplied market records. A date is available when every ticker has an adjusted close for each of the 21 supplied dates ending on that date. The sample snapshot has one synthetic date.</p>
     </details>
   </main>

@@ -81,6 +81,8 @@ export function prepareImport(priceFiles, news = []) {
 
   return {
     universe,
+    news,
+    priceHistory: bySymbol,
     dates: [...windows.keys()].reverse(),
     sourceFor(date) {
       if (!windows.has(date)) throw new Error('This date has no complete scoring window.');

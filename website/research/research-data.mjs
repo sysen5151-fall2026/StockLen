@@ -20,3 +20,12 @@ export function researchView(run) {
 
   return { comparison: run.display, stocks };
 }
+
+export function selectedResearchStocks(view, symbols) {
+  const selected = new Set(symbols);
+  const rows = view.stocks.filter(stock => selected.has(stock.symbol));
+  if (rows.length < 2 || rows.length !== selected.size) {
+    throw new Error('Select at least two stocks in the current ranking universe.');
+  }
+  return rows;
+}
