@@ -1,8 +1,6 @@
 # StockLens — SYSEN 5151
 
-**[Open the live StockLens dashboard](https://stocklens-research-preview.shuxuanwang-624.chatgpt.site/?v=43131b9)**
-
-The live dashboard requires authorized access.
+**[Open the StockLens dashboard](https://sysen5151-fall2026.github.io/StockLen/)**
 
 StockLens lets researchers select 2–100 companies from a fixed U.S. large-cap list, browse dated financial news, and rank the selected stocks by their market-adjusted price reaction. Open a ranked stock for its company, sector, price chart and reported volume.
 

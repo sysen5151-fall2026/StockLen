@@ -1,6 +1,6 @@
 import { universe } from './universe.mjs';
 import { hydrateSessions, rankReaction } from './event-ranking.mjs';
-import { analyzeNews, compareNewsEvidence } from './news-ai.mjs';
+import { analyzeNews, compareNewsEvidence, explainAvailableEvidence, predictNewsOutlook, compareOutlookWithActual, refineNewsOutlook } from './news-ai.mjs';
 
 const get = id => document.getElementById(id);
 const form = get('news-search');
@@ -12,6 +12,13 @@ const points = value => `${(100 * value).toFixed(2)} pp`;
 const price = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 let market = new Map();
 let currentRanking = null;
+let currentForecast = null;
+const outlookLabels = {
+  outperformance: 'Likely outperform',
+  underperformance: 'Likely underperform',
+  neutral: 'Neutral signal',
+  insufficient: 'Insufficient evidence',
+};
 let newsSequence = 0;
 let rankingSequence = 0;
 let articles = [];
@@ -23,6 +30,8 @@ let cursor = null;
 const selection = new Set(['AAPL', 'MSFT', 'NVDA']);
 let analysisSequence = 0;
 let localAiRunning = false;
+let localModelState = 'unavailable';
+const browserModel = globalThis.LanguageModel;
 
 function element(tag, value) {
   const node = document.createElement(tag);
@@ -34,6 +43,11 @@ function clearRanking() {
   rankingSequence += 1;
   get('rank-button').disabled = false;
   get('rank-content').hidden = true;
+  get('rankings').hidden = true;
+  get('forecast').hidden = true;
+  get('actual-button').disabled = false;
+  currentForecast = null;
+  get('forecast-status').textContent = '';
   get('stock-details').hidden = true;
   status.textContent = 'Run the ranking for the current inputs.';
   currentRanking = null;
@@ -56,7 +70,9 @@ function renderNewsAnalysis() {
   const content = get('news-analysis-content');
   const message = get('news-analysis-status');
   const source = selectedArticle;
-  get('ai-button').disabled = !source || localAiRunning;
+  const canInterpret = localModelState !== 'unavailable' && (source?.description?.trim().length ?? 0) >= 30;
+  get('local-ai').hidden = !canInterpret;
+  get('ai-button').disabled = !canInterpret || localAiRunning;
   content.hidden = !source;
   if (!source) {
     message.textContent = 'Select an article to see its company references and available sentiment.';
@@ -67,10 +83,12 @@ function renderNewsAnalysis() {
   message.textContent = count
     ? `Massive supplied stock-specific sentiment for ${count} of ${rows.length} selected stocks.`
     : 'Massive did not supply stock-specific sentiment for the selected stocks in this article.';
-  const top = currentRanking?.covered[0];
-  get('news-analysis-summary').textContent = top
-    ? `${top.ticker} had the largest absolute difference from SPY (${points(top.relative)} signed). Rank uses the observed price difference.`
-    : 'Run the ranking to compare the article evidence with observed price moves.';
+  const explanation = explainAvailableEvidence(source, rows, currentRanking)
+    .map(line => element('li', line));
+  get('news-analysis-summary').replaceChildren(...explanation);
+  const excerpt = source.description?.trim();
+  get('news-source-excerpt').hidden = !excerpt;
+  get('news-source-excerpt').textContent = excerpt ?? '';
   get('news-analysis-rows').replaceChildren(...rows.map(({ticker, mentioned, insight, reaction}) => {
     const row = element('tr');
     const coverage = mentioned || insight ? 'Linked by provider' : 'No provider association';
@@ -91,7 +109,11 @@ async function queryApi(path, params) {
     throw new Error('The historical data service is unavailable on this deployment.');
   }
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error ?? 'The data request failed.');
+  if (!response.ok) {
+    const error = new Error(data.error ?? 'The data request failed.');
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -260,17 +282,71 @@ function showDetail(stock, result) {
   get('stock-title').focus();
 }
 
+function renderForecast({ source, group, horizon, predictions }) {
+  const directional = predictions.filter(row => ['outperformance', 'underperformance'].includes(row.outlook)).length;
+  get('forecast-status').textContent = `${directional} of ${group.length} selected stocks have a directional forecast for ${horizon} trading session${horizon === 1 ? '' : 's'}. This view uses the selected story’s signals only.`;
+  const indirect = predictions.filter(row => row.relevance === 'Possible indirect link').length;
+  if (indirect) get('forecast-status').textContent += ` ${indirect} selected stocks have possible indirect links.`;
+  const selected = new Set(group.map(stock => stock.ticker));
+  const suggestions = predictNewsOutlook(source, universe.filter(stock => !selected.has(stock.ticker)))
+    .filter(row => row.relevance !== 'Insufficient evidence').slice(0, 8);
+  const hint = get('forecast-suggestions');
+  hint.textContent = suggestions.length
+    ? `Also worth comparing: ${suggestions.map(({ ticker }) => ticker).join(', ')}. Find them in the stock selector above.`
+    : '';
+  hint.hidden = suggestions.length === 0;
+  get('forecast-rows').replaceChildren(...predictions.map(prediction => {
+    const row = element('tr');
+    for (const text of [prediction.ticker, prediction.relevance, outlookLabels[prediction.outlook], prediction.explanation]) {
+      row.append(element('td', text));
+    }
+    return row;
+  }));
+  get('forecast').hidden = false;
+}
+
 get('rank-button').addEventListener('click', async () => {
   clearRanking();
   const sequence = rankingSequence;
-  const button = get('rank-button');
-  button.disabled = true;
   try {
     const source = article();
     if (selection.size < 2) throw new Error('Select at least two stocks.');
     const group = universe.filter(stock => selection.has(stock.ticker));
     const horizon = Number(get('horizon').value);
-    status.textContent = 'Loading historical prices and calculating reactions…';
+    const forecast = { source, group, horizon, predictions: predictNewsOutlook(source, group) };
+    currentForecast = forecast;
+    renderForecast(forecast);
+    if (localModelState === 'available' && source.description?.trim().length >= 30) {
+      get('actual-button').disabled = true;
+      get('forecast-status').textContent += ' Checking the article with on-device AI…';
+      const refined = await refineNewsOutlook(browserModel, source, forecast.predictions, horizon)
+        .catch(() => forecast.predictions);
+      if (sequence !== rankingSequence) return;
+      currentForecast = { ...forecast, predictions: refined };
+      renderForecast(currentForecast);
+      get('actual-button').disabled = false;
+    }
+  } catch (error) {
+    if (sequence !== rankingSequence) return;
+    get('forecast').hidden = false;
+    get('actual-button').disabled = true;
+    get('forecast-suggestions').hidden = true;
+    get('forecast-rows').replaceChildren();
+    get('forecast-status').textContent = error.message;
+  }
+});
+
+get('actual-button').addEventListener('click', async () => {
+  const forecast = currentForecast;
+  if (!forecast) return;
+  const { source, group, horizon, predictions } = forecast;
+  const sequence = rankingSequence;
+  const button = get('actual-button');
+  button.disabled = true;
+  get('rankings').hidden = false;
+  get('rank-content').hidden = true;
+  status.textContent = 'Checking whether the observation window is complete…';
+  try {
     const response = await queryApi('/api/market-window', {
       date: source.date, symbols: group.map(stock => stock.ticker).join(','), horizon,
     });
@@ -278,6 +354,7 @@ get('rank-button').addEventListener('click', async () => {
     market = hydrateSessions(response.sessions);
     const result = rankReaction(group, market, source.date, horizon);
     if (!result.covered.length) throw new Error('No stock has prices for both window endpoints.');
+    const checks = new Map(compareOutlookWithActual(predictions, result).map(row => [row.ticker, row]));
     status.textContent = `${result.covered.length} of ${group.length} selected stocks ranked · ${result.before} to ${result.after} · SPY ${percent(result.benchmarkReturn)}`;
     const most = result.covered[0];
     get('rank-summary').textContent = `${most.ticker} moved furthest from SPY in this window (${points(most.relative)} relative return).`;
@@ -286,7 +363,8 @@ get('rank-button').addEventListener('click', async () => {
       button.type = 'button';
       button.addEventListener('click', () => showDetail(stock, result));
       const row = element('tr');
-      for (const value of [String(index + 1), button, stock.sector, percent(stock.priceReturn), points(stock.relative), points(stock.magnitude)]) {
+      const check = checks.get(stock.ticker);
+      for (const value of [String(index + 1), button, stock.sector, percent(stock.priceReturn), points(stock.relative), points(stock.magnitude), check.assessment + '. ' + check.explanation]) {
         const cell = element('td');
         cell.append(value);
         row.append(cell);
@@ -298,13 +376,12 @@ get('rank-button').addEventListener('click', async () => {
     get('rank-content').hidden = false;
     currentRanking = result;
     renderNewsAnalysis();
-    const browserModel = globalThis.LanguageModel;
-    if (source.description.length >= 30 && browserModel) {
-      const state = await browserModel.availability().catch(() => 'unavailable');
-      if (sequence === rankingSequence && state === 'available') void runLocalAi();
-    }
   } catch (error) {
-    if (sequence === rankingSequence) status.textContent = error.message;
+    if (sequence === rankingSequence) {
+      status.textContent = error.status === 422
+        ? 'Actual returns are not available for the full window yet. The forecast above remains available.'
+        : error.message;
+    }
   } finally {
     if (sequence === rankingSequence) button.disabled = false;
   }
@@ -322,7 +399,7 @@ async function runLocalAi() {
   try {
     const source = article();
     if (!source.description) throw new Error('The provider has no summary for this article.');
-    const result = await analyzeNews(globalThis.LanguageModel, source, source.description, fraction => {
+    const result = await analyzeNews(browserModel, source, source.description, fraction => {
       if (sequence === analysisSequence) aiStatus.textContent = `Downloading the browser model… ${Math.round(fraction * 100)}%`;
     });
     if (sequence !== analysisSequence) return;
@@ -334,8 +411,17 @@ async function runLocalAi() {
     if (sequence === analysisSequence) aiStatus.textContent = error.message;
   } finally {
     localAiRunning = false;
-    button.disabled = !selectedArticle;
+    renderNewsAnalysis();
   }
 }
 
 get('ai-button').addEventListener('click', () => void runLocalAi());
+
+if (browserModel?.availability) {
+  Promise.resolve().then(() => browserModel.availability()).then(state => {
+    if (['available', 'downloadable', 'downloading'].includes(state)) {
+      localModelState = state;
+      renderNewsAnalysis();
+    }
+  }).catch(() => {});
+}

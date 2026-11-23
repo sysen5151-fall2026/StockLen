@@ -109,3 +109,68 @@ test('keyword-first search defaults to seven Eastern dates and recognizes compan
   assert.equal(params.get('ticker'), 'NVDA');
   assert.deepEqual((await result.json()).articles.map(item => item.id), ['title', 'tagged']);
 });
+
+test('evidence explanation stays useful when sentiment or market data is missing', async () => {
+  const { explainAvailableEvidence } = await import('../website/research/news-ai.mjs');
+  const withoutData = explainAvailableEvidence({}, [{ticker: 'NVDA', mentioned: false}], null).join(' ');
+  assert.match(withoutData, /did not supply a summary/);
+  assert.match(withoutData, /sentiment is unavailable/);
+  assert.match(withoutData, /when price comparison results are available/);
+
+  const completed = explainAvailableEvidence({ description: 'Earnings release.' }, [
+    { ticker: 'NVDA', mentioned: true, insight: { sentiment: 'negative' } },
+  ], { covered: [{ ticker: 'NVDA', relative: -.03 }], missing: ['AAPL'] }).join(' ');
+  assert.match(completed, /NVDA: negative/);
+  assert.match(completed, /3.00 percentage points below SPY/);
+  assert.match(completed, /missing for 1/);
+  assert.match(completed, /do not establish/);
+});
+
+test('news forecast abstains without sentiment and evaluates later relative returns separately', async () => {
+  const { predictNewsOutlook, compareOutlookWithActual } = await import('../website/research/news-ai.mjs');
+  const forecasts = predictNewsOutlook({ tickers: ['NVDA'], insights: { NVDA: { sentiment: 'positive' } } },
+    [{ ticker: 'NVDA' }, { ticker: 'AAPL' }]);
+  assert.equal(forecasts.find(row => row.ticker === 'NVDA').outlook, 'outperformance');
+  assert.equal(forecasts.find(row => row.ticker === 'AAPL').outlook, 'insufficient');
+  const checked = compareOutlookWithActual(forecasts, { covered: [
+    { ticker: 'NVDA', relative: -.04, priceReturn: .01 },
+    { ticker: 'AAPL', relative: .02, priceReturn: .07 },
+  ] });
+  assert.match(checked[0].explanation, /different directions/);
+  assert.equal(checked[0].assessment, 'Different direction');
+  assert.equal(checked[1].assessment, 'No directional call');
+});
+
+test('on-device outlook accepts only selected linked tickers and exact source quotes', async () => {
+  const { refineNewsOutlook } = await import('../website/research/news-ai.mjs');
+  const source = { description: 'Nvidia postponed a planned accelerator release.', tickers: ['NVDA'] };
+  const inputs = [{ ticker: 'NVDA', name: 'Nvidia', outlook: 'insufficient' }, { ticker: 'AAPL', name: 'Apple', outlook: 'insufficient' }];
+  const model = { create: async () => ({
+    destroy() {},
+    prompt: async () => JSON.stringify([
+      { ticker: 'NVDA', outlook: 'underperformance', quote: 'postponed a planned accelerator release' },
+      { ticker: 'AAPL', outlook: 'outperformance', quote: 'postponed a planned accelerator release' },
+    ]),
+  }) };
+  const result = await refineNewsOutlook(model, source, inputs, 1);
+  assert.equal(result[0].outlook, 'underperformance');
+  assert.equal(result[1].outlook, 'insufficient');
+});
+
+test('news relevance connects industry news without inventing a directional forecast', async () => {
+  const { predictNewsOutlook } = await import('../website/research/news-ai.mjs');
+  const stocks = ['AAPL', 'NVDA', 'AMD', 'AMAT', 'MSFT'].map(ticker => ({ ticker }));
+  const article = { title: 'Demand for AI chips rises', description: 'Analysts report data-center expansion.', tickers: ['NVDA'] };
+  const rows = predictNewsOutlook(article, stocks);
+  assert.equal(rows[0].ticker, 'NVDA');
+  assert.equal(rows[0].relevance, 'Provider-linked');
+  for (const ticker of ['AMD', 'AMAT', 'MSFT']) {
+    const row = rows.find(item => item.ticker === ticker);
+    assert.equal(row.relevance, 'Possible indirect link');
+    assert.equal(row.outlook, 'insufficient');
+    assert.match(row.explanation, /“(?:AI chips|data-center expansion)”/);
+  }
+  assert.equal(rows.find(row => row.ticker === 'AAPL').relevance, 'Insufficient evidence');
+  const founderNews = { title: 'Nvidia founder announces departure', tickers: ['NVDA'] };
+  assert.equal(predictNewsOutlook(founderNews, stocks).find(row => row.ticker === 'AMD').relevance, 'Insufficient evidence');
+});

@@ -60,20 +60,33 @@
           <output id="selection-count"></output>
         </div>
         <div id="stock-picker" class="stock-picker" role="group" aria-label="Eligible stocks"></div>
-        <label>Window after publication day
+        <label>Forecast horizon after publication
           <select id="horizon"><option value="1">1 trading session</option><option value="3">3 trading sessions</option><option value="5">5 trading sessions</option></select>
         </label>
-        <button type="button" id="rank-button">Compare stocks and analyze news</button>
+        <button type="button" id="rank-button">Generate news forecast</button>
       </section>
     </div>
-    <section id="rankings" class="card" aria-labelledby="rank-title">
-      <h2 id="rank-title">Stock reactions</h2>
-      <p id="rank-status" role="status">Select news and at least two stocks to see results.</p>
+    <section id="forecast" class="card" aria-labelledby="forecast-title" hidden>
+      <h2 id="forecast-title">News forecast</h2>
+      <p id="forecast-status" role="status"></p>
+      <p>Directional estimates use stock-specific news sentiment and, where available, an on-device interpretation of the article summary. Outperformance and underperformance are relative to SPY.</p>
+      <p id="forecast-suggestions" hidden></p>
+      <div class="table-scroll">
+        <table aria-label="Forecasts by stock">
+          <thead><tr><th scope="col">Stock</th><th scope="col">Article relevance</th><th scope="col">Expected reaction vs. SPY</th><th scope="col">News rationale</th></tr></thead>
+          <tbody id="forecast-rows"></tbody>
+        </table>
+      </div>
+      <button type="button" id="actual-button">Check actual returns</button>
+    </section>
+    <section id="rankings" class="card" aria-labelledby="rank-title" hidden>
+      <h2 id="rank-title">Actual reaction and forecast check</h2>
+      <p id="rank-status" role="status">Generate a forecast to check it against completed market data.</p>
       <div id="rank-content" hidden>
         <p id="rank-summary"></p>
         <div class="table-scroll">
           <table>
-            <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Sector</th><th scope="col">Stock return</th><th scope="col">vs. SPY</th><th scope="col">Reaction size</th></tr></thead>
+            <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Sector</th><th scope="col">Stock return</th><th scope="col">vs. SPY</th><th scope="col">Reaction size</th><th scope="col">Forecast check</th></tr></thead>
             <tbody id="reaction-rows"></tbody>
           </table>
         </div>
@@ -86,10 +99,11 @@
       </div>
     </section>
     <section class="card" aria-labelledby="ai-title">
-      <h2 id="ai-title">AI news analysis</h2>
+      <h2 id="ai-title">News explanation</h2>
       <p id="news-analysis-status" role="status">Select an article to see its company references and available sentiment.</p>
       <div id="news-analysis-content" hidden>
-        <p id="news-analysis-summary"></p>
+        <ul id="news-analysis-summary" aria-label="Evidence-based explanation"></ul>
+        <blockquote id="news-source-excerpt" aria-label="Publisher summary" hidden></blockquote>
         <div class="table-scroll analysis-table">
           <table aria-label="News and observed market reaction by stock">
             <thead><tr><th scope="col">Stock</th><th scope="col">Article coverage</th><th scope="col">Massive sentiment and rationale</th><th scope="col">Observed move vs. SPY</th></tr></thead>
@@ -98,7 +112,7 @@
         </div>
         <p>Sentiment describes the news. Relative returns describe market moves during the selected window. Other events can affect those returns.</p>
       </div>
-      <details id="local-ai">
+      <details id="local-ai" hidden>
         <summary>Interpret the article with on-device AI</summary>
         <p>Where supported, your browser classifies the article summary and highlights supporting text.</p>
         <button id="ai-button" type="button" disabled>Analyze article</button>
