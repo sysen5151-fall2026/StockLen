@@ -1,12 +1,12 @@
 # Public news reaction workflow
 
-Select a publication date and optional ticker to search the historical news feed. Select 2–100 stocks from the OEF universe and choose a return window. The website backend loads news, prices and volumes through a licensed Massive account. Visitors do not upload data.
+Search the historical news feed by company, ticker or topic. The default window covers the most recent seven New York calendar dates. Optional filters narrow the query to one publication date or related company. Results continue loading as the user scrolls. Select 2–100 stocks from the OEF universe and choose a return window. A single button generates the comparison and refreshes the news analysis. An already-available browser model can also generate its interpretation from that action. The website backend loads news, prices and volumes through a licensed Massive account. Visitors do not upload data.
 
 The fixed universe is a snapshot of the November 20, 2026 iShares S&P 100 ETF equity holdings. Alphabet Class A is retained and Class C is omitted. Berkshire Class B uses display symbol BRK-B and provider symbol BRK.B. This research universe is fixed for every analysis date. [Holdings source](https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv)
 
 SPY defines the window. Use the last trading close strictly before publication day and the first, third, or fifth trading close strictly after that day. The data are split-adjusted prices, excluding dividends. Every ranked stock has prices on both dates. Rank the absolute size of the return difference against SPY and show the signed difference in percentage points. Mark missing coverage. Observed reactions do not establish causation.
 
-An available browser language model analyzes the provider summary. It labels the topic and tone and supports its interpretation with a quotation checked against the summary. The interpretation does not change the rank or supply prices. [Browser support](https://developer.chrome.com/docs/ai/prompt-api)
+The website displays Massive’s ticker-level sentiment and rationale alongside observed stock reactions when the news provider supplies those fields. Missing sentiment is shown as unavailable. An available browser language model analyzes the provider summary. It labels the topic and tone and supports its interpretation with a quotation checked against the summary. The interpretation does not change the rank or supply prices. [Browser support](https://developer.chrome.com/docs/ai/prompt-api)
 
 The data routes are same-origin and the provider key is a Worker secret. Provision a Massive account approved for the intended site audience before enabling it. [Massive market data redistribution terms](https://massive.com/knowledge-base/article/how-can-i-redistribute-massives-market-data)
 

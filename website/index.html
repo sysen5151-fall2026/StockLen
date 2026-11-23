@@ -11,22 +11,39 @@
 <body>
   <header class="topbar"><div class="shell product-header"><a class="brand" href="./">StockLens<span>.</span></a></div></header>
   <main class="shell">
-    <section class="intro">
-      <h1>News reaction ranking</h1>
-      <p>Select 2–100 stocks and compare how they moved around a historical news story.</p>
+    <section class="search-hero" aria-labelledby="search-heading">
+      <h1 id="search-heading">Find market news</h1>
+      <p>Search for a story, then compare how your stocks reacted.</p>
+      <form id="news-search" role="search">
+        <div class="search-bar">
+          <span class="search-icon" aria-hidden="true"></span>
+          <input id="news-keyword" aria-label="Search news" type="search" maxlength="120" placeholder="Search a company, ticker, or topic">
+          <button type="submit">Search</button>
+        </div>
+        <details id="news-filters">
+          <summary>Filters</summary>
+          <div class="filter-grid">
+            <label>Publication date (New York) <input id="news-date" type="date"></label>
+            <label>Related company <select id="news-ticker"><option value="">All companies</option></select></label>
+          </div>
+        </details>
+      </form>
     </section>
-    <div class="event-layout">
-      <section class="card" aria-labelledby="article-heading">
-        <h2 id="article-heading">Find historical news</h2>
-        <form id="news-search">
-          <label>Publication date (New York) <input id="news-date" type="date" required></label>
-          <label>Filter by ticker <select id="news-ticker"><option value="">All news</option></select></label>
-          <button type="submit">Find news</button>
-        </form>
+    <section class="search-results" id="news-results" aria-labelledby="article-heading" hidden>
+      <div class="results-heading">
+        <h2 id="article-heading">News results</h2>
         <p id="news-status" role="status"></p>
-        <label>Article <select id="article-picker" disabled><option value="">Search for news first</option></select></label>
-        <button id="more-news" type="button" hidden>Load more articles</button>
-        <p id="article-source"></p>
+      </div>
+      <div class="news-scroll" id="news-scroll">
+        <ul id="news-list" aria-label="Matching news"></ul>
+        <div id="news-sentinel" aria-hidden="true" hidden></div>
+      </div>
+    </section>
+    <div id="analysis-workspace" hidden>
+      <div class="event-layout">
+      <section class="card selected-story" aria-labelledby="selected-story-heading">
+        <h2 id="selected-story-heading">Selected news</h2>
+        <div id="article-source"></div>
       </section>
       <section class="card" aria-labelledby="market-heading">
         <h2 id="market-heading">Stocks to compare</h2>
@@ -40,7 +57,7 @@
         <label>Window after publication day
           <select id="horizon"><option value="1">1 trading session</option><option value="3">3 trading sessions</option><option value="5">5 trading sessions</option></select>
         </label>
-        <button type="button" id="rank-button">Rank selected stocks</button>
+        <button type="button" id="rank-button">Compare stocks and analyze news</button>
       </section>
     </div>
     <section id="rankings" class="card" aria-labelledby="rank-title">
@@ -64,14 +81,29 @@
     </section>
     <section class="card" aria-labelledby="ai-title">
       <h2 id="ai-title">AI news analysis</h2>
-      <p>On-device AI analyzes the selected article summary and shows the text behind its interpretation.</p>
-      <button id="ai-button" type="button">Analyze article</button>
+      <p id="news-analysis-status" role="status">Select an article to see its company references and available sentiment.</p>
+      <div id="news-analysis-content" hidden>
+        <p id="news-analysis-summary"></p>
+        <div class="table-scroll analysis-table">
+          <table aria-label="News and observed market reaction by stock">
+            <thead><tr><th scope="col">Stock</th><th scope="col">Article coverage</th><th scope="col">Massive sentiment and rationale</th><th scope="col">Observed move vs. SPY</th></tr></thead>
+            <tbody id="news-analysis-rows"></tbody>
+          </table>
+        </div>
+        <p>Sentiment describes the news. Relative returns describe market moves during the selected window. Other events can affect those returns.</p>
+      </div>
+      <details id="local-ai">
+        <summary>Interpret the article with on-device AI</summary>
+        <p>Where supported, your browser classifies the article summary and highlights supporting text.</p>
+        <button id="ai-button" type="button" disabled>Analyze article</button>
       <p id="ai-status" role="status"></p>
       <div id="ai-result" hidden>
         <p id="ai-classification"></p>
         <blockquote id="ai-evidence"></blockquote>
       </div>
+      </details>
     </section>
+    </div>
     <details class="method">
       <summary>Stock universe and ranking method</summary>
       <p>Select any subset of the fixed list, which uses 100 companies from the November 20, 2026 OEF holdings snapshot, with one share class per company. <a id="universe-source" href="https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv">Holdings source</a>.</p>

@@ -22,9 +22,9 @@ export function validateInterpretation(result, excerpt) {
 
 export async function analyzeNews(model, article, excerpt, progress) {
   const evidence = excerpt.trim();
-  if (evidence.length < 30 || evidence.length > 3500) throw new Error('Paste 30–3,500 characters of source text.');
+  if (evidence.length < 30 || evidence.length > 3500) throw new Error('This article does not have enough source text for on-device analysis.');
   if (!model || await model.availability() === 'unavailable') {
-    throw new Error('On-device AI is unavailable in this browser.');
+    throw new Error('On-device AI is unavailable in this browser. Provider sentiment is shown above when supplied.');
   }
   const session = await model.create({
     monitor(monitor) {
@@ -43,4 +43,17 @@ export async function analyzeNews(model, article, excerpt, progress) {
   } finally {
     session.destroy();
   }
+}
+
+
+export function compareNewsEvidence(article, symbols, ranking) {
+  const mentioned = new Set((article.tickers ?? []).map(ticker => ticker.replace('.', '-')));
+  const ranked = new Map((ranking?.covered ?? []).map((row, index) => [row.ticker, { ...row, rank: index + 1 }]));
+  return [...symbols].map(ticker => ({
+    ticker,
+    mentioned: mentioned.has(ticker),
+    insight: Object.hasOwn(article.insights ?? {}, ticker) ? article.insights[ticker] : null,
+    reaction: ranked.get(ticker) ?? null,
+  })).sort((first, second) => (first.reaction?.rank ?? Infinity) - (second.reaction?.rank ?? Infinity)
+    || Number(Boolean(second.insight)) - Number(Boolean(first.insight)) || first.ticker.localeCompare(second.ticker));
 }
