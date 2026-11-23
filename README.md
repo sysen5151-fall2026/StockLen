@@ -15,13 +15,13 @@ Group 29: Yihan Zhou, Shuxuan Wang, Henian Li, Xinyuan Yan, David Limmer, Rosa S
 
 Historical imports run in browser memory. Select one CSV per ticker in a predefined universe of 2–100 U.S. stocks and optionally import a dated news JSON file. The public build includes only the fictional sample snapshot for 2026-09-21. See the [import instructions and data requirements](docs/research-dashboard.md#historical-data-import).
 
-**[Engineering comparison](https://sysen5151-fall2026.github.io/StockLen/compare.html)** exposes the same F.1–F.5 workflow with additional scenarios and the engineering trace. See [the dashboard, model and verification map](docs/research-dashboard.md).
+The local engineering comparison exposes the F.1–F.5 verification scenarios and trace. See [the dashboard, model and verification map](docs/research-dashboard.md).
 
 ## Evidence acquisition and validation
 
 F.2 Acquire and Validate Dated Evidence is implemented by two software modules: F.2.1/P.2.1 builds provider queries and F.2.2/P.2.2 checks returned evidence. The Evidence Lab uses synthetic records and fictional sources. It does not call live providers or calculate stock rankings.
 
-**[Open the Evidence Lab online](https://sysen5151-fall2026.github.io/StockLen/evidence.html)** — runs in your browser without installation or a terminal. Select the stock pair and evidence case, then click **Run F.2**. The browser uses the same synthetic contract and is checked against the Python implementation for every supported scenario.
+For the course verification views, run `python scripts/build_site.py --engineering` and `python -m http.server 8081 --bind 127.0.0.1 --directory .engineering-site`. Open `http://127.0.0.1:8081/evidence.html` for the F.2 lab or `http://127.0.0.1:8081/compare.html` for the engineering comparison.
 
 The Python implementation is also available for local development:
 
@@ -56,7 +56,7 @@ Open http://127.0.0.1:8765 and select **Compare fixture**. One request traverses
 
 ## Website
 
-`website/index.html` is the research dashboard. `research-lab.html` retains the earlier illustrative lab and its separate scoring method. The GitHub Pages build also publishes the engineering comparison, evidence lab and browser-only transport fixture. The local FastAPI fixture runs separately.
+`website/index.html` is the StockLens website. GitHub Pages publishes the research dashboard and its assets. The engineering build and local FastAPI fixture support course verification.
 
 Preview: `python3 scripts/build_site.py` then `python3 -m http.server 8080 --directory .site --bind 127.0.0.1`.
 

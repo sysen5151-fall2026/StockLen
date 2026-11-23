@@ -114,7 +114,7 @@ function renderPriceWindow() {
 
 function showStock(symbol) {
   selectedStock = view.stocks.find(stock => stock.symbol === symbol);
-  for (const button of byId('ranking-rows').querySelectorAll('button')) {
+  for (const button of document.querySelectorAll('[data-stock-detail]')) {
     button.setAttribute('aria-pressed', String(button.value === symbol));
   }
   byId('detail-title').textContent = company[symbol] ? `${symbol} · ${company[symbol]}` : symbol;
@@ -123,20 +123,31 @@ function showStock(symbol) {
   renderPriceWindow();
 }
 
-function renderDashboard() {
+function detailButton(symbol) {
+  const button = element('button', symbol, 'ticker');
+  button.type = 'button';
+  button.value = symbol;
+  button.dataset.stockDetail = '';
+  button.setAttribute('aria-label', `View ${symbol} details`);
+  button.addEventListener('click', () => {
+    showStock(symbol);
+    byId('detail-title').focus();
+  });
+  return button;
+}
+
+function renderDashboard(detailSymbol) {
   const comparison = view.comparison;
   const [first, second] = comparison.stock_pair;
   const [firstScore, secondScore] = comparison.stocks;
-  byId('ranking-scope').textContent = `Scores out of 100 across ${view.stocks.length} stocks. Select a ticker for details.`;
+  byId('ranking-scope').textContent = `Scores out of 100 across ${view.stocks.length} stocks. Select a ticker for its chart.`;
   const lastMarketDate = view.stocks[0].prices.at(-1).observation_date;
   byId('comparison-dates').textContent =
     `Analysis date ${comparison.analysis_date} · Market data through ${lastMarketDate}`;
   byId('comparison-scores').replaceChildren(...comparison.stocks.map(stock => {
     const card = element('div', null, 'score-card');
-    card.append(
-      element('h3', stock.symbol),
-      element('p', stock.display_score, 'score-number'),
-    );
+    const ticker = detailButton(stock.symbol);
+    card.append(ticker, element('p', stock.display_score, 'score-number'));
     return card;
   }));
   byId('model-explanation').textContent =
@@ -170,21 +181,22 @@ function renderDashboard() {
   }));
 
   byId('ranking-rows').replaceChildren(...view.stocks.map(stock => {
-    const button = element('button', stock.symbol);
-    button.type = 'button';
-    button.value = stock.symbol;
-    button.setAttribute('aria-label', `View ${stock.symbol} details`);
-    button.addEventListener('click', () => {
-      showStock(stock.symbol);
-      byId('detail-title').focus();
+    const compareButton = element('button', stock.symbol === first || stock.symbol === second ? 'Selected' : 'Compare');
+    compareButton.type = 'button';
+    compareButton.disabled = stock.symbol === first || stock.symbol === second;
+    compareButton.setAttribute('aria-label', `Compare ${first} with ${stock.symbol}`);
+    compareButton.addEventListener('click', () => {
+      form.elements.stockB.value = stock.symbol;
+      void compare(stock.symbol);
     });
-    return row(String(stock.rank), button, stock.score.toFixed(2));
+    return row(String(stock.rank), detailButton(stock.symbol), stock.score.toFixed(2), compareButton);
   }));
   results.hidden = false;
-  showStock(first);
+  showStock(detailSymbol ?? first);
+  if (detailSymbol) byId('detail-title').focus();
 }
 
-async function compare() {
+async function compare(detailSymbol) {
   const sequence = ++comparisonSequence;
   const status = byId('research-status');
   const button = form.querySelector('button[type="submit"]');
@@ -204,7 +216,7 @@ async function compare() {
         : 'A comparison is unavailable for this pair and date.';
       return;
     }
-    renderDashboard();
+    renderDashboard(detailSymbol);
     status.textContent = run.history.at(-1).state === 'completed_with_limitations'
       ? 'Comparison ready with evidence or explanation limitations.'
       : 'Comparison ready.';

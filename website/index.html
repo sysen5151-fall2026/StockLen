@@ -10,47 +10,46 @@
 </head>
 <body>
   <header class="topbar">
-    <nav class="shell" aria-label="Main">
+    <div class="shell product-header">
       <a class="brand" href="./">StockLens<span>.</span></a>
-      <a href="#ranking">Rankings</a>
-      <a href="#comparison">Comparison</a>
-      <a href="#method">Methodology</a>
-    </nav>
+      <span id="data-source">Sample data · Fictional prices and news</span>
+    </div>
   </header>
   <main class="shell">
     <section class="intro">
-      <h1>Stock research dashboard</h1>
-      <p>Compare two stocks and see the prices, indicators and evidence behind their scores.</p>
-      <p class="data-note" id="data-source">Sample data · Fictional prices and news</p>
+      <h1>Stock research</h1>
+      <p>Rank your stocks, compare two companies and see what drives their scores.</p>
     </section>
-    <section class="card" aria-labelledby="import-title">
-      <h2 id="import-title">Import historical data</h2>
-      <p>Choose Yahoo Finance daily CSVs you have permission to use. Choose your set of 2–100 U.S. stocks and name each file after its ticker, such as AAPL.csv. Import the full set together to fix the ranking universe. Each file needs Date and Adj Close columns. Your files stay in this browser session.</p>
-      <form id="import-form">
-        <label>Yahoo historical price files <input type="file" name="prices" accept=".csv,text/csv" multiple required></label>
-        <label>News evidence (optional JSON) <input type="file" name="news" accept=".json,application/json"></label>
-        <button type="submit">Load data</button>
-        <button type="button" id="sample-data" disabled>Use sample data</button>
-      </form>
-      <p class="muted" id="import-status" role="status"></p>
-      <details>
-        <summary>News file format</summary>
-        <p>Provide titles you have permission to use, along with their publication dates and original article URLs.</p>
-        <pre>[{
+    <section class="card research-controls" aria-label="Research settings">
+      <details id="data-settings">
+        <summary>Change data source</summary>
+        <p>Import daily Yahoo Finance CSVs for 2–100 U.S. stocks. Name each file after its ticker, such as AAPL.csv, and include Date and Adj Close. Files stay in this browser session.</p>
+        <form id="import-form">
+          <label>Price files <input type="file" name="prices" accept=".csv,text/csv" multiple required></label>
+          <label>News evidence (optional JSON) <input type="file" name="news" accept=".json,application/json"></label>
+          <button type="submit">Load data</button>
+          <button type="button" id="sample-data" disabled>Use sample data</button>
+        </form>
+        <p class="muted" id="import-status" role="status"></p>
+        <details>
+          <summary>News file format</summary>
+          <p>Use headlines and original article links you have permission to use.</p>
+          <pre>[{
   "symbol": "AAPL",
   "title": "Article headline",
   "publication_date": "2026-09-18",
   "url": "https://example.com/article"
 }]</pre>
+        </details>
       </details>
+      <form id="research-form">
+        <label>First stock <select name="stockA" required></select></label>
+        <label>Second stock <select name="stockB" required></select></label>
+        <label>Analysis date <select name="analysisDate" required></select></label>
+        <button type="submit">Compare stocks</button>
+      </form>
+      <p id="research-status" role="status"></p>
     </section>
-    <form id="research-form" class="card">
-      <label>First stock <select name="stockA" required></select></label>
-      <label>Second stock <select name="stockB" required></select></label>
-      <label>Analysis date <select name="analysisDate" required></select></label>
-      <button type="submit">Compare stocks</button>
-    </form>
-    <p id="research-status" role="status"></p>
     <noscript>Enable JavaScript to use the StockLens dashboard.</noscript>
     <div id="research-results" hidden>
       <div class="workspace">
@@ -59,7 +58,7 @@
           <p class="muted" id="ranking-scope"></p>
           <div class="table-scroll">
             <table aria-label="Universe rankings">
-              <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Score</th></tr></thead>
+              <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Score</th><th scope="col">Compare</th></tr></thead>
               <tbody id="ranking-rows"></tbody>
             </table>
           </div>
@@ -68,6 +67,27 @@
           <h2>Stock comparison</h2>
           <p class="muted" id="comparison-dates"></p>
           <div class="score-grid" id="comparison-scores"></div>
+          <section id="stock-detail" aria-labelledby="detail-title">
+            <h3 id="detail-title" tabindex="-1">Stock details</h3>
+            <p id="detail-summary"></p>
+            <div class="chart-header">
+              <h3 id="chart-title">Adjusted closing price (USD)</h3>
+              <label>Chart window
+                <select id="chart-window"><option value="21">21 observations</option><option value="10">10 observations</option><option value="5">5 observations</option></select>
+              </label>
+            </div>
+            <canvas id="price-chart" role="img" aria-labelledby="chart-title" aria-describedby="chart-summary"></canvas>
+            <p class="muted" id="chart-summary"></p>
+            <details>
+              <summary>View dated market records</summary>
+              <div class="table-scroll">
+                <table aria-label="Market source records">
+                  <thead><tr><th scope="col">Observation date</th><th scope="col">Adjusted close</th><th scope="col">Source ID</th></tr></thead>
+                  <tbody id="market-rows"></tbody>
+                </table>
+              </div>
+            </details>
+          </section>
           <h3>What drives the difference?</h3>
           <p id="model-explanation"></p>
           <div class="table-scroll">
@@ -80,40 +100,13 @@
           <div id="news-evidence"></div>
         </section>
       </div>
-      <section class="card" id="stock-detail" aria-labelledby="detail-title">
-        <h2 id="detail-title" tabindex="-1">Stock details</h2>
-        <p id="detail-summary"></p>
-        <div class="chart-header">
-          <h3 id="chart-title">Adjusted closing price (USD)</h3>
-          <label>Chart window
-            <select id="chart-window"><option value="21">21 observations</option><option value="10">10 observations</option><option value="5">5 observations</option></select>
-          </label>
-        </div>
-        <canvas id="price-chart" role="img" aria-labelledby="chart-title" aria-describedby="chart-summary"></canvas>
-        <p class="muted" id="chart-summary"></p>
-        <details>
-          <summary>View dated market records</summary>
-          <div class="table-scroll">
-            <table aria-label="Market source records">
-              <thead><tr><th scope="col">Observation date</th><th scope="col">Adjusted close</th><th scope="col">Source ID</th></tr></thead>
-              <tbody id="market-rows"></tbody>
-            </table>
-          </div>
-        </details>
-      </section>
     </div>
-    <section class="card" id="method">
-      <h2>How scores are calculated</h2>
+    <details class="method" id="method">
+      <summary>How scores are calculated</summary>
       <p>StockLens uses 21 aligned adjusted closes to calculate momentum over 20 periods and the sample standard deviation of 20 simple returns. Stronger momentum and lower volatility earn more points.</p>
       <p>Each factor contributes up to 50 points using average-tie ranks across the fixed universe for the current dataset. News provides context for the selected pair. Scoring uses prices only. The local model identifies the leading factor after scoring.</p>
       <p>Imported analysis dates come from the supplied market records. A date is available when every ticker has an adjusted close for each of the 21 supplied dates ending on that date. The sample snapshot has one synthetic date.</p>
-    </section>
+    </details>
   </main>
-  <footer class="shell">
-    <a href="./compare.html">Engineering comparison</a>
-    <a href="./evidence.html">Evidence lab</a>
-    <a href="./research-lab.html">Original research lab</a>
-    <a href="https://github.com/sysen5151-fall2026/StockLen">Project repository</a>
-  </footer>
 </body>
 </html>

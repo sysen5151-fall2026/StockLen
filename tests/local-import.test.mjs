@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 execFileSync(process.env.PYTHON || 'python', ['scripts/build_site.py']);
@@ -72,4 +73,13 @@ test('original product scope: a predefined 100-stock set can be scored without a
   assert.equal(run.evidence.evidence.market_records.length, 2100);
   const fixture = await compareWithExplanationModel();
   assert.equal(researchView(fixture).stocks.length, 10);
+});
+
+test('Pages package contains only the StockLens product and connects its research views', () => {
+  assert.deepEqual(readdirSync('.site').sort(), ['.nojekyll', 'index.html', 'js', 'research']);
+  const html = readFileSync('.site/index.html', 'utf8');
+  for (const element of ['research-form', 'ranking-rows', 'comparison-scores', 'price-chart', 'model-explanation', 'news-evidence']) {
+    assert.ok(html.includes(`id="${element}"`), element);
+  }
+  assert.doesNotMatch(html, /(?:compare|evidence|research-lab|skeleton)\.html/);
 });
