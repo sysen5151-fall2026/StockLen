@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
+execFileSync(process.env.PYTHON || 'python', ['scripts/build_site.py', '--engineering']);
 execFileSync(process.env.PYTHON || 'python', ['scripts/build_site.py']);
-const { UNIVERSE, IMPORT_CONFIG_ID } = await import('../.site/js/evidence.mjs');
-const { compareWithExplanationModel } = await import('../.site/js/local-explanation.mjs');
-const { prepareImport, readNews, readYahooPrices } = await import('../.site/research/local-import.mjs');
-const { researchView, selectedResearchStocks } = await import('../.site/research/research-data.mjs');
+const { UNIVERSE, IMPORT_CONFIG_ID } = await import('../.engineering-site/js/evidence.mjs');
+const { compareWithExplanationModel } = await import('../.engineering-site/js/local-explanation.mjs');
+const { prepareImport, readNews, readYahooPrices } = await import('../.engineering-site/research/local-import.mjs');
+const { researchView, selectedResearchStocks } = await import('../.engineering-site/research/research-data.mjs');
 const dates = Array.from({ length: 31 }, (_, index) => new Date(Date.UTC(2025, 9, index + 1)))
   .filter(date => date.getUTCDay() > 0 && date.getUTCDay() < 6)
   .map(date => date.toISOString().slice(0, 10));
@@ -78,16 +79,20 @@ test('original product scope: a predefined 100-stock set can be scored without a
 });
 
 test('Pages package contains only the StockLens product and connects its research views', () => {
-  assert.deepEqual(readdirSync('.site').sort(), ['.nojekyll', 'index.html', 'js', 'research']);
+  assert.deepEqual(readdirSync('.site').sort(), ['.nojekyll', 'index.html', 'research']);
   const html = readFileSync('.site/index.html', 'utf8');
-  for (const element of ['research-form', 'ranking-rows', 'comparison-scores', 'price-chart', 'model-explanation', 'event-results']) {
+  for (const element of ['article-form', 'market-files', 'reaction-rows', 'event-chart', 'ai-evidence']) {
     assert.ok(html.includes(`id="${element}"`), element);
   }
+  assert.deepEqual(readdirSync('.site/research').sort(), [
+    'dashboard.css', 'event-dashboard.mjs', 'event-ranking.mjs',
+    'market-csv.mjs', 'news-ai.mjs', 'universe.mjs',
+  ]);
   assert.doesNotMatch(html, /(?:compare|evidence|research-lab|skeleton)\.html/);
 });
 
 test('selected historical events evaluate all selected stocks with common dates and no future data', async () => {
-  const { eventResponse, historicalEvents } = await import('../.site/research/news-events.mjs');
+  const { eventResponse, historicalEvents } = await import('../.engineering-site/research/news-events.mjs');
   const event = historicalEvents.find(entry => entry.symbol === 'AAPL');
   const symbols = ['AAPL', 'MSFT', 'NVDA'];
   const prices = new Map([
@@ -102,4 +107,46 @@ test('selected historical events evaluate all selected stocks with common dates 
   assert.ok(Math.abs(moves[1].change + .1) < 1e-9);
   assert.equal(moves[2].change, null);
   assert.ok(eventResponse(event, symbols, prices, '2025-01-31', 3).every(row => row.change === null));
+});
+
+test('Yahoo event ranking fixes the universe and ranks real-input windows by absolute SPY-relative move', async () => {
+  const { universe } = await import('../.site/research/universe.mjs');
+  const { rankReaction, validateYahooArticle, yahooArticles } = await import('../.site/research/event-ranking.mjs');
+  assert.equal(universe.length, 100);
+  assert.equal(new Set(universe.map(stock => stock.ticker)).size, 100);
+  assert.ok(universe.some(stock => stock.ticker === 'BRK-B'));
+  for (const article of yahooArticles) assert.deepEqual(validateYahooArticle(article), article);
+  assert.throws(() => validateYahooArticle({ ...yahooArticles[0], url: 'https://finance.yahoo.com.example.com/news/story.html' }), /original/);
+
+  const history = (before, after) => ({ prices: new Map([
+    ['2025-02-25', before], ['2025-02-26', before], ['2025-02-27', after],
+  ]), volumes: new Map() });
+  const market = new Map([['SPY', history(100, 101)], ['AAPL', history(100, 105)], ['NVDA', history(100, 92)]]);
+  const result = rankReaction(universe, market, '2025-02-26', 1);
+  assert.deepEqual(result.covered.map(stock => stock.ticker), ['NVDA', 'AAPL']);
+  assert.ok(Math.abs(result.covered[0].relative + .09) < 1e-9);
+  assert.equal(result.missing.length, 98);
+  assert.equal(result.before, '2025-02-25');
+  assert.equal(result.after, '2025-02-27');
+  assert.throws(() => rankReaction(universe, market, '2025-02-26', 3), /does not cover/);
+  for (const stock of universe) market.set(stock.ticker, history(100, 102));
+  assert.equal(rankReaction(universe, market, '2025-02-26', 1).covered.length, 100);
+});
+
+test('AI results require exact source evidence and do not silently substitute a template', async () => {
+  const { analyzeNews, validateInterpretation } = await import('../.site/research/news-ai.mjs');
+  const excerpt = 'The company reported that its quarterly revenue increased.';
+  const evidence = 'quarterly revenue increased';
+  assert.throws(() => validateInterpretation({ topic: 'earnings', tone: 'positive', evidence: 'quarterly revenue declined' }, excerpt), /exact supporting quote/);
+  await assert.rejects(analyzeNews(undefined, { title: 'Test' }, excerpt, () => {}), /unavailable/);
+  let destroyed = false;
+  const model = {
+    availability: async () => 'available',
+    create: async () => ({
+      prompt: async () => JSON.stringify({ topic: 'earnings', tone: 'positive', evidence }),
+      destroy: () => { destroyed = true; },
+    }),
+  };
+  assert.equal((await analyzeNews(model, { title: 'Test' }, excerpt, () => {})).evidence, evidence);
+  assert.equal(destroyed, true);
 });

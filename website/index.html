@@ -3,121 +3,75 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore the StockLens ranking, compare selected stocks, and inspect the dated evidence behind their scores.">
-  <title>StockLens | Stock research</title>
+  <meta name="description" content="Rank the market-adjusted reactions of 100 U.S. stocks to a Yahoo Finance event.">
+  <title>StockLens | News reaction ranking</title>
   <link rel="stylesheet" href="./research/dashboard.css">
-  <script type="module" src="./research/dashboard.mjs"></script>
+  <script type="module" src="./research/event-dashboard.mjs"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="shell product-header">
-      <a class="brand" href="./">StockLens<span>.</span></a>
-      <span id="data-source">Sample data · Fictional prices and news</span>
-    </div>
-  </header>
+  <header class="topbar"><div class="shell product-header"><a class="brand" href="./">StockLens<span>.</span></a></div></header>
   <main class="shell">
     <section class="intro">
-      <h1>Stock research</h1>
-      <p>Rank your stocks, compare selected companies and see what drives their scores.</p>
+      <h1>News reaction ranking</h1>
+      <p>Compare how 100 representative U.S. stocks moved around a Yahoo Finance story.</p>
     </section>
-    <section class="card research-controls" aria-label="Research settings">
-      <details id="data-settings">
-        <summary>Change data source</summary>
-        <p>Import daily Yahoo Finance CSVs for 2–100 U.S. stocks. Name each file after its ticker, such as AAPL.csv, and include Date and Adj Close. Files stay in this browser session.</p>
-        <form id="import-form">
-          <label>Price files <input type="file" name="prices" accept=".csv,text/csv" multiple required></label>
-          <label>News evidence (optional JSON) <input type="file" name="news" accept=".json,application/json"></label>
-          <button type="submit">Load data</button>
-          <button type="button" id="sample-data" disabled>Use sample data</button>
+    <div class="event-layout">
+      <section class="card" aria-labelledby="article-heading">
+        <h2 id="article-heading">Yahoo Finance news</h2>
+        <label>Choose an article <select id="article-picker"><option value="">Enter a Yahoo Finance article</option></select></label>
+        <form id="article-form">
+          <label>Article title <input name="title" required maxlength="300"></label>
+          <label>Publication date <input name="date" type="date" required></label>
+          <label>Yahoo Finance article URL <input name="url" type="url" required></label>
         </form>
-        <p class="muted" id="import-status" role="status"></p>
-        <details>
-          <summary>News file format</summary>
-          <p>Use headlines and original article links you have permission to use.</p>
-          <pre>[{
-  "symbol": "AAPL",
-  "title": "Article headline",
-  "publication_date": "2026-09-18",
-  "url": "https://example.com/article"
-}]</pre>
-        </details>
-      </details>
-      <form id="research-form">
-        <label>Analysis date <select name="analysisDate" required></select></label>
-        <button type="submit">Analyze selected stocks</button>
-        <fieldset class="stock-selection">
-          <legend>Stocks to analyze</legend>
-          <div class="selection-actions">
-            <button type="button" id="select-all">Select all</button>
-            <button type="button" id="clear-all">Clear selection</button>
-            <output id="selection-count"></output>
-          </div>
-          <div id="stock-picker" class="stock-picker"></div>
-        </fieldset>
-      </form>
-      <p id="research-status" role="status"></p>
-    </section>
-    <noscript>Enable JavaScript to use the StockLens dashboard.</noscript>
-    <div id="research-results" hidden>
-      <div class="workspace">
-        <section class="card" id="ranking">
-          <h2>Universe rankings</h2>
-          <p class="muted" id="ranking-scope"></p>
-          <div class="table-scroll">
-            <table aria-label="Universe rankings">
-              <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Score</th></tr></thead>
-              <tbody id="ranking-rows"></tbody>
-            </table>
-          </div>
-        </section>
-        <section class="card" id="comparison">
-          <h2>Stock comparison</h2>
-          <p class="muted" id="comparison-dates"></p>
-          <p id="model-explanation"></p>
-          <div class="table-scroll group-scores">
-            <table aria-label="Selected stock scores">
-              <thead><tr><th scope="col">Stock</th><th scope="col">Score</th><th scope="col">Momentum</th><th scope="col">Volatility</th><th scope="col">Factor points (M / V)</th></tr></thead>
-              <tbody id="comparison-scores"></tbody>
-            </table>
-          </div>
-          <section id="stock-detail" aria-labelledby="detail-title">
-            <h3 id="detail-title" tabindex="-1">Stock details</h3>
-            <p id="detail-summary"></p>
-            <div class="chart-header">
-              <h3 id="chart-title">Adjusted closing price (USD)</h3>
-              <label>Chart window
-                <select id="chart-window"><option value="21">21 observations</option><option value="10">10 observations</option><option value="5">5 observations</option></select>
-              </label>
-            </div>
-            <canvas id="price-chart" role="img" aria-labelledby="chart-title" aria-describedby="chart-summary"></canvas>
-            <p class="muted" id="chart-summary"></p>
-            <details>
-              <summary>View dated market records</summary>
-              <div class="table-scroll">
-                <table aria-label="Market source records">
-                  <thead><tr><th scope="col">Observation date</th><th scope="col">Adjusted close</th><th scope="col">Source ID</th></tr></thead>
-                  <tbody id="market-rows"></tbody>
-                </table>
-              </div>
-            </details>
-          </section>
-        </section>
-      </div>
-      <section class="card" aria-labelledby="news-impact">
-        <h2 id="news-impact">News and stock moves</h2>
-        <p>Select news to see how each analyzed stock moved around its publication. Observed returns alone cannot establish what caused a price move.</p>
-        <label>Closing observations after publication
-          <select id="event-horizon"><option value="1">1 observation</option><option value="3">3 observations</option><option value="5">5 observations</option></select>
+        <p id="article-source"></p>
+      </section>
+      <section class="card" aria-labelledby="market-heading">
+        <h2 id="market-heading">Historical prices</h2>
+        <p>Import daily CSVs named by ticker, including SPY.csv. Each file needs Date and Adj Close. Volume is optional.</p>
+        <label>Historical CSV files <input id="market-files" type="file" accept=".csv,text/csv" multiple></label>
+        <p id="market-status" role="status">No price files loaded.</p>
+        <label>Window after publication day
+          <select id="horizon"><option value="1">1 trading session</option><option value="3">3 trading sessions</option><option value="5">5 trading sessions</option></select>
         </label>
-        <div id="event-picker" class="event-picker"></div>
-        <div id="event-results" aria-live="polite"></div>
+        <button type="button" id="rank-button">Rank stock reactions</button>
       </section>
     </div>
-    <details class="method" id="method">
-      <summary>How scores are calculated</summary>
-      <p>StockLens uses 21 aligned adjusted closes to calculate momentum over 20 periods and the sample standard deviation of 20 simple returns. Stronger momentum and lower volatility earn more points.</p>
-      <p>Each factor contributes up to 50 points using average-tie ranks across the fixed universe for the current dataset. Scoring uses prices only. News analysis reports returns from the last close strictly before publication day to the chosen close strictly after it, within the selected analysis cutoff. The method brackets the date when only the publication day is known.</p>
-      <p>Imported analysis dates come from the supplied market records. A date is available when every ticker has an adjusted close for each of the 21 supplied dates ending on that date. The sample snapshot has one synthetic date.</p>
+    <section id="rankings" class="card" aria-labelledby="rank-title">
+      <h2 id="rank-title">Stock reactions</h2>
+      <p id="rank-status" role="status">Choose news and load historical prices to see results.</p>
+      <div id="rank-content" hidden>
+        <p id="rank-summary"></p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th scope="col">Rank</th><th scope="col">Stock</th><th scope="col">Sector</th><th scope="col">Stock return</th><th scope="col">vs. SPY</th><th scope="col">Reaction size</th></tr></thead>
+            <tbody id="reaction-rows"></tbody>
+          </table>
+        </div>
+        <section id="stock-details" hidden aria-labelledby="stock-title">
+          <h3 id="stock-title" tabindex="-1"></h3>
+          <p id="stock-summary"></p>
+          <canvas id="event-chart" role="img" aria-labelledby="stock-title" aria-describedby="stock-summary"></canvas>
+        </section>
+        <details id="missing-data"><summary>Stocks without enough price data</summary><p id="missing-stocks"></p></details>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="ai-title">
+      <h2 id="ai-title">AI news analysis</h2>
+      <p>Paste a permitted excerpt from the selected article. On-device AI identifies the topic and tone and highlights supporting text.</p>
+      <label>Article excerpt <textarea id="article-excerpt" rows="4" minlength="30" maxlength="3500"></textarea></label>
+      <button id="ai-button" type="button">Analyze article</button>
+      <p id="ai-status" role="status"></p>
+      <div id="ai-result" hidden>
+        <p id="ai-classification"></p>
+        <blockquote id="ai-evidence"></blockquote>
+      </div>
+    </section>
+    <details class="method">
+      <summary>Stock universe and ranking method</summary>
+      <p>The fixed list uses 100 companies from the November 20, 2026 OEF holdings snapshot, with one share class per company. <a id="universe-source" href="https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv">Holdings source</a>.</p>
+      <p>Rank is based on the absolute difference between a stock’s return and SPY’s return over the same window. The window starts at the last SPY trading close strictly before the publication date and ends at the selected close strictly after it. The publication date uses New York time. The signed difference shows whether a stock outperformed or underperformed the market. Other news and market factors can contribute to the observed moves.</p>
+      <div id="universe-list"></div>
     </details>
   </main>
 </body>

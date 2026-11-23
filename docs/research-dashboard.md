@@ -1,3 +1,17 @@
+# Public news reaction workflow
+
+Select an indexed Yahoo Finance article or paste a Yahoo Finance article URL, its title and the publication date in New York time. Import authorized daily adjusted-close CSVs for the fixed list and for SPY. All files stay in browser memory. There is no sample-data option in the public build.
+
+The representative universe is a fixed snapshot of the November 20, 2026 iShares S&P 100 ETF equity holdings. Alphabet Class A is retained and Class C is omitted. Berkshire Class B uses the Yahoo symbol BRK-B. This is a fixed research universe applied to the selected dates, including older dates, and is not a historical membership series. [Holdings source](https://www.ishares.com/us/products/239723/ishares-s-p-100-etf/latest-holdings.csv)
+
+SPY supplies the window calendar. The start is the last recorded SPY close strictly before publication day. The end is the first, third, or fifth recorded SPY close strictly after that day. Each stock needs a valid close on both shared dates. Compute the simple stock return less the SPY return and rank the absolute value. Show the signed difference in percentage points and list missing coverage. This measure is an observed market-adjusted price reaction. It does not isolate causation.
+
+The browser Prompt API analyzes a user-provided excerpt using a local model where available. The topic and tone are model classifications and the evidence quotation must match the supplied excerpt exactly. This result never supplies or changes a market price or a rank. [Browser support](https://developer.chrome.com/docs/ai/prompt-api)
+
+The engineering workflow below records the submitted F.1–F.5 and v0.1 baseline. Its two-stock verification rules are distinct from this public event study.
+
+---
+
 # Research dashboard implementation
 
 The dashboard uses the team’s submitted v0.1 system requirements (§5.4), the F.1–F.5 functional architecture and the same-host decision documented in the Systems Analysis and Risk Assessment. [Innoslate TD-01](https://cloud.innoslate.com/cornell/p/659/database/entity/319237)

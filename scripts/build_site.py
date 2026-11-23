@@ -7,28 +7,37 @@ ROOT = Path(__file__).resolve().parents[1]
 WEBSITE = ROOT / "website"
 BROWSER = ROOT / "pmc2" / "browser"
 MODULES = ("evidence.mjs", "system.mjs", "local-explanation.mjs")
+PRODUCT_ASSETS = (
+    "dashboard.css", "event-dashboard.mjs", "event-ranking.mjs",
+    "market-csv.mjs", "news-ai.mjs", "universe.mjs",
+)
 
 
 def build(engineering=False):
     target = ROOT / (".engineering-site" if engineering else ".site")
     target.mkdir(exist_ok=True)
-    (target / "js").mkdir(exist_ok=True)
-    for name in MODULES:
-        shutil.copyfile(BROWSER / name, target / "js" / name)
     for name in (".nojekyll", "index.html"):
         shutil.copyfile(WEBSITE / name, target / name)
-    shutil.copytree(WEBSITE / "research", target / "research", dirs_exist_ok=True)
 
     if not engineering:
         # Remove files left by a build made before the public package was reduced.
         for name in ("compare.html", "evidence.html", "skeleton.html", "research-lab.html", "app.css", "package.json"):
             (target / name).unlink(missing_ok=True)
-        for name in ("app.js", "historical-adapter.js", "scoring.js", "skeleton.js"):
-            (target / "js" / name).unlink(missing_ok=True)
-        for name in ("data", "demo"):
+        for name in ("data", "demo", "js"):
             if (target / name).exists():
                 shutil.rmtree(target / name)
+        assets = target / "research"
+        assets.mkdir(exist_ok=True)
+        for path in assets.iterdir():
+            if path.is_file() and path.name not in PRODUCT_ASSETS:
+                path.unlink()
+        for name in PRODUCT_ASSETS:
+            shutil.copyfile(WEBSITE / "research" / name, assets / name)
     else:
+        (target / "js").mkdir(exist_ok=True)
+        for name in MODULES:
+            shutil.copyfile(BROWSER / name, target / "js" / name)
+        shutil.copytree(WEBSITE / "research", target / "research", dirs_exist_ok=True)
         for name in ("app.css", "research-lab.html"):
             shutil.copyfile(WEBSITE / name, target / name)
         shutil.copytree(WEBSITE / "data", target / "data", dirs_exist_ok=True)
